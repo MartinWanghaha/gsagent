@@ -1,0 +1,16 @@
+# 忽略数据集和输出结果 (去掉斜杠，同时兼容文件夹和软链接)
+data
+output
+
+# 忽略模型权重
+checkpoints
+*.pth
+*.pt
+*.ckpt
+
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
+
+# 忽略系统文件
+.DS_Store
