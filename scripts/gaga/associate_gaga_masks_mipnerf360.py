@@ -104,7 +104,7 @@ def parse_args() -> argparse.Namespace:
         "--camera-resolution",
         choices=(1, 2, 4, 8),
         type=int,
-        default=8,
+        default=1,
         help=(
             "Downsample factor for RGB tensors loaded by Gaga. RGB pixels are not "
             "used during association; masks remain at their saved resolution. Default: 8."

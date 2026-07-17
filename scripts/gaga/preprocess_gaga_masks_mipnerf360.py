@@ -15,6 +15,7 @@ Examples:
 from __future__ import annotations
 
 import argparse
+import importlib
 import os
 import sys
 from dataclasses import dataclass
@@ -233,8 +234,19 @@ def image_paths(image_dir: Path) -> list[Path]:
     ]
 
 
-def load_gaga_mask_api(gaga_root: Path) -> dict[str, Any]:
+def load_gaga_mask_api(gaga_root: Path, seg_method: str) -> dict[str, Any]:
     mask_dir = gaga_root / "mask"
+    detectron2_root = mask_dir / "detectron2"
+    cropformer_root = (
+        detectron2_root / "detectron2" / "projects" / "CropFormer"
+    )
+    cropformer_ops = (
+        cropformer_root
+        / "mask2former"
+        / "modeling"
+        / "pixel_decoder"
+        / "ops"
+    )
     required = [
         mask_dir / "get_raw_mask.py",
         mask_dir / "automatic_mask_generator.py",
@@ -245,7 +257,25 @@ def load_gaga_mask_api(gaga_root: Path) -> dict[str, Any]:
             "Gaga mask code is missing required file(s): " + ", ".join(map(str, missing))
         )
 
-    sys.path.insert(0, str(mask_dir))
+    for import_root in (
+        mask_dir,
+        detectron2_root,
+        cropformer_root,
+        cropformer_ops,
+    ):
+        import_root_str = str(import_root)
+        if import_root.is_dir() and import_root_str not in sys.path:
+            sys.path.insert(0, import_root_str)
+
+    if seg_method == "entityseg":
+        # CropFormer mixes its installed-style and source-tree import names.
+        # Alias both names to one module to avoid duplicate dataset registration.
+        mask2former = importlib.import_module("mask2former")
+        qualified_name = "detectron2.projects.CropFormer.mask2former"
+        sys.modules[qualified_name] = mask2former
+        cropformer = importlib.import_module("detectron2.projects.CropFormer")
+        setattr(cropformer, "mask2former", mask2former)
+
     from get_raw_mask import (  # pylint: disable=import-outside-toplevel
         get_entityseg_mask,
         get_sam_mask,
@@ -301,6 +331,24 @@ def build_segmenter_config(args: argparse.Namespace, gaga_root: Path) -> dict[st
         "entityseg_checkpoint_path": str(checkpoint),
         "confidence_threshold": args.confidence_threshold,
     }
+
+
+def configure_entityseg_resolution(segmenter: Any, image_resolution: int) -> None:
+    if image_resolution <= 0:
+        return
+
+    predictor = getattr(segmenter, "predictor", None)
+    cfg = getattr(predictor, "cfg", None)
+    if cfg is None:
+        raise RuntimeError("EntitySeg predictor does not expose its Detectron2 config")
+
+    was_frozen = cfg.is_frozen()
+    cfg.defrost()
+    cfg.INPUT.MIN_SIZE_TEST = image_resolution
+    cfg.INPUT.MAX_SIZE_TEST = image_resolution
+    if was_frozen:
+        cfg.freeze()
+    print(f"[segmenter] EntitySeg network max image size: {image_resolution}")
 
 
 def run_scene(
@@ -392,8 +440,9 @@ def run_scene(
             print(f"[failed] {scene_name}/{image_path.name}: {exc}", file=sys.stderr)
             if isinstance(exc, torch.cuda.OutOfMemoryError):
                 predictor = getattr(segmenter, "predictor", None)
-                if predictor is not None:
-                    predictor.reset_image()
+                reset_image = getattr(predictor, "reset_image", None)
+                if callable(reset_image):
+                    reset_image()
                 if device.type == "cuda":
                     torch.cuda.empty_cache()
             if args.fail_fast:
@@ -448,9 +497,11 @@ def main() -> int:
     device = torch.device(device_name)
     print(f"[segmenter] {args.seg_method} on {device}")
 
-    api = load_gaga_mask_api(gaga_root)
+    api = load_gaga_mask_api(gaga_root, args.seg_method)
     config = build_segmenter_config(args, gaga_root)
     segmenter = api["get_seg_model"](config, args.seg_method, device)
+    if args.seg_method == "entityseg":
+        configure_entityseg_resolution(segmenter, args.image_resolution)
 
     results: list[SceneResult] = []
     for scene in scenes:
