@@ -19,7 +19,7 @@ __pycache__/
 venv/
 env/
 .env
-
+.conda-pkgs
 # 忽略 IDE 和编辑器配置文件 (非常重要，否则团队成员的 IDE 配置会冲突)
 .vscode/
 .idea/
