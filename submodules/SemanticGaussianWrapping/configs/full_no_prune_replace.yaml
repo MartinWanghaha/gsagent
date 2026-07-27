@@ -1,0 +1,7 @@
+_base_: full.yaml
+
+# Disable donor-funded replacement both near the global Gaussian cap and in
+# the zero-net-growth surface topology window. Ordinary pre-cap densification
+# and opacity pruning remain enabled.
+density:
+  capacity_replacement_enabled: false

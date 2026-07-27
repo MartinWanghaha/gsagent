@@ -1,0 +1,1572 @@
+{
+  "scriptCompleted": true,
+  "commonPrefix": "",
+  "directoryGroups": {
+    "densification": [
+      "file:densification/__init__.py",
+      "file:densification/controller.py"
+    ],
+    "regularization": [
+      "file:regularization/losses.py",
+      "file:regularization/surface.py",
+      "file:regularization/__init__.py",
+      "file:regularization/mesh_correspondence.py",
+      "file:regularization/mesh_feedback.py",
+      "file:regularization/pareto.py",
+      "file:regularization/scheduler.py"
+    ],
+    "tests": [
+      "file:tests/test_checkpointing.py",
+      "file:tests/test_density_controller.py",
+      "file:tests/test_density_lifecycle.py",
+      "file:tests/test_depth_normal_validity.py",
+      "file:tests/test_loss_curriculum.py",
+      "file:tests/test_semantic_region_routing.py",
+      "file:tests/test_surface_regularization.py",
+      "file:tests/test_training_diagnostics.py",
+      "file:tests/test_training_log_resume.py",
+      "file:tests/test_training_profiling.py",
+      "file:tests/test_contact_learning.py",
+      "file:tests/test_mesh_bounds.py",
+      "file:tests/test_mesh_cli.py",
+      "file:tests/test_mesh_conformity.py",
+      "file:tests/test_mesh_io.py",
+      "file:tests/test_mesh_metrics.py",
+      "file:tests/test_mesh_topology.py",
+      "file:tests/test_config.py",
+      "file:tests/test_end_to_end_smoke.py",
+      "file:tests/test_mipnerf360_launcher.py",
+      "file:tests/test_model_io_inference.py",
+      "file:tests/test_reference_rasterizer.py",
+      "file:tests/test_render_outputs.py",
+      "file:tests/test_train_configuration_wiring.py",
+      "file:tests/test_attribute_registry.py",
+      "file:tests/test_camera_intrinsics.py",
+      "file:tests/test_neighbor_index.py",
+      "file:tests/test_semantic_evidence.py",
+      "file:tests/test_surface_field.py",
+      "file:tests/test_mesh_correspondence.py",
+      "file:tests/test_mesh_feedback.py",
+      "file:tests/test_mesh_feedback_v4.py",
+      "file:tests/test_pareto.py",
+      "file:tests/test_blender_alpha.py",
+      "file:tests/test_image_metrics.py",
+      "file:tests/test_metrics_cli.py",
+      "file:tests/test_ablation_runner.py",
+      "file:tests/test_cuda_build_setup.py",
+      "file:tests/test_gaga_association_launcher.py"
+    ],
+    "training": [
+      "file:training/__init__.py",
+      "file:training/checkpointing.py",
+      "file:training/engine.py"
+    ],
+    "utils": [
+      "file:utils/general_utils.py",
+      "file:utils/graphics_utils.py",
+      "file:utils/config_utils.py",
+      "file:utils/io_utils.py",
+      "file:utils/image_utils.py",
+      "file:utils/loss_utils.py",
+      "file:utils/__init__.py",
+      "file:utils/sh_utils.py",
+      "file:utils/system_utils.py"
+    ],
+    "root": [
+      "file:extract_mesh.py",
+      "file:model_io.py",
+      "file:render.py",
+      "file:train.py",
+      "file:metrics.py",
+      "document:ARCHITECTURE.md",
+      "document:LICENSE.md",
+      "document:README.md",
+      "document:THIRD_PARTY_NOTICES.md",
+      "config:pyproject.toml",
+      "document:requirements.txt",
+      "file:convert.py",
+      "file:install.py"
+    ],
+    "mesh": [
+      "file:mesh/__init__.py",
+      "file:mesh/bounds.py",
+      "file:mesh/extractors.py",
+      "file:mesh/field.py",
+      "file:mesh/io.py",
+      "file:mesh/metrics.py",
+      "file:mesh/pipeline.py",
+      "file:mesh/postprocess.py",
+      "file:mesh/sampling.py",
+      "file:mesh/topology.py",
+      "file:mesh/types.py"
+    ],
+    "gaussian_renderer": [
+      "file:gaussian_renderer/__init__.py"
+    ],
+    "semantic": [
+      "file:semantic/__init__.py",
+      "file:semantic/gaga_adapter.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py",
+      "file:semantic/surface_field.py"
+    ],
+    "tools": [
+      "file:tools/benchmark_surface_query.py"
+    ],
+    "scene": [
+      "file:scene/__init__.py",
+      "file:scene/cameras.py",
+      "file:scene/colmap_loader.py",
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_attributes.py",
+      "file:scene/gaussian_model.py"
+    ],
+    "evaluation": [
+      "file:evaluation/__init__.py",
+      "file:evaluation/image_metrics.py"
+    ],
+    "submodules": [
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "document:submodules/diff-semantic-gaussian-rasterization/README.md",
+      "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml",
+      "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu",
+      "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "file:submodules/diff-semantic-gaussian-rasterization/setup.py"
+    ],
+    "configs": [
+      "config:configs/default.yaml",
+      "config:configs/full.yaml",
+      "config:configs/full_no_confidence_propagation.yaml",
+      "config:configs/full_no_expert_certainty.yaml",
+      "config:configs/full_no_mesh_feedback.yaml",
+      "config:configs/full_no_prune_replace.yaml",
+      "config:configs/full_no_surface_topology.yaml",
+      "config:configs/rgb_only.yaml",
+      "config:configs/semantic_render_only.yaml",
+      "file:configs/__init__.py"
+    ],
+    "arguments": [
+      "file:arguments/__init__.py"
+    ]
+  },
+  "nodeTypeGroups": {
+    "file": [
+      "file:densification/__init__.py",
+      "file:densification/controller.py",
+      "file:regularization/losses.py",
+      "file:regularization/surface.py",
+      "file:tests/test_checkpointing.py",
+      "file:tests/test_density_controller.py",
+      "file:tests/test_density_lifecycle.py",
+      "file:tests/test_depth_normal_validity.py",
+      "file:tests/test_loss_curriculum.py",
+      "file:tests/test_semantic_region_routing.py",
+      "file:tests/test_surface_regularization.py",
+      "file:tests/test_training_diagnostics.py",
+      "file:tests/test_training_log_resume.py",
+      "file:tests/test_training_profiling.py",
+      "file:training/__init__.py",
+      "file:training/checkpointing.py",
+      "file:training/engine.py",
+      "file:utils/general_utils.py",
+      "file:utils/graphics_utils.py",
+      "file:extract_mesh.py",
+      "file:mesh/__init__.py",
+      "file:mesh/bounds.py",
+      "file:mesh/extractors.py",
+      "file:mesh/field.py",
+      "file:mesh/io.py",
+      "file:mesh/metrics.py",
+      "file:mesh/pipeline.py",
+      "file:mesh/postprocess.py",
+      "file:mesh/sampling.py",
+      "file:mesh/topology.py",
+      "file:mesh/types.py",
+      "file:tests/test_contact_learning.py",
+      "file:tests/test_mesh_bounds.py",
+      "file:tests/test_mesh_cli.py",
+      "file:tests/test_mesh_conformity.py",
+      "file:tests/test_mesh_io.py",
+      "file:tests/test_mesh_metrics.py",
+      "file:tests/test_mesh_topology.py",
+      "file:gaussian_renderer/__init__.py",
+      "file:model_io.py",
+      "file:render.py",
+      "file:semantic/__init__.py",
+      "file:semantic/gaga_adapter.py",
+      "file:tests/test_config.py",
+      "file:tests/test_end_to_end_smoke.py",
+      "file:tests/test_mipnerf360_launcher.py",
+      "file:tests/test_model_io_inference.py",
+      "file:tests/test_reference_rasterizer.py",
+      "file:tests/test_render_outputs.py",
+      "file:tests/test_train_configuration_wiring.py",
+      "file:tools/benchmark_surface_query.py",
+      "file:train.py",
+      "file:utils/config_utils.py",
+      "file:utils/io_utils.py",
+      "file:scene/__init__.py",
+      "file:scene/cameras.py",
+      "file:scene/colmap_loader.py",
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_attributes.py",
+      "file:scene/gaussian_model.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py",
+      "file:semantic/surface_field.py",
+      "file:tests/test_attribute_registry.py",
+      "file:tests/test_camera_intrinsics.py",
+      "file:tests/test_neighbor_index.py",
+      "file:tests/test_semantic_evidence.py",
+      "file:tests/test_surface_field.py",
+      "file:regularization/__init__.py",
+      "file:regularization/mesh_correspondence.py",
+      "file:regularization/mesh_feedback.py",
+      "file:regularization/pareto.py",
+      "file:regularization/scheduler.py",
+      "file:tests/test_mesh_correspondence.py",
+      "file:tests/test_mesh_feedback.py",
+      "file:tests/test_mesh_feedback_v4.py",
+      "file:tests/test_pareto.py",
+      "file:evaluation/__init__.py",
+      "file:evaluation/image_metrics.py",
+      "file:metrics.py",
+      "file:tests/test_blender_alpha.py",
+      "file:tests/test_image_metrics.py",
+      "file:tests/test_metrics_cli.py",
+      "file:utils/image_utils.py",
+      "file:utils/loss_utils.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "file:arguments/__init__.py",
+      "file:configs/__init__.py",
+      "file:convert.py",
+      "file:install.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu",
+      "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "file:submodules/diff-semantic-gaussian-rasterization/setup.py",
+      "file:tests/test_ablation_runner.py",
+      "file:tests/test_cuda_build_setup.py",
+      "file:tests/test_gaga_association_launcher.py",
+      "file:utils/__init__.py",
+      "file:utils/sh_utils.py",
+      "file:utils/system_utils.py"
+    ],
+    "document": [
+      "document:ARCHITECTURE.md",
+      "document:LICENSE.md",
+      "document:README.md",
+      "document:THIRD_PARTY_NOTICES.md",
+      "document:requirements.txt",
+      "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "document:submodules/diff-semantic-gaussian-rasterization/README.md"
+    ],
+    "config": [
+      "config:pyproject.toml",
+      "config:configs/default.yaml",
+      "config:configs/full.yaml",
+      "config:configs/full_no_confidence_propagation.yaml",
+      "config:configs/full_no_expert_certainty.yaml",
+      "config:configs/full_no_mesh_feedback.yaml",
+      "config:configs/full_no_prune_replace.yaml",
+      "config:configs/full_no_surface_topology.yaml",
+      "config:configs/rgb_only.yaml",
+      "config:configs/semantic_render_only.yaml",
+      "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml"
+    ]
+  },
+  "importAdjacency": {
+    "file:densification/__init__.py": [
+      "file:densification/controller.py"
+    ],
+    "file:densification/controller.py": [
+      "file:utils/general_utils.py"
+    ],
+    "file:regularization/losses.py": [
+      "file:semantic/neighbor_index.py",
+      "file:utils/general_utils.py",
+      "file:utils/graphics_utils.py",
+      "file:utils/loss_utils.py"
+    ],
+    "file:regularization/surface.py": [
+      "file:utils/general_utils.py"
+    ],
+    "file:tests/test_checkpointing.py": [
+      "file:training/checkpointing.py",
+      "file:training/engine.py"
+    ],
+    "file:tests/test_density_controller.py": [
+      "file:densification/__init__.py"
+    ],
+    "file:tests/test_density_lifecycle.py": [
+      "file:training/engine.py"
+    ],
+    "file:tests/test_depth_normal_validity.py": [
+      "file:regularization/losses.py",
+      "file:training/engine.py",
+      "file:utils/graphics_utils.py"
+    ],
+    "file:tests/test_loss_curriculum.py": [
+      "file:regularization/losses.py",
+      "file:semantic/geometry_policy.py"
+    ],
+    "file:tests/test_semantic_region_routing.py": [
+      "file:regularization/losses.py",
+      "file:scene/gaussian_model.py"
+    ],
+    "file:tests/test_surface_regularization.py": [
+      "file:regularization/surface.py"
+    ],
+    "file:tests/test_training_diagnostics.py": [
+      "file:training/engine.py"
+    ],
+    "file:tests/test_training_log_resume.py": [
+      "file:training/engine.py"
+    ],
+    "file:tests/test_training_profiling.py": [
+      "file:training/engine.py"
+    ],
+    "file:training/__init__.py": [
+      "file:training/checkpointing.py",
+      "file:training/engine.py"
+    ],
+    "file:training/checkpointing.py": [
+      "file:utils/config_utils.py"
+    ],
+    "file:training/engine.py": [
+      "file:densification/__init__.py",
+      "file:gaussian_renderer/__init__.py",
+      "file:regularization/__init__.py",
+      "file:regularization/surface.py",
+      "file:semantic/__init__.py",
+      "file:training/checkpointing.py",
+      "file:utils/graphics_utils.py",
+      "file:utils/image_utils.py"
+    ],
+    "file:utils/general_utils.py": [],
+    "file:utils/graphics_utils.py": [],
+    "file:extract_mesh.py": [
+      "file:mesh/__init__.py"
+    ],
+    "file:mesh/__init__.py": [
+      "file:mesh/bounds.py",
+      "file:mesh/extractors.py",
+      "file:mesh/field.py",
+      "file:mesh/io.py",
+      "file:mesh/metrics.py",
+      "file:mesh/pipeline.py",
+      "file:mesh/postprocess.py",
+      "file:mesh/sampling.py",
+      "file:mesh/topology.py",
+      "file:mesh/types.py"
+    ],
+    "file:mesh/bounds.py": [
+      "file:mesh/sampling.py"
+    ],
+    "file:mesh/extractors.py": [
+      "file:mesh/field.py",
+      "file:mesh/sampling.py",
+      "file:mesh/topology.py",
+      "file:mesh/types.py"
+    ],
+    "file:mesh/field.py": [
+      "file:mesh/types.py"
+    ],
+    "file:mesh/io.py": [
+      "file:mesh/types.py"
+    ],
+    "file:mesh/metrics.py": [
+      "file:mesh/types.py"
+    ],
+    "file:mesh/pipeline.py": [
+      "file:mesh/extractors.py",
+      "file:mesh/field.py",
+      "file:mesh/io.py",
+      "file:mesh/postprocess.py",
+      "file:mesh/sampling.py",
+      "file:mesh/topology.py",
+      "file:mesh/types.py"
+    ],
+    "file:mesh/postprocess.py": [
+      "file:mesh/topology.py",
+      "file:mesh/types.py"
+    ],
+    "file:mesh/sampling.py": [
+      "file:mesh/field.py",
+      "file:mesh/types.py"
+    ],
+    "file:mesh/topology.py": [
+      "file:mesh/types.py"
+    ],
+    "file:mesh/types.py": [],
+    "file:tests/test_contact_learning.py": [
+      "file:mesh/__init__.py"
+    ],
+    "file:tests/test_mesh_bounds.py": [
+      "file:mesh/__init__.py"
+    ],
+    "file:tests/test_mesh_cli.py": [
+      "file:extract_mesh.py",
+      "file:mesh/__init__.py"
+    ],
+    "file:tests/test_mesh_conformity.py": [
+      "file:mesh/__init__.py"
+    ],
+    "file:tests/test_mesh_io.py": [
+      "file:mesh/io.py",
+      "file:mesh/types.py"
+    ],
+    "file:tests/test_mesh_metrics.py": [
+      "file:mesh/__init__.py"
+    ],
+    "file:tests/test_mesh_topology.py": [
+      "file:extract_mesh.py",
+      "file:mesh/__init__.py"
+    ],
+    "file:gaussian_renderer/__init__.py": [],
+    "file:model_io.py": [
+      "file:scene/__init__.py",
+      "file:semantic/__init__.py",
+      "file:utils/config_utils.py"
+    ],
+    "file:render.py": [
+      "file:gaussian_renderer/__init__.py",
+      "file:model_io.py",
+      "file:utils/image_utils.py",
+      "file:utils/io_utils.py"
+    ],
+    "file:semantic/__init__.py": [
+      "file:semantic/gaga_adapter.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py"
+    ],
+    "file:semantic/gaga_adapter.py": [],
+    "file:tests/test_config.py": [
+      "file:utils/config_utils.py"
+    ],
+    "file:tests/test_end_to_end_smoke.py": [
+      "file:gaussian_renderer/__init__.py",
+      "file:model_io.py",
+      "file:scene/__init__.py",
+      "file:semantic/__init__.py",
+      "file:training/__init__.py",
+      "file:utils/config_utils.py"
+    ],
+    "file:tests/test_mipnerf360_launcher.py": [
+      "file:utils/config_utils.py"
+    ],
+    "file:tests/test_model_io_inference.py": [
+      "file:model_io.py"
+    ],
+    "file:tests/test_reference_rasterizer.py": [
+      "file:gaussian_renderer/__init__.py"
+    ],
+    "file:tests/test_render_outputs.py": [
+      "file:render.py"
+    ],
+    "file:tests/test_train_configuration_wiring.py": [
+      "file:model_io.py",
+      "file:scene/__init__.py",
+      "file:train.py",
+      "file:utils/config_utils.py"
+    ],
+    "file:tools/benchmark_surface_query.py": [
+      "file:model_io.py",
+      "file:regularization/surface.py",
+      "file:semantic/__init__.py"
+    ],
+    "file:train.py": [
+      "file:model_io.py",
+      "file:regularization/__init__.py",
+      "file:scene/__init__.py",
+      "file:semantic/__init__.py",
+      "file:training/__init__.py",
+      "file:utils/config_utils.py"
+    ],
+    "file:utils/config_utils.py": [],
+    "file:utils/io_utils.py": [],
+    "file:scene/__init__.py": [
+      "file:scene/cameras.py",
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_attributes.py",
+      "file:scene/gaussian_model.py"
+    ],
+    "file:scene/cameras.py": [],
+    "file:scene/colmap_loader.py": [],
+    "file:scene/dataset_readers.py": [
+      "file:scene/colmap_loader.py"
+    ],
+    "file:scene/gaussian_attributes.py": [],
+    "file:scene/gaussian_model.py": [
+      "file:scene/gaussian_attributes.py"
+    ],
+    "file:semantic/geometry_policy.py": [
+      "file:semantic/neighbor_index.py"
+    ],
+    "file:semantic/neighbor_index.py": [],
+    "file:semantic/surface_field.py": [
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py"
+    ],
+    "file:tests/test_attribute_registry.py": [
+      "file:scene/__init__.py",
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_attributes.py",
+      "file:scene/gaussian_model.py"
+    ],
+    "file:tests/test_camera_intrinsics.py": [
+      "file:scene/colmap_loader.py",
+      "file:scene/dataset_readers.py"
+    ],
+    "file:tests/test_neighbor_index.py": [
+      "file:semantic/neighbor_index.py"
+    ],
+    "file:tests/test_semantic_evidence.py": [
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_model.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py"
+    ],
+    "file:tests/test_surface_field.py": [
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_model.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/neighbor_index.py",
+      "file:semantic/surface_field.py"
+    ],
+    "file:regularization/__init__.py": [
+      "file:regularization/losses.py",
+      "file:regularization/mesh_feedback.py",
+      "file:regularization/pareto.py",
+      "file:regularization/scheduler.py"
+    ],
+    "file:regularization/mesh_correspondence.py": [],
+    "file:regularization/mesh_feedback.py": [
+      "file:mesh/__init__.py",
+      "file:regularization/mesh_correspondence.py",
+      "file:utils/general_utils.py"
+    ],
+    "file:regularization/pareto.py": [],
+    "file:regularization/scheduler.py": [],
+    "file:tests/test_mesh_correspondence.py": [
+      "file:regularization/mesh_correspondence.py"
+    ],
+    "file:tests/test_mesh_feedback.py": [
+      "file:mesh/__init__.py",
+      "file:regularization/__init__.py",
+      "file:regularization/mesh_feedback.py",
+      "file:training/engine.py"
+    ],
+    "file:tests/test_mesh_feedback_v4.py": [
+      "file:mesh/__init__.py",
+      "file:regularization/mesh_feedback.py"
+    ],
+    "file:tests/test_pareto.py": [
+      "file:regularization/pareto.py"
+    ],
+    "file:evaluation/__init__.py": [
+      "file:evaluation/image_metrics.py"
+    ],
+    "file:evaluation/image_metrics.py": [
+      "file:utils/image_utils.py",
+      "file:utils/loss_utils.py"
+    ],
+    "file:metrics.py": [
+      "file:evaluation/__init__.py"
+    ],
+    "file:tests/test_blender_alpha.py": [
+      "file:scene/__init__.py",
+      "file:scene/dataset_readers.py",
+      "file:utils/image_utils.py"
+    ],
+    "file:tests/test_image_metrics.py": [
+      "file:evaluation/__init__.py"
+    ],
+    "file:tests/test_metrics_cli.py": [
+      "file:metrics.py"
+    ],
+    "file:utils/image_utils.py": [],
+    "file:utils/loss_utils.py": [],
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py": [
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py"
+    ],
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py": [],
+    "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py": [
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py"
+    ],
+    "document:ARCHITECTURE.md": [],
+    "document:LICENSE.md": [],
+    "document:README.md": [],
+    "document:THIRD_PARTY_NOTICES.md": [],
+    "config:pyproject.toml": [],
+    "document:requirements.txt": [],
+    "config:configs/default.yaml": [],
+    "config:configs/full.yaml": [],
+    "config:configs/full_no_confidence_propagation.yaml": [],
+    "config:configs/full_no_expert_certainty.yaml": [],
+    "config:configs/full_no_mesh_feedback.yaml": [],
+    "config:configs/full_no_prune_replace.yaml": [],
+    "config:configs/full_no_surface_topology.yaml": [],
+    "config:configs/rgb_only.yaml": [],
+    "config:configs/semantic_render_only.yaml": [],
+    "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md": [],
+    "document:submodules/diff-semantic-gaussian-rasterization/README.md": [],
+    "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml": [],
+    "file:arguments/__init__.py": [],
+    "file:configs/__init__.py": [],
+    "file:convert.py": [],
+    "file:install.py": [],
+    "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu": [],
+    "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp": [
+      "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h"
+    ],
+    "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h": [],
+    "file:submodules/diff-semantic-gaussian-rasterization/setup.py": [],
+    "file:tests/test_ablation_runner.py": [],
+    "file:tests/test_cuda_build_setup.py": [
+      "file:install.py"
+    ],
+    "file:tests/test_gaga_association_launcher.py": [],
+    "file:utils/__init__.py": [],
+    "file:utils/sh_utils.py": [],
+    "file:utils/system_utils.py": []
+  },
+  "crossCategoryEdges": [
+    {
+      "fromType": "file",
+      "toType": "file",
+      "edgeType": "imports",
+      "count": 161
+    },
+    {
+      "fromType": "file",
+      "toType": "file",
+      "edgeType": "tested_by",
+      "count": 21
+    }
+  ],
+  "nonCodeConnections": [],
+  "interGroupImports": [
+    {
+      "from": "tests",
+      "to": "scene",
+      "count": 15
+    },
+    {
+      "from": "tests",
+      "to": "mesh",
+      "count": 10
+    },
+    {
+      "from": "tests",
+      "to": "training",
+      "count": 9
+    },
+    {
+      "from": "tests",
+      "to": "regularization",
+      "count": 9
+    },
+    {
+      "from": "tests",
+      "to": "root",
+      "count": 9
+    },
+    {
+      "from": "tests",
+      "to": "semantic",
+      "count": 8
+    },
+    {
+      "from": "tests",
+      "to": "utils",
+      "count": 6
+    },
+    {
+      "from": "regularization",
+      "to": "utils",
+      "count": 5
+    },
+    {
+      "from": "root",
+      "to": "utils",
+      "count": 4
+    },
+    {
+      "from": "training",
+      "to": "utils",
+      "count": 3
+    },
+    {
+      "from": "evaluation",
+      "to": "utils",
+      "count": 2
+    },
+    {
+      "from": "root",
+      "to": "scene",
+      "count": 2
+    },
+    {
+      "from": "root",
+      "to": "semantic",
+      "count": 2
+    },
+    {
+      "from": "tests",
+      "to": "gaussian_renderer",
+      "count": 2
+    },
+    {
+      "from": "training",
+      "to": "regularization",
+      "count": 2
+    },
+    {
+      "from": "densification",
+      "to": "utils",
+      "count": 1
+    },
+    {
+      "from": "regularization",
+      "to": "semantic",
+      "count": 1
+    },
+    {
+      "from": "regularization",
+      "to": "mesh",
+      "count": 1
+    },
+    {
+      "from": "root",
+      "to": "mesh",
+      "count": 1
+    },
+    {
+      "from": "root",
+      "to": "gaussian_renderer",
+      "count": 1
+    },
+    {
+      "from": "root",
+      "to": "regularization",
+      "count": 1
+    },
+    {
+      "from": "root",
+      "to": "training",
+      "count": 1
+    },
+    {
+      "from": "root",
+      "to": "evaluation",
+      "count": 1
+    },
+    {
+      "from": "tests",
+      "to": "densification",
+      "count": 1
+    },
+    {
+      "from": "tests",
+      "to": "evaluation",
+      "count": 1
+    },
+    {
+      "from": "tools",
+      "to": "root",
+      "count": 1
+    },
+    {
+      "from": "tools",
+      "to": "regularization",
+      "count": 1
+    },
+    {
+      "from": "tools",
+      "to": "semantic",
+      "count": 1
+    },
+    {
+      "from": "training",
+      "to": "densification",
+      "count": 1
+    },
+    {
+      "from": "training",
+      "to": "gaussian_renderer",
+      "count": 1
+    },
+    {
+      "from": "training",
+      "to": "semantic",
+      "count": 1
+    }
+  ],
+  "intraGroupDensity": {
+    "densification": {
+      "internalEdges": 1,
+      "totalEdges": 4,
+      "density": 0.25,
+      "importsFrom": [
+        "utils"
+      ],
+      "importedBy": [
+        "tests",
+        "training"
+      ]
+    },
+    "regularization": {
+      "internalEdges": 5,
+      "totalEdges": 25,
+      "density": 0.2,
+      "importsFrom": [
+        "mesh",
+        "semantic",
+        "utils"
+      ],
+      "importedBy": [
+        "root",
+        "tests",
+        "tools",
+        "training"
+      ]
+    },
+    "tests": {
+      "internalEdges": 0,
+      "totalEdges": 70,
+      "density": 0,
+      "importsFrom": [
+        "densification",
+        "evaluation",
+        "gaussian_renderer",
+        "mesh",
+        "regularization",
+        "root",
+        "scene",
+        "semantic",
+        "training",
+        "utils"
+      ],
+      "importedBy": []
+    },
+    "training": {
+      "internalEdges": 3,
+      "totalEdges": 21,
+      "density": 0.14285714285714285,
+      "importsFrom": [
+        "densification",
+        "gaussian_renderer",
+        "regularization",
+        "semantic",
+        "utils"
+      ],
+      "importedBy": [
+        "root",
+        "tests"
+      ]
+    },
+    "utils": {
+      "internalEdges": 0,
+      "totalEdges": 21,
+      "density": 0,
+      "importsFrom": [],
+      "importedBy": [
+        "densification",
+        "evaluation",
+        "regularization",
+        "root",
+        "tests",
+        "training"
+      ]
+    },
+    "root": {
+      "internalEdges": 2,
+      "totalEdges": 25,
+      "density": 0.08,
+      "importsFrom": [
+        "evaluation",
+        "gaussian_renderer",
+        "mesh",
+        "regularization",
+        "scene",
+        "semantic",
+        "training",
+        "utils"
+      ],
+      "importedBy": [
+        "tests",
+        "tools"
+      ]
+    },
+    "mesh": {
+      "internalEdges": 30,
+      "totalEdges": 42,
+      "density": 0.7142857142857143,
+      "importsFrom": [],
+      "importedBy": [
+        "regularization",
+        "root",
+        "tests"
+      ]
+    },
+    "gaussian_renderer": {
+      "internalEdges": 0,
+      "totalEdges": 4,
+      "density": 0,
+      "importsFrom": [],
+      "importedBy": [
+        "root",
+        "tests",
+        "training"
+      ]
+    },
+    "semantic": {
+      "internalEdges": 6,
+      "totalEdges": 19,
+      "density": 0.3157894736842105,
+      "importsFrom": [],
+      "importedBy": [
+        "regularization",
+        "root",
+        "tests",
+        "tools",
+        "training"
+      ]
+    },
+    "tools": {
+      "internalEdges": 0,
+      "totalEdges": 3,
+      "density": 0,
+      "importsFrom": [
+        "regularization",
+        "root",
+        "semantic"
+      ],
+      "importedBy": []
+    },
+    "scene": {
+      "internalEdges": 6,
+      "totalEdges": 23,
+      "density": 0.2608695652173913,
+      "importsFrom": [],
+      "importedBy": [
+        "root",
+        "tests"
+      ]
+    },
+    "evaluation": {
+      "internalEdges": 1,
+      "totalEdges": 5,
+      "density": 0.2,
+      "importsFrom": [
+        "utils"
+      ],
+      "importedBy": [
+        "root",
+        "tests"
+      ]
+    },
+    "submodules": {
+      "internalEdges": 3,
+      "totalEdges": 3,
+      "density": 1,
+      "importsFrom": [],
+      "importedBy": []
+    },
+    "configs": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0,
+      "importsFrom": [],
+      "importedBy": []
+    },
+    "arguments": {
+      "internalEdges": 0,
+      "totalEdges": 0,
+      "density": 0,
+      "importsFrom": [],
+      "importedBy": []
+    }
+  },
+  "patternMatches": {
+    "densification": "entry",
+    "regularization": "entry",
+    "tests": "test",
+    "training": "entry",
+    "utils": "utility",
+    "root": "documentation",
+    "mesh": "entry",
+    "gaussian_renderer": "entry",
+    "semantic": "entry",
+    "tools": "utility",
+    "scene": "entry",
+    "evaluation": "entry",
+    "submodules": null,
+    "configs": "config",
+    "arguments": "entry"
+  },
+  "filePatternMatches": {
+    "file:densification/__init__.py": "entry",
+    "file:tests/test_checkpointing.py": "test",
+    "file:tests/test_density_controller.py": "test",
+    "file:tests/test_density_lifecycle.py": "test",
+    "file:tests/test_depth_normal_validity.py": "test",
+    "file:tests/test_loss_curriculum.py": "test",
+    "file:tests/test_semantic_region_routing.py": "test",
+    "file:tests/test_surface_regularization.py": "test",
+    "file:tests/test_training_diagnostics.py": "test",
+    "file:tests/test_training_log_resume.py": "test",
+    "file:tests/test_training_profiling.py": "test",
+    "file:training/__init__.py": "entry",
+    "file:mesh/__init__.py": "entry",
+    "file:tests/test_contact_learning.py": "test",
+    "file:tests/test_mesh_bounds.py": "test",
+    "file:tests/test_mesh_cli.py": "test",
+    "file:tests/test_mesh_conformity.py": "test",
+    "file:tests/test_mesh_io.py": "test",
+    "file:tests/test_mesh_metrics.py": "test",
+    "file:tests/test_mesh_topology.py": "test",
+    "file:gaussian_renderer/__init__.py": "entry",
+    "file:semantic/__init__.py": "entry",
+    "file:tests/test_config.py": "test",
+    "file:tests/test_end_to_end_smoke.py": "test",
+    "file:tests/test_mipnerf360_launcher.py": "test",
+    "file:tests/test_model_io_inference.py": "test",
+    "file:tests/test_reference_rasterizer.py": "test",
+    "file:tests/test_render_outputs.py": "test",
+    "file:tests/test_train_configuration_wiring.py": "test",
+    "file:scene/__init__.py": "entry",
+    "file:tests/test_attribute_registry.py": "test",
+    "file:tests/test_camera_intrinsics.py": "test",
+    "file:tests/test_neighbor_index.py": "test",
+    "file:tests/test_semantic_evidence.py": "test",
+    "file:tests/test_surface_field.py": "test",
+    "file:regularization/__init__.py": "entry",
+    "file:tests/test_mesh_correspondence.py": "test",
+    "file:tests/test_mesh_feedback.py": "test",
+    "file:tests/test_mesh_feedback_v4.py": "test",
+    "file:tests/test_pareto.py": "test",
+    "file:evaluation/__init__.py": "entry",
+    "file:tests/test_blender_alpha.py": "test",
+    "file:tests/test_image_metrics.py": "test",
+    "file:tests/test_metrics_cli.py": "test",
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py": "entry",
+    "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py": "test",
+    "document:ARCHITECTURE.md": "documentation",
+    "document:LICENSE.md": "documentation",
+    "document:README.md": "documentation",
+    "document:THIRD_PARTY_NOTICES.md": "documentation",
+    "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md": "documentation",
+    "document:submodules/diff-semantic-gaussian-rasterization/README.md": "documentation",
+    "file:arguments/__init__.py": "entry",
+    "file:configs/__init__.py": "entry",
+    "file:tests/test_ablation_runner.py": "test",
+    "file:tests/test_cuda_build_setup.py": "test",
+    "file:tests/test_gaga_association_launcher.py": "test",
+    "file:utils/__init__.py": "entry"
+  },
+  "deploymentTopology": {
+    "hasDockerfile": false,
+    "hasCompose": false,
+    "hasK8s": false,
+    "hasTerraform": false,
+    "hasCI": false,
+    "infraFiles": []
+  },
+  "dataPipeline": {
+    "schemaFiles": [],
+    "migrationFiles": [],
+    "dataModelFiles": [
+      "scene/__init__.py",
+      "scene/cameras.py",
+      "scene/colmap_loader.py",
+      "scene/dataset_readers.py",
+      "scene/gaussian_attributes.py",
+      "scene/gaussian_model.py"
+    ],
+    "apiHandlerFiles": []
+  },
+  "docCoverage": {
+    "groupsWithDocs": 3,
+    "totalGroups": 15,
+    "coverageRatio": 0.2,
+    "undocumentedGroups": [
+      "densification",
+      "regularization",
+      "tests",
+      "training",
+      "utils",
+      "mesh",
+      "gaussian_renderer",
+      "tools",
+      "scene",
+      "evaluation",
+      "configs",
+      "arguments"
+    ]
+  },
+  "dependencyDirection": [
+    {
+      "dependent": "tests",
+      "dependsOn": "scene",
+      "count": 15,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "mesh",
+      "count": 10,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "training",
+      "count": 9,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "regularization",
+      "count": 9,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "root",
+      "count": 9,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "semantic",
+      "count": 8,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "utils",
+      "count": 6,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "regularization",
+      "dependsOn": "utils",
+      "count": 5,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "utils",
+      "count": 4,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "training",
+      "dependsOn": "utils",
+      "count": 3,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "evaluation",
+      "dependsOn": "utils",
+      "count": 2,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "scene",
+      "count": 2,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "semantic",
+      "count": 2,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "gaussian_renderer",
+      "count": 2,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "training",
+      "dependsOn": "regularization",
+      "count": 2,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "densification",
+      "dependsOn": "utils",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "regularization",
+      "dependsOn": "semantic",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "regularization",
+      "dependsOn": "mesh",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "mesh",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "gaussian_renderer",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "regularization",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "training",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "root",
+      "dependsOn": "evaluation",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "densification",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tests",
+      "dependsOn": "evaluation",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "root",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "regularization",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "tools",
+      "dependsOn": "semantic",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "training",
+      "dependsOn": "densification",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "training",
+      "dependsOn": "gaussian_renderer",
+      "count": 1,
+      "reverseCount": 0
+    },
+    {
+      "dependent": "training",
+      "dependsOn": "semantic",
+      "count": 1,
+      "reverseCount": 0
+    }
+  ],
+  "fileStats": {
+    "totalFileNodes": 120,
+    "filesPerGroup": {
+      "densification": 2,
+      "regularization": 7,
+      "tests": 39,
+      "training": 3,
+      "utils": 9,
+      "root": 13,
+      "mesh": 11,
+      "gaussian_renderer": 1,
+      "semantic": 5,
+      "tools": 1,
+      "scene": 6,
+      "evaluation": 2,
+      "submodules": 10,
+      "configs": 10,
+      "arguments": 1
+    },
+    "nodeTypeCounts": {
+      "file": 102,
+      "document": 7,
+      "config": 11
+    }
+  },
+  "fileFanIn": {
+    "file:densification/__init__.py": 2,
+    "file:densification/controller.py": 1,
+    "file:regularization/losses.py": 4,
+    "file:regularization/surface.py": 3,
+    "file:tests/test_checkpointing.py": 0,
+    "file:tests/test_density_controller.py": 0,
+    "file:tests/test_density_lifecycle.py": 0,
+    "file:tests/test_depth_normal_validity.py": 0,
+    "file:tests/test_loss_curriculum.py": 0,
+    "file:tests/test_semantic_region_routing.py": 0,
+    "file:tests/test_surface_regularization.py": 0,
+    "file:tests/test_training_diagnostics.py": 0,
+    "file:tests/test_training_log_resume.py": 0,
+    "file:tests/test_training_profiling.py": 0,
+    "file:training/__init__.py": 2,
+    "file:training/checkpointing.py": 3,
+    "file:training/engine.py": 8,
+    "file:utils/general_utils.py": 4,
+    "file:utils/graphics_utils.py": 3,
+    "file:extract_mesh.py": 2,
+    "file:mesh/__init__.py": 10,
+    "file:mesh/bounds.py": 1,
+    "file:mesh/extractors.py": 2,
+    "file:mesh/field.py": 4,
+    "file:mesh/io.py": 3,
+    "file:mesh/metrics.py": 1,
+    "file:mesh/pipeline.py": 1,
+    "file:mesh/postprocess.py": 2,
+    "file:mesh/sampling.py": 4,
+    "file:mesh/topology.py": 4,
+    "file:mesh/types.py": 10,
+    "file:tests/test_contact_learning.py": 0,
+    "file:tests/test_mesh_bounds.py": 0,
+    "file:tests/test_mesh_cli.py": 0,
+    "file:tests/test_mesh_conformity.py": 0,
+    "file:tests/test_mesh_io.py": 0,
+    "file:tests/test_mesh_metrics.py": 0,
+    "file:tests/test_mesh_topology.py": 0,
+    "file:gaussian_renderer/__init__.py": 4,
+    "file:model_io.py": 6,
+    "file:render.py": 1,
+    "file:semantic/__init__.py": 5,
+    "file:semantic/gaga_adapter.py": 1,
+    "file:tests/test_config.py": 0,
+    "file:tests/test_end_to_end_smoke.py": 0,
+    "file:tests/test_mipnerf360_launcher.py": 0,
+    "file:tests/test_model_io_inference.py": 0,
+    "file:tests/test_reference_rasterizer.py": 0,
+    "file:tests/test_render_outputs.py": 0,
+    "file:tests/test_train_configuration_wiring.py": 0,
+    "file:tools/benchmark_surface_query.py": 0,
+    "file:train.py": 1,
+    "file:utils/config_utils.py": 7,
+    "file:utils/io_utils.py": 1,
+    "file:scene/__init__.py": 6,
+    "file:scene/cameras.py": 1,
+    "file:scene/colmap_loader.py": 2,
+    "file:scene/dataset_readers.py": 6,
+    "file:scene/gaussian_attributes.py": 3,
+    "file:scene/gaussian_model.py": 5,
+    "file:semantic/geometry_policy.py": 5,
+    "file:semantic/neighbor_index.py": 7,
+    "file:semantic/surface_field.py": 1,
+    "file:tests/test_attribute_registry.py": 0,
+    "file:tests/test_camera_intrinsics.py": 0,
+    "file:tests/test_neighbor_index.py": 0,
+    "file:tests/test_semantic_evidence.py": 0,
+    "file:tests/test_surface_field.py": 0,
+    "file:regularization/__init__.py": 3,
+    "file:regularization/mesh_correspondence.py": 2,
+    "file:regularization/mesh_feedback.py": 3,
+    "file:regularization/pareto.py": 2,
+    "file:regularization/scheduler.py": 1,
+    "file:tests/test_mesh_correspondence.py": 0,
+    "file:tests/test_mesh_feedback.py": 0,
+    "file:tests/test_mesh_feedback_v4.py": 0,
+    "file:tests/test_pareto.py": 0,
+    "file:evaluation/__init__.py": 2,
+    "file:evaluation/image_metrics.py": 1,
+    "file:metrics.py": 1,
+    "file:tests/test_blender_alpha.py": 0,
+    "file:tests/test_image_metrics.py": 0,
+    "file:tests/test_metrics_cli.py": 0,
+    "file:utils/image_utils.py": 4,
+    "file:utils/loss_utils.py": 2,
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py": 0,
+    "document:ARCHITECTURE.md": 0,
+    "document:LICENSE.md": 0,
+    "document:README.md": 0,
+    "document:THIRD_PARTY_NOTICES.md": 0,
+    "config:pyproject.toml": 0,
+    "document:requirements.txt": 0,
+    "config:configs/default.yaml": 0,
+    "config:configs/full.yaml": 0,
+    "config:configs/full_no_confidence_propagation.yaml": 0,
+    "config:configs/full_no_expert_certainty.yaml": 0,
+    "config:configs/full_no_mesh_feedback.yaml": 0,
+    "config:configs/full_no_prune_replace.yaml": 0,
+    "config:configs/full_no_surface_topology.yaml": 0,
+    "config:configs/rgb_only.yaml": 0,
+    "config:configs/semantic_render_only.yaml": 0,
+    "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md": 0,
+    "document:submodules/diff-semantic-gaussian-rasterization/README.md": 0,
+    "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml": 0,
+    "file:arguments/__init__.py": 0,
+    "file:configs/__init__.py": 0,
+    "file:convert.py": 0,
+    "file:install.py": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/setup.py": 0,
+    "file:tests/test_ablation_runner.py": 0,
+    "file:tests/test_cuda_build_setup.py": 0,
+    "file:tests/test_gaga_association_launcher.py": 0,
+    "file:utils/__init__.py": 0,
+    "file:utils/sh_utils.py": 0,
+    "file:utils/system_utils.py": 0
+  },
+  "fileFanOut": {
+    "file:densification/__init__.py": 1,
+    "file:densification/controller.py": 1,
+    "file:regularization/losses.py": 4,
+    "file:regularization/surface.py": 1,
+    "file:tests/test_checkpointing.py": 2,
+    "file:tests/test_density_controller.py": 1,
+    "file:tests/test_density_lifecycle.py": 1,
+    "file:tests/test_depth_normal_validity.py": 3,
+    "file:tests/test_loss_curriculum.py": 2,
+    "file:tests/test_semantic_region_routing.py": 2,
+    "file:tests/test_surface_regularization.py": 1,
+    "file:tests/test_training_diagnostics.py": 1,
+    "file:tests/test_training_log_resume.py": 1,
+    "file:tests/test_training_profiling.py": 1,
+    "file:training/__init__.py": 2,
+    "file:training/checkpointing.py": 1,
+    "file:training/engine.py": 8,
+    "file:utils/general_utils.py": 0,
+    "file:utils/graphics_utils.py": 0,
+    "file:extract_mesh.py": 1,
+    "file:mesh/__init__.py": 10,
+    "file:mesh/bounds.py": 1,
+    "file:mesh/extractors.py": 4,
+    "file:mesh/field.py": 1,
+    "file:mesh/io.py": 1,
+    "file:mesh/metrics.py": 1,
+    "file:mesh/pipeline.py": 7,
+    "file:mesh/postprocess.py": 2,
+    "file:mesh/sampling.py": 2,
+    "file:mesh/topology.py": 1,
+    "file:mesh/types.py": 0,
+    "file:tests/test_contact_learning.py": 1,
+    "file:tests/test_mesh_bounds.py": 1,
+    "file:tests/test_mesh_cli.py": 2,
+    "file:tests/test_mesh_conformity.py": 1,
+    "file:tests/test_mesh_io.py": 2,
+    "file:tests/test_mesh_metrics.py": 1,
+    "file:tests/test_mesh_topology.py": 2,
+    "file:gaussian_renderer/__init__.py": 0,
+    "file:model_io.py": 3,
+    "file:render.py": 4,
+    "file:semantic/__init__.py": 3,
+    "file:semantic/gaga_adapter.py": 0,
+    "file:tests/test_config.py": 1,
+    "file:tests/test_end_to_end_smoke.py": 6,
+    "file:tests/test_mipnerf360_launcher.py": 1,
+    "file:tests/test_model_io_inference.py": 1,
+    "file:tests/test_reference_rasterizer.py": 1,
+    "file:tests/test_render_outputs.py": 1,
+    "file:tests/test_train_configuration_wiring.py": 4,
+    "file:tools/benchmark_surface_query.py": 3,
+    "file:train.py": 6,
+    "file:utils/config_utils.py": 0,
+    "file:utils/io_utils.py": 0,
+    "file:scene/__init__.py": 4,
+    "file:scene/cameras.py": 0,
+    "file:scene/colmap_loader.py": 0,
+    "file:scene/dataset_readers.py": 1,
+    "file:scene/gaussian_attributes.py": 0,
+    "file:scene/gaussian_model.py": 1,
+    "file:semantic/geometry_policy.py": 1,
+    "file:semantic/neighbor_index.py": 0,
+    "file:semantic/surface_field.py": 2,
+    "file:tests/test_attribute_registry.py": 4,
+    "file:tests/test_camera_intrinsics.py": 2,
+    "file:tests/test_neighbor_index.py": 1,
+    "file:tests/test_semantic_evidence.py": 4,
+    "file:tests/test_surface_field.py": 5,
+    "file:regularization/__init__.py": 4,
+    "file:regularization/mesh_correspondence.py": 0,
+    "file:regularization/mesh_feedback.py": 3,
+    "file:regularization/pareto.py": 0,
+    "file:regularization/scheduler.py": 0,
+    "file:tests/test_mesh_correspondence.py": 1,
+    "file:tests/test_mesh_feedback.py": 4,
+    "file:tests/test_mesh_feedback_v4.py": 2,
+    "file:tests/test_pareto.py": 1,
+    "file:evaluation/__init__.py": 1,
+    "file:evaluation/image_metrics.py": 2,
+    "file:metrics.py": 1,
+    "file:tests/test_blender_alpha.py": 3,
+    "file:tests/test_image_metrics.py": 1,
+    "file:tests/test_metrics_cli.py": 1,
+    "file:utils/image_utils.py": 0,
+    "file:utils/loss_utils.py": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py": 1,
+    "document:ARCHITECTURE.md": 0,
+    "document:LICENSE.md": 0,
+    "document:README.md": 0,
+    "document:THIRD_PARTY_NOTICES.md": 0,
+    "config:pyproject.toml": 0,
+    "document:requirements.txt": 0,
+    "config:configs/default.yaml": 0,
+    "config:configs/full.yaml": 0,
+    "config:configs/full_no_confidence_propagation.yaml": 0,
+    "config:configs/full_no_expert_certainty.yaml": 0,
+    "config:configs/full_no_mesh_feedback.yaml": 0,
+    "config:configs/full_no_prune_replace.yaml": 0,
+    "config:configs/full_no_surface_topology.yaml": 0,
+    "config:configs/rgb_only.yaml": 0,
+    "config:configs/semantic_render_only.yaml": 0,
+    "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md": 0,
+    "document:submodules/diff-semantic-gaussian-rasterization/README.md": 0,
+    "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml": 0,
+    "file:arguments/__init__.py": 0,
+    "file:configs/__init__.py": 0,
+    "file:convert.py": 0,
+    "file:install.py": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp": 1,
+    "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h": 0,
+    "file:submodules/diff-semantic-gaussian-rasterization/setup.py": 0,
+    "file:tests/test_ablation_runner.py": 0,
+    "file:tests/test_cuda_build_setup.py": 1,
+    "file:tests/test_gaga_association_launcher.py": 0,
+    "file:utils/__init__.py": 0,
+    "file:utils/sh_utils.py": 0,
+    "file:utils/system_utils.py": 0
+  }
+}

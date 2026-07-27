@@ -1,0 +1,124 @@
+[
+  {
+    "order": 1,
+    "title": "项目全景",
+    "description": "先从 README 建立 Semantic Gaussian Wrapping 的整体心智模型：它把 GaGa 风格的视图一致实例证据、Gaussian-Wrapping surface field、自定义 CUDA rasterizer 与 mesh refinement 组织成一条完整工作流。这里同时给出安装、数据布局、训练、渲染评估和网格提取的操作地图，为后续逐层阅读提供方向。",
+    "nodeIds": [
+      "document:README.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "架构契约",
+    "description": "在项目目标之上，ARCHITECTURE.md 定义运行时数据、Gaussian state、renderer、邻域、surface field、训练、拓扑与 checkpoint 之间的 contract。先理解这些边界，后面看到训练阶段之间共享状态、异步 mesh feedback 和推理恢复时，就能判断每类数据由谁创建、由谁消费。",
+    "nodeIds": [
+      "document:ARCHITECTURE.md"
+    ]
+  },
+  {
+    "order": 3,
+    "title": "训练入口与配置",
+    "description": "train.py 是主训练 CLI：它解析配置和 resume 状态，组装 Scene、Gaussian、regularizer 与 trainer，最终发布 checkpoint 和 PLY。default.yaml 则把模型、数据、renderer、semantic、optimization、density、surface、mesh 和 logging 的选择集中为可复现实验 contract，是理解四阶段训练如何被启用和调参的入口。",
+    "nodeIds": [
+      "file:train.py",
+      "config:configs/default.yaml"
+    ],
+    "languageLesson": "Python CLI 常把参数解析留在入口文件，把长生命周期状态机下沉到独立 engine；YAML override 则让同一代码路径承载基线、完整方案和消融实验。"
+  },
+  {
+    "order": 4,
+    "title": "四阶段训练引擎",
+    "description": "training/engine.py 承接入口组装的对象，统一编排 differentiable rendering、复合损失、densification、surface/mesh feedback、日志与 profiling，从而形成四阶段训练的核心控制流。checkpointing.py 保存配置来源、模型状态和 CPU/CUDA RNG，并采用原子写入，使阶段切换后的 resume 仍能保持确定性与配置一致性。",
+    "nodeIds": [
+      "file:training/engine.py",
+      "file:training/checkpointing.py"
+    ],
+    "languageLesson": "训练状态不仅包含 Parameter 和 optimizer，还包括 scheduler、随机数生成器与拓扑生命周期；完整 checkpoint 才能让 resume 真正延续原实验。"
+  },
+  {
+    "order": 5,
+    "title": "数据与 Gaussian 模型",
+    "description": "沿训练引擎向下，convert.py 先把原始图像整理为 COLMAP 训练布局，dataset_readers.py 再统一装载 COLMAP 与 Blender 数据、相机和初始点云。gaussian_attributes.py 用属性注册表协调 Parameter、optimizer、拓扑变更和序列化，gaussian_model.py 在此基础上维护 RGB、语义与几何状态；model_io.py 则让训练、resume 和离线推理共享一致的模型装载路径。",
+    "nodeIds": [
+      "file:convert.py",
+      "file:scene/dataset_readers.py",
+      "file:scene/gaussian_attributes.py",
+      "file:scene/gaussian_model.py",
+      "file:model_io.py"
+    ],
+    "languageLesson": "属性注册表把 densification 造成的张量增删集中处理，避免 Parameter、optimizer state、checkpoint 与 PLY schema 在拓扑变化后彼此失配。"
+  },
+  {
+    "order": 6,
+    "title": "可微联合渲染",
+    "description": "有了相机和 Gaussian state，gaussian_renderer 将属性组装成 RGB、depth、normal、alpha 与 semantic embedding 的联合输出。Python API 在 native CUDA extension 与 PyTorch reference 路径之间调度并封装 autograd，而 rasterize.cu 实现 forward/backward kernels；render.py 复用同一 contract 完成离线视图渲染和语义解码。",
+    "nodeIds": [
+      "file:gaussian_renderer/__init__.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu",
+      "file:render.py"
+    ],
+    "languageLesson": "PyTorch custom autograd Function 将 Python 张量 contract 映射到 C++/CUDA forward 与 backward；reference 实现既是 CPU fallback，也是检查 native kernel 数值和梯度一致性的 oracle。"
+  },
+  {
+    "order": 7,
+    "title": "语义与表面场",
+    "description": "渲染输出之外，gaga_adapter.py 把跨视图实例观测压缩成 label、置信度、边界和实例映射，neighbor_index.py 则为 Gaussian 建立可扩展的局部邻域。geometry_policy.py 将语义与几何证据变成软策略并传播置信度，surface_field.py 最终通过邻域插值提供可微 SDF、法线、语义和几何置信度查询，连接 2D 证据与 3D surface reasoning。",
+    "nodeIds": [
+      "file:semantic/gaga_adapter.py",
+      "file:semantic/neighbor_index.py",
+      "file:semantic/geometry_policy.py",
+      "file:semantic/surface_field.py"
+    ],
+    "languageLesson": "分块邻域查询让高维 Gaussian 集合避免一次性构造完整距离矩阵，同时仍保留 autograd 所需的局部连续插值路径。"
+  },
+  {
+    "order": 8,
+    "title": "正则化与密度控制",
+    "description": "基于上一站的 semantic 和 surface 查询，losses.py 组合 photometric、semantic、manifold、normal 与 SH prior，surface.py 构造稳健的一致性采样批次。DensityController 汇聚 RGB、语义、几何和 mesh coverage 信号执行 clone、split、prune 与容量预算；mesh_feedback.py 和 pareto.py 分别把异步 mesh 质量反馈及冲突梯度约束送回优化过程，使 adaptive density control 不脱离主渲染目标。",
+    "nodeIds": [
+      "file:regularization/losses.py",
+      "file:regularization/surface.py",
+      "file:densification/controller.py",
+      "file:regularization/mesh_feedback.py",
+      "file:regularization/pareto.py"
+    ],
+    "languageLesson": "Pareto gradient projection 在辅助梯度与主目标冲突时移除破坏性分量，使语义、几何和 mesh regularization 能参与训练而不反向拖累 photometric objective。"
+  },
+  {
+    "order": 9,
+    "title": "拓扑与 Mesh 精炼",
+    "description": "extract_mesh.py 将训练结果或 surface field 变成网格任务，mesh/pipeline.py 串联边界采样、等值面提取、语义拓扑过滤、后处理与导出。field.py 统一不同模型的查询 contract，topology.py 用 contact graph、标签、embedding 和置信度处理 seam 与连通性，postprocess.py 再清理退化面、小分量并进行 seam-aware 简化，完成 surface 到可交付 mesh 的精炼。",
+    "nodeIds": [
+      "file:extract_mesh.py",
+      "file:mesh/pipeline.py",
+      "file:mesh/field.py",
+      "file:mesh/topology.py",
+      "file:mesh/postprocess.py"
+    ],
+    "languageLesson": "等值面提取解决几何离散化，contact graph 和 seam-aware 后处理解决语义拓扑；两者分层可避免纯几何清理跨越本应保留的实例边界。"
+  },
+  {
+    "order": 10,
+    "title": "双指标评估",
+    "description": "metrics.py 遍历渲染 method/iteration 并安全写出评估结果，evaluation/image_metrics.py 计算 PSNR、SSIM、LPIPS 以及 ignore-aware mean IoU 等图像与语义指标。mesh/metrics.py 从另一侧用 Chamfer distance、precision、recall 和 F-score 衡量重建表面，因此最终报告同时覆盖 rendering quality 与 mesh quality，而不是用单一分数掩盖权衡。",
+    "nodeIds": [
+      "file:metrics.py",
+      "file:evaluation/image_metrics.py",
+      "file:mesh/metrics.py"
+    ],
+    "languageLesson": "ignore-aware confusion matrix 在累积语义统计前屏蔽无效标签；表面指标则依赖确定性采样，保证不同 mesh 的距离比较可以复现。"
+  },
+  {
+    "order": 11,
+    "title": "端到端验证",
+    "description": "最后用测试反向检查整条叙事：end-to-end smoke test 覆盖最小场景的训练、checkpoint reload 与 rendering，reference rasterizer 测试约束张量 contract、联合梯度和 CUDA 一致性。mesh topology 与 metrics CLI 测试继续验证语义拓扑边界、多 iteration 隔离和设备回退，让训练、渲染、mesh 与双指标评估形成闭环。",
+    "nodeIds": [
+      "file:tests/test_end_to_end_smoke.py",
+      "file:tests/test_reference_rasterizer.py",
+      "file:tests/test_mesh_topology.py",
+      "file:tests/test_metrics_cli.py"
+    ],
+    "languageLesson": "Smoke test 验证主链路能连通，contract 与回归测试锁定数值和边界行为；两类测试组合比单独追求高覆盖率更能保护科研流水线。"
+  }
+]

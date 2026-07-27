@@ -1,0 +1,1705 @@
+{
+  "nodes": [
+    {
+      "id": "file:scene/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "scene/__init__.py",
+      "summary": "组装数据集、相机与 GaussianModel 的场景生命周期，负责分辨率选择、训练/测试相机构建以及检查点和点云保存。",
+      "tags": [
+        "场景-管理",
+        "入口点",
+        "相机-装配"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/__init__.py:_latest_iteration",
+      "type": "function",
+      "name": "_latest_iteration",
+      "filePath": "scene/__init__.py",
+      "lineRange": [
+        17,
+        25
+      ],
+      "summary": "为 __init__.py 提供 latest iteration 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/__init__.py:_resolution",
+      "type": "function",
+      "name": "_resolution",
+      "filePath": "scene/__init__.py",
+      "lineRange": [
+        28,
+        38
+      ],
+      "summary": "为 __init__.py 提供 resolution 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/__init__.py:camera_from_info",
+      "type": "function",
+      "name": "camera_from_info",
+      "filePath": "scene/__init__.py",
+      "lineRange": [
+        41,
+        103
+      ],
+      "summary": "根据数据集相机信息与目标分辨率构造运行时 Camera，并保留 RGB、alpha、语义和内参。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/__init__.py:cameraList_from_camInfos",
+      "type": "function",
+      "name": "cameraList_from_camInfos",
+      "filePath": "scene/__init__.py",
+      "lineRange": [
+        106,
+        111
+      ],
+      "summary": "批量将相机信息转换为运行时 Camera 列表。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/__init__.py:Scene",
+      "type": "class",
+      "name": "Scene",
+      "filePath": "scene/__init__.py",
+      "lineRange": [
+        114,
+        238
+      ],
+      "summary": "协调数据集、相机集合与 GaussianModel 的加载、保存和访问。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:scene/cameras.py",
+      "type": "file",
+      "name": "cameras.py",
+      "filePath": "scene/cameras.py",
+      "summary": "定义完整相机与轻量 MiniCam 表示，并实现投影矩阵、图像/语义观测缩放裁剪和语义边界计算。",
+      "tags": [
+        "相机-模型",
+        "几何-变换",
+        "观测-预处理"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/cameras.py:focal2fov",
+      "type": "function",
+      "name": "focal2fov",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        14,
+        15
+      ],
+      "summary": "实现 focal2fov 操作，供 cameras.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:fov2focal",
+      "type": "function",
+      "name": "fov2focal",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        18,
+        19
+      ],
+      "summary": "实现 fov2focal 操作，供 cameras.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:get_world_to_view",
+      "type": "function",
+      "name": "get_world_to_view",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        22,
+        35
+      ],
+      "summary": "实现 get world to view 操作，供 cameras.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:get_projection_matrix",
+      "type": "function",
+      "name": "get_projection_matrix",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        38,
+        53
+      ],
+      "summary": "实现 get projection matrix 操作，供 cameras.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:_resolve_device",
+      "type": "function",
+      "name": "_resolve_device",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        56,
+        60
+      ],
+      "summary": "为 cameras.py 提供 resolve device 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:_image_tensor",
+      "type": "function",
+      "name": "_image_tensor",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        63,
+        88
+      ],
+      "summary": "为 cameras.py 提供 image tensor 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:_map_tensor",
+      "type": "function",
+      "name": "_map_tensor",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        91,
+        99
+      ],
+      "summary": "为 cameras.py 提供 map tensor 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:semantic_boundary_from_ids",
+      "type": "function",
+      "name": "semantic_boundary_from_ids",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        102,
+        115
+      ],
+      "summary": "比较相邻 semantic id，生成像素级语义边界掩码。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/cameras.py:resize_observations",
+      "type": "function",
+      "name": "resize_observations",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        118,
+        135
+      ],
+      "summary": "在统一目标尺寸下缩放 RGB、alpha、语义 id、置信度和边界观测。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/cameras.py:Camera",
+      "type": "class",
+      "name": "Camera",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        138,
+        304
+      ],
+      "summary": "封装图像、相机内外参及语义观测，并支持保持标定一致的 resize/crop。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:scene/cameras.py:MiniCam",
+      "type": "class",
+      "name": "MiniCam",
+      "filePath": "scene/cameras.py",
+      "lineRange": [
+        307,
+        327
+      ],
+      "summary": "保存渲染所需的轻量相机矩阵与视场参数。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scene/colmap_loader.py",
+      "type": "file",
+      "name": "colmap_loader.py",
+      "filePath": "scene/colmap_loader.py",
+      "summary": "解析 COLMAP 文本及二进制稀疏重建模型，将相机内外参、图像姿态与三维点转换为 Python 数据结构。",
+      "tags": [
+        "COLMAP",
+        "数据-解析",
+        "相机-标定"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:qvec2rotmat",
+      "type": "function",
+      "name": "qvec2rotmat",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        47,
+        62
+      ],
+      "summary": "实现 qvec2rotmat 操作，供 colmap_loader.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:rotmat2qvec",
+      "type": "function",
+      "name": "rotmat2qvec",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        65,
+        80
+      ],
+      "summary": "实现 rotmat2qvec 操作，供 colmap_loader.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_next_bytes",
+      "type": "function",
+      "name": "read_next_bytes",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        88,
+        97
+      ],
+      "summary": "读取并解析 read next bytes 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:_data_lines",
+      "type": "function",
+      "name": "_data_lines",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        100,
+        105
+      ],
+      "summary": "为 colmap_loader.py 提供 data lines 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_intrinsics_text",
+      "type": "function",
+      "name": "read_intrinsics_text",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        108,
+        127
+      ],
+      "summary": "读取并解析 read intrinsics text 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_intrinsics_binary",
+      "type": "function",
+      "name": "read_intrinsics_binary",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        130,
+        144
+      ],
+      "summary": "读取并解析 read intrinsics binary 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_extrinsics_text",
+      "type": "function",
+      "name": "read_extrinsics_text",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        147,
+        183
+      ],
+      "summary": "读取并解析 read extrinsics text 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_extrinsics_binary",
+      "type": "function",
+      "name": "read_extrinsics_binary",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        186,
+        214
+      ],
+      "summary": "读取并解析 read extrinsics binary 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_points3D_text",
+      "type": "function",
+      "name": "read_points3D_text",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        217,
+        230
+      ],
+      "summary": "读取并解析 read points3D text 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_points3D_binary",
+      "type": "function",
+      "name": "read_points3D_binary",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        233,
+        249
+      ],
+      "summary": "读取并解析 read points3D binary 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/colmap_loader.py:read_model",
+      "type": "function",
+      "name": "read_model",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        252,
+        277
+      ],
+      "summary": "根据文件类型读取完整 COLMAP 稀疏模型并返回相机、图像和点云记录。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/colmap_loader.py:Image",
+      "type": "class",
+      "name": "Image",
+      "filePath": "scene/colmap_loader.py",
+      "lineRange": [
+        83,
+        85
+      ],
+      "summary": "表示 COLMAP 图像记录并提供四元数到旋转矩阵转换。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scene/dataset_readers.py",
+      "type": "file",
+      "name": "dataset_readers.py",
+      "filePath": "scene/dataset_readers.py",
+      "summary": "统一读取 COLMAP 与 Blender/NeRF Synthetic 数据集，构造相机载荷、点云和训练测试划分，并支持 PLY 输入输出。",
+      "tags": [
+        "数据集-加载",
+        "点云",
+        "相机-观测"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:focal2fov",
+      "type": "function",
+      "name": "focal2fov",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        100,
+        101
+      ],
+      "summary": "实现 focal2fov 操作，供 dataset_readers.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:fov2focal",
+      "type": "function",
+      "name": "fov2focal",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        104,
+        105
+      ],
+      "summary": "实现 fov2focal 操作，供 dataset_readers.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_load_camera_payload",
+      "type": "function",
+      "name": "_load_camera_payload",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        108,
+        167
+      ],
+      "summary": "为 dataset_readers.py 提供 load camera payload 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:getNerfppNorm",
+      "type": "function",
+      "name": "getNerfppNorm",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        170,
+        182
+      ],
+      "summary": "实现 getNerfppNorm 操作，供 dataset_readers.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_intrinsics",
+      "type": "function",
+      "name": "_intrinsics",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        185,
+        197
+      ],
+      "summary": "为 dataset_readers.py 提供 intrinsics 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:readColmapCameras",
+      "type": "function",
+      "name": "readColmapCameras",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        200,
+        272
+      ],
+      "summary": "读取并解析 readColmapCameras 对应的数据结构，转换为项目内部表示。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_numpy",
+      "type": "function",
+      "name": "_numpy",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        275,
+        276
+      ],
+      "summary": "为 dataset_readers.py 提供 numpy 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_find_sparse_folder",
+      "type": "function",
+      "name": "_find_sparse_folder",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        279,
+        284
+      ],
+      "summary": "为 dataset_readers.py 提供 find sparse folder 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_read_sparse_model",
+      "type": "function",
+      "name": "_read_sparse_model",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        287,
+        304
+      ],
+      "summary": "为 dataset_readers.py 提供 read sparse model 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:_split_cameras",
+      "type": "function",
+      "name": "_split_cameras",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        307,
+        314
+      ],
+      "summary": "为 dataset_readers.py 提供 split cameras 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:readColmapSceneInfo",
+      "type": "function",
+      "name": "readColmapSceneInfo",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        317,
+        379
+      ],
+      "summary": "读取 COLMAP 场景、划分相机并构建或加载初始化点云。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:readCamerasFromTransforms",
+      "type": "function",
+      "name": "readCamerasFromTransforms",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        382,
+        459
+      ],
+      "summary": "解析 Blender transforms JSON 并生成带 alpha/语义载荷的 CameraInfo。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:readNerfSyntheticInfo",
+      "type": "function",
+      "name": "readNerfSyntheticInfo",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        462,
+        533
+      ],
+      "summary": "加载 NeRF Synthetic 训练测试视角和初始化点云。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:fetchPly",
+      "type": "function",
+      "name": "fetchPly",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        536,
+        568
+      ],
+      "summary": "从 PLY 文件读取坐标、颜色与法线。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/dataset_readers.py:storePly",
+      "type": "function",
+      "name": "storePly",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        571,
+        588
+      ],
+      "summary": "将坐标与 RGB 写入标准 vertex PLY。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/dataset_readers.py:BasicPointCloud",
+      "type": "class",
+      "name": "BasicPointCloud",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        36,
+        39
+      ],
+      "summary": "保存点坐标、颜色与法线的基础点云记录。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/dataset_readers.py:CameraPayload",
+      "type": "class",
+      "name": "CameraPayload",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        43,
+        50
+      ],
+      "summary": "延迟保存相机 RGB、alpha 与语义观测载荷。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/dataset_readers.py:CameraInfo",
+      "type": "class",
+      "name": "CameraInfo",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        54,
+        83
+      ],
+      "summary": "汇总单视角标定、姿态、图像和语义元数据。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/dataset_readers.py:SceneInfo",
+      "type": "class",
+      "name": "SceneInfo",
+      "filePath": "scene/dataset_readers.py",
+      "lineRange": [
+        87,
+        97
+      ],
+      "summary": "汇总点云、训练/测试相机和场景归一化信息。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scene/gaussian_attributes.py",
+      "type": "file",
+      "name": "gaussian_attributes.py",
+      "filePath": "scene/gaussian_attributes.py",
+      "summary": "提供可扩展 Gaussian 属性注册表，统一管理 Parameter、optimizer 状态、拓扑变更以及 checkpoint/PLY 序列化。",
+      "tags": [
+        "属性-注册表",
+        "optimizer",
+        "序列化"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/gaussian_attributes.py:_as_index",
+      "type": "function",
+      "name": "_as_index",
+      "filePath": "scene/gaussian_attributes.py",
+      "lineRange": [
+        33,
+        43
+      ],
+      "summary": "为 gaussian_attributes.py 提供 as index 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/gaussian_attributes.py:AttributeSpec",
+      "type": "class",
+      "name": "AttributeSpec",
+      "filePath": "scene/gaussian_attributes.py",
+      "lineRange": [
+        22,
+        30
+      ],
+      "summary": "描述 Gaussian 属性的形状、dtype、训练角色和序列化策略。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/gaussian_attributes.py:GaussianAttributeRegistry",
+      "type": "class",
+      "name": "GaussianAttributeRegistry",
+      "filePath": "scene/gaussian_attributes.py",
+      "lineRange": [
+        46,
+        624
+      ],
+      "summary": "集中注册与变换 Gaussian 属性，并同步 optimizer 状态及持久化 schema。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:_latest_iteration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:_latest_iteration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:_resolution",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:_resolution",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:camera_from_info",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:camera_from_info",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:cameraList_from_camInfos",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "function:scene/__init__.py:cameraList_from_camInfos",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "class:scene/__init__.py:Scene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "class:scene/__init__.py:Scene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:focal2fov",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:focal2fov",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:fov2focal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:fov2focal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:get_world_to_view",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:get_world_to_view",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:get_projection_matrix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:get_projection_matrix",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_resolve_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_resolve_device",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_image_tensor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_image_tensor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_map_tensor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:_map_tensor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:semantic_boundary_from_ids",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:semantic_boundary_from_ids",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:resize_observations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "function:scene/cameras.py:resize_observations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "class:scene/cameras.py:Camera",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "class:scene/cameras.py:Camera",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "class:scene/cameras.py:MiniCam",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/cameras.py",
+      "target": "class:scene/cameras.py:MiniCam",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:qvec2rotmat",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:qvec2rotmat",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:rotmat2qvec",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:rotmat2qvec",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_next_bytes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_next_bytes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:_data_lines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:_data_lines",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_intrinsics_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_intrinsics_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_intrinsics_binary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_intrinsics_binary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_extrinsics_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_extrinsics_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_extrinsics_binary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_extrinsics_binary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_points3D_text",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_points3D_text",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_points3D_binary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_points3D_binary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "function:scene/colmap_loader.py:read_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "class:scene/colmap_loader.py:Image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "class:scene/colmap_loader.py:Image",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:focal2fov",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:focal2fov",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:fov2focal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:fov2focal",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_load_camera_payload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_load_camera_payload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:getNerfppNorm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:getNerfppNorm",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_intrinsics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_intrinsics",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readColmapCameras",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readColmapCameras",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_numpy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_numpy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_find_sparse_folder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_find_sparse_folder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_read_sparse_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_read_sparse_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_split_cameras",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:_split_cameras",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readColmapSceneInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readColmapSceneInfo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readCamerasFromTransforms",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readCamerasFromTransforms",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readNerfSyntheticInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:readNerfSyntheticInfo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:fetchPly",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:fetchPly",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:storePly",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "function:scene/dataset_readers.py:storePly",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:BasicPointCloud",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:BasicPointCloud",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:CameraPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:CameraPayload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:CameraInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:CameraInfo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:SceneInfo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "class:scene/dataset_readers.py:SceneInfo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "function:scene/gaussian_attributes.py:_as_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "function:scene/gaussian_attributes.py:_as_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "class:scene/gaussian_attributes.py:AttributeSpec",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "class:scene/gaussian_attributes.py:AttributeSpec",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "class:scene/gaussian_attributes.py:GaussianAttributeRegistry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "class:scene/gaussian_attributes.py:GaussianAttributeRegistry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/cameras.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:scene/colmap_loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "file:tests/test_camera_intrinsics.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_camera_intrinsics.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

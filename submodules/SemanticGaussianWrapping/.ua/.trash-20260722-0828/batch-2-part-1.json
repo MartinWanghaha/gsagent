@@ -1,0 +1,1811 @@
+{
+  "nodes": [
+    {
+      "id": "file:extract_mesh.py",
+      "type": "file",
+      "name": "extract_mesh.py",
+      "filePath": "extract_mesh.py",
+      "summary": "网格提取命令行入口：加载训练场景或 surface field，推导采样边界与分辨率，并驱动语义网格提取和导出。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:extract_mesh.py:_import_symbol",
+      "type": "function",
+      "name": "_import_symbol",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        36,
+        46
+      ],
+      "summary": "实现 import symbol 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:_factory_call",
+      "type": "function",
+      "name": "_factory_call",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        49,
+        71
+      ],
+      "summary": "实现 factory call 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:_unwrap_surface_field",
+      "type": "function",
+      "name": "_unwrap_surface_field",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        74,
+        93
+      ],
+      "summary": "实现 unwrap surface field 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:_load_trained_scene",
+      "type": "function",
+      "name": "_load_trained_scene",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        96,
+        118
+      ],
+      "summary": "加载并规范化 load trained scene 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:_resolve_device",
+      "type": "function",
+      "name": "_resolve_device",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        121,
+        138
+      ],
+      "summary": "实现 resolve device 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:load_surface_field",
+      "type": "function",
+      "name": "load_surface_field",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        141,
+        205
+      ],
+      "summary": "加载并规范化 load surface field 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:extract_mesh.py:_apply_experiment_mesh_defaults",
+      "type": "function",
+      "name": "_apply_experiment_mesh_defaults",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        208,
+        291
+      ],
+      "summary": "实现 apply experiment mesh defaults 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:extract_mesh.py:_resolution_layout",
+      "type": "function",
+      "name": "_resolution_layout",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        294,
+        336
+      ],
+      "summary": "实现 resolution layout 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:_numpy",
+      "type": "function",
+      "name": "_numpy",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        339,
+        346
+      ],
+      "summary": "实现 numpy 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:infer_bounds",
+      "type": "function",
+      "name": "infer_bounds",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        349,
+        381
+      ],
+      "summary": "推导 infer bounds 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:extract_mesh.py:build_parser",
+      "type": "function",
+      "name": "build_parser",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        384,
+        473
+      ],
+      "summary": "构建 build parser 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:extract_mesh.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "extract_mesh.py",
+      "lineRange": [
+        476,
+        605
+      ],
+      "summary": "执行命令行流程 main 相关逻辑，供 extract_mesh.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "mesh/__init__.py",
+      "summary": "网格子系统的公共 API 聚合层，集中暴露采样、提取、拓扑过滤、后处理、I/O 与质量评估能力。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/bounds.py",
+      "type": "file",
+      "name": "bounds.py",
+      "filePath": "mesh/bounds.py",
+      "summary": "根据 Gaussian 的位置、尺度和旋转估计空间支持边界，并支持选择与离群点裁剪。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/bounds.py:_numpy",
+      "type": "function",
+      "name": "_numpy",
+      "filePath": "mesh/bounds.py",
+      "lineRange": [
+        12,
+        18
+      ],
+      "summary": "实现 numpy 相关逻辑，供 bounds.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/bounds.py:_quaternion_matrix",
+      "type": "function",
+      "name": "_quaternion_matrix",
+      "filePath": "mesh/bounds.py",
+      "lineRange": [
+        21,
+        38
+      ],
+      "summary": "实现 quaternion matrix 相关逻辑，供 bounds.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/bounds.py:gaussian_support_bounds",
+      "type": "function",
+      "name": "gaussian_support_bounds",
+      "filePath": "mesh/bounds.py",
+      "lineRange": [
+        41,
+        116
+      ],
+      "summary": "实现 gaussian support bounds 相关逻辑，供 bounds.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/extractors.py",
+      "type": "file",
+      "name": "extractors.py",
+      "filePath": "mesh/extractors.py",
+      "summary": "实现 blocked marching cubes、marching tetrahedra 与 Delaunay tetrahedralization 等等值面提取算法，并负责合并和定向三角网格。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:mesh/extractors.py:_remove_degenerate",
+      "type": "function",
+      "name": "_remove_degenerate",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        19,
+        37
+      ],
+      "summary": "移除 remove degenerate 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:orient_faces",
+      "type": "function",
+      "name": "orient_faces",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        40,
+        51
+      ],
+      "summary": "实现 orient faces 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:mesh_from_vertices_faces",
+      "type": "function",
+      "name": "mesh_from_vertices_faces",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        54,
+        77
+      ],
+      "summary": "实现 mesh from vertices faces 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:marching_cubes_block",
+      "type": "function",
+      "name": "marching_cubes_block",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        80,
+        113
+      ],
+      "summary": "实现 marching cubes block 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:merge_meshes",
+      "type": "function",
+      "name": "merge_meshes",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        116,
+        193
+      ],
+      "summary": "合并 merge meshes 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/extractors.py:marching_cubes_blocks",
+      "type": "function",
+      "name": "marching_cubes_blocks",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        196,
+        222
+      ],
+      "summary": "实现 marching cubes blocks 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:_crossing_edges",
+      "type": "function",
+      "name": "_crossing_edges",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        225,
+        242
+      ],
+      "summary": "实现 crossing edges 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:_triangulate_crossings",
+      "type": "function",
+      "name": "_triangulate_crossings",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        245,
+        253
+      ],
+      "summary": "实现 triangulate crossings 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/extractors.py:marching_tetrahedra",
+      "type": "function",
+      "name": "marching_tetrahedra",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        256,
+        319
+      ],
+      "summary": "实现 marching tetrahedra 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/extractors.py:delaunay_marching_tetra",
+      "type": "function",
+      "name": "delaunay_marching_tetra",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        322,
+        343
+      ],
+      "summary": "实现 delaunay marching tetra 相关逻辑，供 extractors.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/extractors.py:MissingOptionalBackend",
+      "type": "class",
+      "name": "MissingOptionalBackend",
+      "filePath": "mesh/extractors.py",
+      "lineRange": [
+        15,
+        16
+      ],
+      "summary": "封装 Missing Optional Backend 的状态与操作，承担 extractors.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:mesh/field.py",
+      "type": "file",
+      "name": "field.py",
+      "filePath": "mesh/field.py",
+      "summary": "把不同模型查询接口适配为统一的语义 surface field contract，规范几何值、语义、置信度和设备转换。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/field.py:_to_numpy",
+      "type": "function",
+      "name": "_to_numpy",
+      "filePath": "mesh/field.py",
+      "lineRange": [
+        28,
+        35
+      ],
+      "summary": "实现 to numpy 相关逻辑，供 field.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/field.py:_result_mapping",
+      "type": "function",
+      "name": "_result_mapping",
+      "filePath": "mesh/field.py",
+      "lineRange": [
+        38,
+        44
+      ],
+      "summary": "实现 result mapping 相关逻辑，供 field.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/field.py:as_field_adapter",
+      "type": "function",
+      "name": "as_field_adapter",
+      "filePath": "mesh/field.py",
+      "lineRange": [
+        212,
+        213
+      ],
+      "summary": "实现 as field adapter 相关逻辑，供 field.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/field.py:FieldContractError",
+      "type": "class",
+      "name": "FieldContractError",
+      "filePath": "mesh/field.py",
+      "lineRange": [
+        24,
+        25
+      ],
+      "summary": "封装 Field Contract Error 的状态与操作，承担 field.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/field.py:SurfaceFieldAdapter",
+      "type": "class",
+      "name": "SurfaceFieldAdapter",
+      "filePath": "mesh/field.py",
+      "lineRange": [
+        47,
+        209
+      ],
+      "summary": "封装 Surface Field Adapter 的状态与操作，承担 field.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/io.py",
+      "type": "file",
+      "name": "io.py",
+      "filePath": "mesh/io.py",
+      "summary": "提供带法线、语义标签和自定义顶点属性的 PLY/OBJ 网格读写，以及点云加载。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:mesh/io.py:semantic_colors",
+      "type": "function",
+      "name": "semantic_colors",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        11,
+        23
+      ],
+      "summary": "实现 semantic colors 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:write_ply",
+      "type": "function",
+      "name": "write_ply",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        26,
+        67
+      ],
+      "summary": "写出 write ply 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:write_obj",
+      "type": "function",
+      "name": "write_obj",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        70,
+        113
+      ],
+      "summary": "写出 write obj 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:export_mesh",
+      "type": "function",
+      "name": "export_mesh",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        116,
+        122
+      ],
+      "summary": "实现 export mesh 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:_read_ascii_ply",
+      "type": "function",
+      "name": "_read_ascii_ply",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        125,
+        202
+      ],
+      "summary": "读取并解析 read ascii ply 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/io.py:_ply_format",
+      "type": "function",
+      "name": "_ply_format",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        205,
+        231
+      ],
+      "summary": "实现 ply format 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:_read_binary_ply",
+      "type": "function",
+      "name": "_read_binary_ply",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        234,
+        266
+      ],
+      "summary": "读取并解析 read binary ply 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:_read_obj",
+      "type": "function",
+      "name": "_read_obj",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        269,
+        320
+      ],
+      "summary": "读取并解析 read obj 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/io.py:load_mesh",
+      "type": "function",
+      "name": "load_mesh",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        323,
+        334
+      ],
+      "summary": "加载并规范化 load mesh 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/io.py:load_points",
+      "type": "function",
+      "name": "load_points",
+      "filePath": "mesh/io.py",
+      "lineRange": [
+        337,
+        355
+      ],
+      "summary": "加载并规范化 load points 相关逻辑，供 io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:mesh/metrics.py",
+      "type": "file",
+      "name": "metrics.py",
+      "filePath": "mesh/metrics.py",
+      "summary": "提供确定性表面采样、最近邻距离、Chamfer distance、precision/recall/F-score 等网格质量指标。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/metrics.py:_points",
+      "type": "function",
+      "name": "_points",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        11,
+        17
+      ],
+      "summary": "实现 points 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:sample_mesh_surface",
+      "type": "function",
+      "name": "sample_mesh_surface",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        20,
+        53
+      ],
+      "summary": "采样 sample mesh surface 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:nearest_distances",
+      "type": "function",
+      "name": "nearest_distances",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        56,
+        86
+      ],
+      "summary": "实现 nearest distances 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:accuracy",
+      "type": "function",
+      "name": "accuracy",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        89,
+        91
+      ],
+      "summary": "实现 accuracy 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:completeness",
+      "type": "function",
+      "name": "completeness",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        94,
+        96
+      ],
+      "summary": "实现 completeness 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:chamfer_distance",
+      "type": "function",
+      "name": "chamfer_distance",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        99,
+        114
+      ],
+      "summary": "实现 chamfer distance 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:precision_recall_fscore",
+      "type": "function",
+      "name": "precision_recall_fscore",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        117,
+        132
+      ],
+      "summary": "实现 precision recall fscore 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:f_score",
+      "type": "function",
+      "name": "f_score",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        135,
+        137
+      ],
+      "summary": "实现 f score 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/metrics.py:compute_mesh_metrics",
+      "type": "function",
+      "name": "compute_mesh_metrics",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        162,
+        203
+      ],
+      "summary": "计算 compute mesh metrics 相关逻辑，供 metrics.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/metrics.py:MeshMetrics",
+      "type": "class",
+      "name": "MeshMetrics",
+      "filePath": "mesh/metrics.py",
+      "lineRange": [
+        141,
+        159
+      ],
+      "summary": "封装 Mesh Metrics 的状态与操作，承担 metrics.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_import_symbol",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_import_symbol",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_factory_call",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_factory_call",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_unwrap_surface_field",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_unwrap_surface_field",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_load_trained_scene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_load_trained_scene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_resolve_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_resolve_device",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:load_surface_field",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:load_surface_field",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_apply_experiment_mesh_defaults",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_apply_experiment_mesh_defaults",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_resolution_layout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_resolution_layout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_numpy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:_numpy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:infer_bounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:infer_bounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:build_parser",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:build_parser",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "function:extract_mesh.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:_numpy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:_numpy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:_quaternion_matrix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:_quaternion_matrix",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:gaussian_support_bounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "function:mesh/bounds.py:gaussian_support_bounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_remove_degenerate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_remove_degenerate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:orient_faces",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:orient_faces",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:mesh_from_vertices_faces",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:mesh_from_vertices_faces",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_cubes_block",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_cubes_block",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:merge_meshes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:merge_meshes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_cubes_blocks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_cubes_blocks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_crossing_edges",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_crossing_edges",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_triangulate_crossings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:_triangulate_crossings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_tetrahedra",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:marching_tetrahedra",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:delaunay_marching_tetra",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "function:mesh/extractors.py:delaunay_marching_tetra",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "class:mesh/extractors.py:MissingOptionalBackend",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "class:mesh/extractors.py:MissingOptionalBackend",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:_to_numpy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:_to_numpy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:_result_mapping",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:_result_mapping",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:as_field_adapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "function:mesh/field.py:as_field_adapter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "class:mesh/field.py:FieldContractError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "class:mesh/field.py:FieldContractError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "class:mesh/field.py:SurfaceFieldAdapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "class:mesh/field.py:SurfaceFieldAdapter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:semantic_colors",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:semantic_colors",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:write_ply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:write_ply",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:write_obj",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:write_obj",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:export_mesh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:export_mesh",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_ascii_ply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_ascii_ply",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_ply_format",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_ply_format",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_binary_ply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_binary_ply",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_obj",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:_read_obj",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:load_mesh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:load_mesh",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:load_points",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "function:mesh/io.py:load_points",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:_points",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:_points",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:sample_mesh_surface",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:sample_mesh_surface",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:nearest_distances",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:nearest_distances",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:accuracy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:accuracy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:completeness",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:completeness",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:chamfer_distance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:chamfer_distance",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:precision_recall_fscore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:precision_recall_fscore",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:f_score",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:f_score",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:compute_mesh_metrics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "function:mesh/metrics.py:compute_mesh_metrics",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "class:mesh/metrics.py:MeshMetrics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "class:mesh/metrics.py:MeshMetrics",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/bounds.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/pipeline.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

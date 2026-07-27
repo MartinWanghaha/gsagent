@@ -1,0 +1,682 @@
+{
+  "nodes": [
+    {
+      "id": "file:regularization/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "regularization/__init__.py",
+      "summary": "汇总并公开 regularization 子系统的损失、mesh feedback、Pareto 梯度守卫和训练阶段调度接口。",
+      "tags": [
+        "正则化",
+        "入口点",
+        "公共-接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:regularization/mesh_correspondence.py",
+      "type": "file",
+      "name": "mesh_correspondence.py",
+      "filePath": "regularization/mesh_correspondence.py",
+      "summary": "将查询点稳健投影到 triangle mesh，结合局部尺度、法线和语义门控计算 point-to-plane correspondence。",
+      "tags": [
+        "mesh-对应",
+        "鲁棒-损失",
+        "几何-投影"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:regularization/mesh_correspondence.py:geman_mcclure",
+      "type": "function",
+      "name": "geman_mcclure",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        33,
+        44
+      ],
+      "summary": "计算有界 Geman–McClure 鲁棒惩罚以抑制远距离 outlier。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/mesh_correspondence.py:detached_local_scale",
+      "type": "function",
+      "name": "detached_local_scale",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        47,
+        70
+      ],
+      "summary": "从 Gaussian scaling 推导停止梯度的稳定局部尺度。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/mesh_correspondence.py:robust_point_to_plane_loss",
+      "type": "function",
+      "name": "robust_point_to_plane_loss",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        73,
+        106
+      ],
+      "summary": "计算按局部尺度归一化并用鲁棒核截断的 point-to-plane 损失。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/mesh_correspondence.py:_closest_on_segments",
+      "type": "function",
+      "name": "_closest_on_segments",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        109,
+        114
+      ],
+      "summary": "为 mesh_correspondence.py 提供 closest on segments 的内部辅助逻辑。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/mesh_correspondence.py:_closest_points_on_triangles",
+      "type": "function",
+      "name": "_closest_points_on_triangles",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        117,
+        163
+      ],
+      "summary": "批量计算点在候选 triangle 上的最近点及 barycentric 权重。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_correspondence.py:TriangleProjection",
+      "type": "class",
+      "name": "TriangleProjection",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        20,
+        30
+      ],
+      "summary": "承载点到 triangle mesh 投影的位置、法线、距离与有效性。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_correspondence.py:TriangleMeshProjector",
+      "type": "class",
+      "name": "TriangleMeshProjector",
+      "filePath": "regularization/mesh_correspondence.py",
+      "lineRange": [
+        166,
+        429
+      ],
+      "summary": "构建 triangle 候选索引并执行带属性门控的最近点投影。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/mesh_feedback.py",
+      "type": "file",
+      "name": "mesh_feedback.py",
+      "filePath": "regularization/mesh_feedback.py",
+      "summary": "实现异步 mesh feedback 正则器，管理 mesh 抽取、清理、质量门控、缓存恢复、平滑切换与可微损失。",
+      "tags": [
+        "mesh-feedback",
+        "异步-刷新",
+        "质量-门控"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:regularization/mesh_feedback.py:_weighted_mean",
+      "type": "function",
+      "name": "_weighted_mean",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        125,
+        128
+      ],
+      "summary": "对有效样本计算数值稳定的加权均值。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:MeshSnapshotStamp",
+      "type": "class",
+      "name": "MeshSnapshotStamp",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        37,
+        43
+      ],
+      "summary": "标识 mesh 快照对应的训练步和 Gaussian 拓扑。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:MeshCache",
+      "type": "class",
+      "name": "MeshCache",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        47,
+        76
+      ],
+      "summary": "保存清理后的 mesh、投影器及快照元数据。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:MeshQualityReport",
+      "type": "class",
+      "name": "MeshQualityReport",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        80,
+        91
+      ],
+      "summary": "记录候选 mesh 的覆盖率、距离和接受判据。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:MeshFeedbackBatch",
+      "type": "class",
+      "name": "MeshFeedbackBatch",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        95,
+        113
+      ],
+      "summary": "承载 mesh regularization 的损失分量与覆盖信号。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:_RefreshJob",
+      "type": "class",
+      "name": "_RefreshJob",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        117,
+        122
+      ],
+      "summary": "追踪后台 mesh 刷新任务和冻结快照。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/mesh_feedback.py:MeshFeedbackRegularizer",
+      "type": "class",
+      "name": "MeshFeedbackRegularizer",
+      "filePath": "regularization/mesh_feedback.py",
+      "lineRange": [
+        131,
+        1998
+      ],
+      "summary": "协调异步 mesh 抽取、候选验收、缓存切换与训练损失计算。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/pareto.py",
+      "type": "file",
+      "name": "pareto.py",
+      "filePath": "regularization/pareto.py",
+      "summary": "通过梯度投影组合 photometric 主目标与辅助目标，避免冲突梯度破坏主任务优化方向。",
+      "tags": [
+        "Pareto-优化",
+        "梯度-投影",
+        "多目标"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:regularization/pareto.py:PhotometricParetoGuard",
+      "type": "class",
+      "name": "PhotometricParetoGuard",
+      "filePath": "regularization/pareto.py",
+      "lineRange": [
+        10,
+        70
+      ],
+      "summary": "投影冲突的辅助梯度并与 photometric 主梯度安全合并。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:regularization/scheduler.py",
+      "type": "file",
+      "name": "scheduler.py",
+      "filePath": "regularization/scheduler.py",
+      "summary": "定义训练阶段及线性 ramp，按迭代生成 photometric、semantic、geometry 与 mesh 正则权重。",
+      "tags": [
+        "阶段-调度",
+        "损失-权重",
+        "训练-课程"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/scheduler.py:Phase",
+      "type": "class",
+      "name": "Phase",
+      "filePath": "regularization/scheduler.py",
+      "lineRange": [
+        9,
+        13
+      ],
+      "summary": "描述一个训练阶段的边界及各损失目标权重。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/scheduler.py:PhaseScheduler",
+      "type": "class",
+      "name": "PhaseScheduler",
+      "filePath": "regularization/scheduler.py",
+      "lineRange": [
+        17,
+        54
+      ],
+      "summary": "按迭代阶段和 ramp 计算动态正则化权重。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:geman_mcclure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:geman_mcclure",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:detached_local_scale",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:detached_local_scale",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:robust_point_to_plane_loss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:robust_point_to_plane_loss",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:_closest_on_segments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:_closest_on_segments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:_closest_points_on_triangles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "function:regularization/mesh_correspondence.py:_closest_points_on_triangles",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "class:regularization/mesh_correspondence.py:TriangleProjection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "class:regularization/mesh_correspondence.py:TriangleProjection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "class:regularization/mesh_correspondence.py:TriangleMeshProjector",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "class:regularization/mesh_correspondence.py:TriangleMeshProjector",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "function:regularization/mesh_feedback.py:_weighted_mean",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "function:regularization/mesh_feedback.py:_weighted_mean",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshSnapshotStamp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshSnapshotStamp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshCache",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshCache",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshQualityReport",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshQualityReport",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshFeedbackBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshFeedbackBatch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:_RefreshJob",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:_RefreshJob",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshFeedbackRegularizer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "class:regularization/mesh_feedback.py:MeshFeedbackRegularizer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/pareto.py",
+      "target": "class:regularization/pareto.py:PhotometricParetoGuard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/pareto.py",
+      "target": "class:regularization/pareto.py:PhotometricParetoGuard",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/scheduler.py",
+      "target": "class:regularization/scheduler.py:Phase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/scheduler.py",
+      "target": "class:regularization/scheduler.py:Phase",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/scheduler.py",
+      "target": "class:regularization/scheduler.py:PhaseScheduler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/scheduler.py",
+      "target": "class:regularization/scheduler.py:PhaseScheduler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/pareto.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/scheduler.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:regularization/mesh_correspondence.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "file:tests/test_mesh_correspondence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:tests/test_mesh_feedback.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:tests/test_mesh_feedback.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:tests/test_mesh_feedback_v4.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/pareto.py",
+      "target": "file:tests/test_pareto.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

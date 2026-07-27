@@ -1,0 +1,6 @@
+_base_: full.yaml
+
+# Retain every rendering, semantic, surface, and mesh objective while denying
+# the surface phase permission to clone/split/prune/replace Gaussians.
+surface:
+  topology_enabled: false

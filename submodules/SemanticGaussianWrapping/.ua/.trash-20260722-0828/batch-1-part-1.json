@@ -1,0 +1,2282 @@
+{
+  "nodes": [
+    {
+      "id": "file:densification/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "densification/__init__.py",
+      "summary": "汇总 densification 子系统的公开接口，为训练流程提供密度控制器及其决策数据结构。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:densification/controller.py",
+      "type": "file",
+      "name": "controller.py",
+      "filePath": "densification/controller.py",
+      "summary": "实现 Gaussian 点的自适应 densification 控制，根据 RGB、语义、几何与 mesh coverage 信号完成 clone、split、prune 和容量预算管理。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:densification/controller.py:_as_column",
+      "type": "function",
+      "name": "_as_column",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        63,
+        71
+      ],
+      "summary": "实现 as column，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:densification/controller.py:_robust_unit",
+      "type": "function",
+      "name": "_robust_unit",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        74,
+        86
+      ],
+      "summary": "实现 robust unit，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:densification/controller.py:DensityDecision",
+      "type": "class",
+      "name": "DensityDecision",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        23,
+        29
+      ],
+      "summary": "封装 DensityDecision 的状态与行为，承担 controller.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:densification/controller.py:TopologyBudget",
+      "type": "class",
+      "name": "TopologyBudget",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        33,
+        46
+      ],
+      "summary": "封装 TopologyBudget 的状态与行为，承担 controller.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:densification/controller.py:DensityReport",
+      "type": "class",
+      "name": "DensityReport",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        50,
+        60
+      ],
+      "summary": "封装 DensityReport 的状态与行为，承担 controller.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:densification/controller.py:DensityController",
+      "type": "class",
+      "name": "DensityController",
+      "filePath": "densification/controller.py",
+      "lineRange": [
+        89,
+        917
+      ],
+      "summary": "封装 DensityController 的状态与行为，承担 controller.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/losses.py",
+      "type": "file",
+      "name": "losses.py",
+      "filePath": "regularization/losses.py",
+      "summary": "组合 photometric、semantic、manifold、geometry-policy、normal 与 SH prior 等训练损失，并管理邻域索引和几何证据状态。",
+      "tags": [
+        "损失函数",
+        "regularization",
+        "训练目标"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:regularization/losses.py:PixelSemanticDecoder",
+      "type": "class",
+      "name": "PixelSemanticDecoder",
+      "filePath": "regularization/losses.py",
+      "lineRange": [
+        24,
+        82
+      ],
+      "summary": "封装 PixelSemanticDecoder 的状态与行为，承担 losses.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:regularization/losses.py:LossBundle",
+      "type": "class",
+      "name": "LossBundle",
+      "filePath": "regularization/losses.py",
+      "lineRange": [
+        86,
+        93
+      ],
+      "summary": "封装 LossBundle 的状态与行为，承担 losses.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/losses.py:SemanticLossSystem",
+      "type": "class",
+      "name": "SemanticLossSystem",
+      "filePath": "regularization/losses.py",
+      "lineRange": [
+        96,
+        520
+      ],
+      "summary": "封装 SemanticLossSystem 的状态与行为，承担 losses.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/surface.py",
+      "type": "file",
+      "name": "surface.py",
+      "filePath": "regularization/surface.py",
+      "summary": "构造 Gaussian 中心与 pivot 的 surface consistency 查询批次，并对采样、置信度和退化输入进行稳健处理。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:regularization/surface.py:_bounded_random_indices",
+      "type": "function",
+      "name": "_bounded_random_indices",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        22,
+        43
+      ],
+      "summary": "实现 bounded random indices，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/surface.py:_selected_geometry",
+      "type": "function",
+      "name": "_selected_geometry",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        46,
+        59
+      ],
+      "summary": "实现 selected geometry，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/surface.py:_selected_confidence",
+      "type": "function",
+      "name": "_selected_confidence",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        62,
+        73
+      ],
+      "summary": "实现 selected confidence，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/surface.py:prepare_gaussian_surface_consistency",
+      "type": "function",
+      "name": "prepare_gaussian_surface_consistency",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        76,
+        100
+      ],
+      "summary": "实现 prepare gaussian surface consistency，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:regularization/surface.py:gaussian_surface_consistency",
+      "type": "function",
+      "name": "gaussian_surface_consistency",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        103,
+        149
+      ],
+      "summary": "实现 gaussian surface consistency，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:regularization/surface.py:GaussianSurfaceBatch",
+      "type": "class",
+      "name": "GaussianSurfaceBatch",
+      "filePath": "regularization/surface.py",
+      "lineRange": [
+        14,
+        19
+      ],
+      "summary": "封装 GaussianSurfaceBatch 的状态与行为，承担 surface.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_checkpointing.py",
+      "type": "file",
+      "name": "test_checkpointing.py",
+      "filePath": "tests/test_checkpointing.py",
+      "summary": "验证 checkpoint 原子保存、配置恢复、来源校验、RNG 状态和 schema 兼容性。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:_config",
+      "type": "function",
+      "name": "_config",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        19,
+        32
+      ],
+      "summary": "验证 config 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_resume_uses_checkpoint_config_and_restricts_overrides",
+      "type": "function",
+      "name": "test_resume_uses_checkpoint_config_and_restricts_overrides",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        35,
+        70
+      ],
+      "summary": "验证 resume uses checkpoint config and restricts overrides 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_prefers_cpu_mmap",
+      "type": "function",
+      "name": "test_resume_checkpoint_load_prefers_cpu_mmap",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        73,
+        96
+      ],
+      "summary": "验证 resume checkpoint load prefers cpu mmap 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_falls_back_when_mmap_is_unsupported",
+      "type": "function",
+      "name": "test_resume_checkpoint_load_falls_back_when_mmap_is_unsupported",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        99,
+        128
+      ],
+      "summary": "验证 resume checkpoint load falls back when mmap is unsupported 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_resume_source_mismatch_fails_without_explicit_relocation",
+      "type": "function",
+      "name": "test_resume_source_mismatch_fails_without_explicit_relocation",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        131,
+        134
+      ],
+      "summary": "验证 resume source mismatch fails without explicit relocation 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_rng_state_round_trip",
+      "type": "function",
+      "name": "test_rng_state_round_trip",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        137,
+        145
+      ],
+      "summary": "验证 rng state round trip 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_atomic_checkpoint_save_round_trips",
+      "type": "function",
+      "name": "test_atomic_checkpoint_save_round_trips",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        148,
+        154
+      ],
+      "summary": "验证 atomic checkpoint save round trips 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_atomic_checkpoint_failure_preserves_previous_file",
+      "type": "function",
+      "name": "test_atomic_checkpoint_failure_preserves_previous_file",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        157,
+        169
+      ],
+      "summary": "验证 atomic checkpoint failure preserves previous file 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_trainer_rejects_unknown_future_checkpoint_schema",
+      "type": "function",
+      "name": "test_trainer_rejects_unknown_future_checkpoint_schema",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        172,
+        175
+      ],
+      "summary": "验证 trainer rejects unknown future checkpoint schema 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_checkpointing.py:test_resume_rejects_unknown_future_checkpoint_before_scene_construction",
+      "type": "function",
+      "name": "test_resume_rejects_unknown_future_checkpoint_before_scene_construction",
+      "filePath": "tests/test_checkpointing.py",
+      "lineRange": [
+        178,
+        189
+      ],
+      "summary": "验证 resume rejects unknown future checkpoint before scene construction 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_density_controller.py",
+      "type": "file",
+      "name": "test_density_controller.py",
+      "filePath": "tests/test_density_controller.py",
+      "summary": "覆盖 DensityController 的语义门控、区域预算、容量替换、mesh coverage、状态恢复与拓扑变异边界条件。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:_config",
+      "type": "function",
+      "name": "_config",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        79,
+        98
+      ],
+      "summary": "验证 config 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_zero_confidence_gates_semantic_score",
+      "type": "function",
+      "name": "test_zero_confidence_gates_semantic_score",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        101,
+        112
+      ],
+      "summary": "验证 zero confidence gates semantic score 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_zero_guidance_weights_make_density_a_true_rgb_only_ablation",
+      "type": "function",
+      "name": "test_zero_guidance_weights_make_density_a_true_rgb_only_ablation",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        115,
+        148
+      ],
+      "summary": "验证 zero guidance weights make density a true rgb only ablation 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_rgb_only_split_offsets_do_not_read_geometry_experts",
+      "type": "function",
+      "name": "test_rgb_only_split_offsets_do_not_read_geometry_experts",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        151,
+        168
+      ],
+      "summary": "验证 rgb only split offsets do not read geometry experts 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_atomic_update_uses_source_topology_masks",
+      "type": "function",
+      "name": "test_atomic_update_uses_source_topology_masks",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        171,
+        185
+      ],
+      "summary": "验证 atomic update uses source topology masks 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_region_budget_never_exceeds_capacity",
+      "type": "function",
+      "name": "test_region_budget_never_exceeds_capacity",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        188,
+        201
+      ],
+      "summary": "验证 region budget never exceeds capacity 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_region_resolver_receives_only_eligible_candidates",
+      "type": "function",
+      "name": "test_region_resolver_receives_only_eligible_candidates",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        204,
+        225
+      ],
+      "summary": "验证 region resolver receives only eligible candidates 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_region_resolver_is_lazy_for_empty_candidates_or_capacity",
+      "type": "function",
+      "name": "test_region_resolver_is_lazy_for_empty_candidates_or_capacity",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        228,
+        242
+      ],
+      "summary": "验证 region resolver is lazy for empty candidates or capacity 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_region_resolver_must_align_with_candidate_indices",
+      "type": "function",
+      "name": "test_region_resolver_must_align_with_candidate_indices",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        245,
+        258
+      ],
+      "summary": "验证 region resolver must align with candidate indices 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_uniform_rgb_residual_does_not_bypass_absolute_gradient_gate",
+      "type": "function",
+      "name": "test_uniform_rgb_residual_does_not_bypass_absolute_gradient_gate",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        261,
+        269
+      ],
+      "summary": "验证 uniform rgb residual does not bypass absolute gradient gate 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_density_step_has_a_bounded_growth_budget",
+      "type": "function",
+      "name": "test_density_step_has_a_bounded_growth_budget",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        272,
+        283
+      ],
+      "summary": "验证 density step has a bounded growth budget 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_size_pruning_is_disabled_by_default_but_opacity_pruning_remains",
+      "type": "function",
+      "name": "test_size_pruning_is_disabled_by_default_but_opacity_pruning_remains",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        286,
+        296
+      ],
+      "summary": "验证 size pruning is disabled by default but opacity pruning remains 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_size_pruning_requires_explicit_enablement",
+      "type": "function",
+      "name": "test_size_pruning_requires_explicit_enablement",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        299,
+        308
+      ],
+      "summary": "验证 size pruning requires explicit enablement 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_pre_cap_standard_candidate_keeps_original_refine_before_prune_order",
+      "type": "function",
+      "name": "test_pre_cap_standard_candidate_keeps_original_refine_before_prune_order",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        311,
+        322
+      ],
+      "summary": "验证 pre cap standard candidate keeps original refine before prune order 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_density_accumulation_window_round_trips",
+      "type": "function",
+      "name": "test_density_accumulation_window_round_trips",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        325,
+        335
+      ],
+      "summary": "验证 density accumulation window round trips 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_sparse_mesh_coverage_accumulates_duplicate_indices_and_valid_values",
+      "type": "function",
+      "name": "test_sparse_mesh_coverage_accumulates_duplicate_indices_and_valid_values",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        338,
+        350
+      ],
+      "summary": "验证 sparse mesh coverage accumulates duplicate indices and valid values 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_mesh_coverage_rejects_invalid_indices",
+      "type": "function",
+      "name": "test_mesh_coverage_rejects_invalid_indices",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        363,
+        372
+      ],
+      "summary": "验证 mesh coverage rejects invalid indices 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_legacy_density_checkpoint_initializes_mesh_coverage_to_zero",
+      "type": "function",
+      "name": "test_legacy_density_checkpoint_initializes_mesh_coverage_to_zero",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        375,
+        390
+      ],
+      "summary": "验证 legacy density checkpoint initializes mesh coverage to zero 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_mesh_coverage_score_ranks_topology_candidates_and_clears_after_step",
+      "type": "function",
+      "name": "test_mesh_coverage_score_ranks_topology_candidates_and_clears_after_step",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        393,
+        418
+      ],
+      "summary": "验证 mesh coverage score ranks topology candidates and clears after step 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_density_rejects_unknown_future_checkpoint_schema",
+      "type": "function",
+      "name": "test_density_rejects_unknown_future_checkpoint_schema",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        421,
+        427
+      ],
+      "summary": "验证 density rejects unknown future checkpoint schema 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_confidence_normalizes_residual_then_gates_once",
+      "type": "function",
+      "name": "test_confidence_normalizes_residual_then_gates_once",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        430,
+        444
+      ],
+      "summary": "验证 confidence normalizes residual then gates once 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:_surface_budget",
+      "type": "function",
+      "name": "_surface_budget",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        447,
+        456
+      ],
+      "summary": "验证 surface budget 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_full_cap_uses_current_prune_donors_for_clone_replacement",
+      "type": "function",
+      "name": "test_full_cap_uses_current_prune_donors_for_clone_replacement",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        459,
+        476
+      ],
+      "summary": "验证 full cap uses current prune donors for clone replacement 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_split_replacement_accounts_for_every_child_slot",
+      "type": "function",
+      "name": "test_split_replacement_accounts_for_every_child_slot",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        480,
+        503
+      ],
+      "summary": "验证 split replacement accounts for every child slot 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_full_cap_without_donor_performs_no_mutation",
+      "type": "function",
+      "name": "test_full_cap_without_donor_performs_no_mutation",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        506,
+        520
+      ],
+      "summary": "验证 full cap without donor performs no mutation 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_surface_replacement_budget_caps_donor_churn",
+      "type": "function",
+      "name": "test_surface_replacement_budget_caps_donor_churn",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        523,
+        533
+      ],
+      "summary": "验证 surface replacement budget caps donor churn 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_surface_net_growth_budget_uses_only_existing_cap_room",
+      "type": "function",
+      "name": "test_surface_net_growth_budget_uses_only_existing_cap_room",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        536,
+        552
+      ],
+      "summary": "验证 surface net growth budget uses only existing cap room 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_surface_donors_protect_confident_boundaries_and_thin_structures",
+      "type": "function",
+      "name": "test_surface_donors_protect_confident_boundaries_and_thin_structures",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        555,
+        569
+      ],
+      "summary": "验证 surface donors protect confident boundaries and thin structures 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_near_cap_standard_window_can_prune_and_replace",
+      "type": "function",
+      "name": "test_near_cap_standard_window_can_prune_and_replace",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        572,
+        586
+      ],
+      "summary": "验证 near cap standard window can prune and replace 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_capacity_replacement_ablation_does_not_spend_donor_slots",
+      "type": "function",
+      "name": "test_capacity_replacement_ablation_does_not_spend_donor_slots",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        589,
+        608
+      ],
+      "summary": "验证 capacity replacement ablation does not spend donor slots 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_evidence_update_preserves_unobserved_gaussian_history",
+      "type": "function",
+      "name": "test_evidence_update_preserves_unobserved_gaussian_history",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        611,
+        625
+      ],
+      "summary": "验证 evidence update preserves unobserved gaussian history 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_controller.py:test_legacy_density_state_clears_once_at_surface_window_transition",
+      "type": "function",
+      "name": "test_legacy_density_state_clears_once_at_surface_window_transition",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        628,
+        643
+      ],
+      "summary": "验证 legacy density state clears once at surface window transition 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_density_controller.py:DummyGaussians",
+      "type": "class",
+      "name": "DummyGaussians",
+      "filePath": "tests/test_density_controller.py",
+      "lineRange": [
+        9,
+        76
+      ],
+      "summary": "提供 DummyGaussians 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_density_lifecycle.py",
+      "type": "file",
+      "name": "test_density_lifecycle.py",
+      "filePath": "tests/test_density_lifecycle.py",
+      "summary": "验证标准与 surface densification 生命周期的观测窗口、切换时机、延迟 pruning 和旧配置恢复。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:_config",
+      "type": "function",
+      "name": "_config",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        6,
+        15
+      ],
+      "summary": "验证 config 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_first_topology_step_uses_the_complete_warmup_window",
+      "type": "function",
+      "name": "test_first_topology_step_uses_the_complete_warmup_window",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        18,
+        23
+      ],
+      "summary": "验证 first topology step uses the complete warmup window 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_size_pruning_is_opt_in_and_delayed_until_after_opacity_reset",
+      "type": "function",
+      "name": "test_size_pruning_is_opt_in_and_delayed_until_after_opacity_reset",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        26,
+        32
+      ],
+      "summary": "验证 size pruning is opt in and delayed until after opacity reset 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_density_observation_stops_at_exclusive_until_iteration",
+      "type": "function",
+      "name": "test_density_observation_stops_at_exclusive_until_iteration",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        35,
+        40
+      ],
+      "summary": "验证 density observation stops at exclusive until iteration 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:_surface_config",
+      "type": "function",
+      "name": "_surface_config",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        43,
+        55
+      ],
+      "summary": "验证 surface config 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:_surface_lifecycle",
+      "type": "function",
+      "name": "_surface_lifecycle",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        58,
+        65
+      ],
+      "summary": "验证 surface lifecycle 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_surface_topology_collects_a_complete_window_before_replacement",
+      "type": "function",
+      "name": "test_surface_topology_collects_a_complete_window_before_replacement",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        68,
+        83
+      ],
+      "summary": "验证 surface topology collects a complete window before replacement 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_surface_topology_switch_disables_observation_and_mutation",
+      "type": "function",
+      "name": "test_surface_topology_switch_disables_observation_and_mutation",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        86,
+        91
+      ],
+      "summary": "验证 surface topology switch disables observation and mutation 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_legacy_surface_config_infers_window_for_checkpoint_resume",
+      "type": "function",
+      "name": "test_legacy_surface_config_infers_window_for_checkpoint_resume",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        94,
+        103
+      ],
+      "summary": "验证 legacy surface config infers window for checkpoint resume 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_density_lifecycle.py:test_standard_window_wins_if_surface_window_overlaps",
+      "type": "function",
+      "name": "test_standard_window_wins_if_surface_window_overlaps",
+      "filePath": "tests/test_density_lifecycle.py",
+      "lineRange": [
+        106,
+        110
+      ],
+      "summary": "验证 standard window wins if surface window overlaps 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:densification/__init__.py",
+      "target": "file:densification/controller.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "function:densification/controller.py:_as_column",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "function:densification/controller.py:_as_column",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "function:densification/controller.py:_robust_unit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "function:densification/controller.py:_robust_unit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityDecision",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityDecision",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:TopologyBudget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:TopologyBudget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityReport",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityReport",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "class:densification/controller.py:DensityController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:PixelSemanticDecoder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:PixelSemanticDecoder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:LossBundle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:LossBundle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:SemanticLossSystem",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "class:regularization/losses.py:SemanticLossSystem",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_bounded_random_indices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_bounded_random_indices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_selected_geometry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_selected_geometry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_selected_confidence",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:_selected_confidence",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:prepare_gaussian_surface_consistency",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:prepare_gaussian_surface_consistency",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:gaussian_surface_consistency",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "function:regularization/surface.py:gaussian_surface_consistency",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "class:regularization/surface.py:GaussianSurfaceBatch",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "class:regularization/surface.py:GaussianSurfaceBatch",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_uses_checkpoint_config_and_restricts_overrides",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_uses_checkpoint_config_and_restricts_overrides",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_prefers_cpu_mmap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_prefers_cpu_mmap",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_falls_back_when_mmap_is_unsupported",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_checkpoint_load_falls_back_when_mmap_is_unsupported",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_source_mismatch_fails_without_explicit_relocation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_source_mismatch_fails_without_explicit_relocation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_rng_state_round_trip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_rng_state_round_trip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_atomic_checkpoint_save_round_trips",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_atomic_checkpoint_save_round_trips",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_atomic_checkpoint_failure_preserves_previous_file",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_atomic_checkpoint_failure_preserves_previous_file",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_trainer_rejects_unknown_future_checkpoint_schema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_trainer_rejects_unknown_future_checkpoint_schema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_rejects_unknown_future_checkpoint_before_scene_construction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "function:tests/test_checkpointing.py:test_resume_rejects_unknown_future_checkpoint_before_scene_construction",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_zero_confidence_gates_semantic_score",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_zero_confidence_gates_semantic_score",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_zero_guidance_weights_make_density_a_true_rgb_only_ablation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_zero_guidance_weights_make_density_a_true_rgb_only_ablation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_rgb_only_split_offsets_do_not_read_geometry_experts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_rgb_only_split_offsets_do_not_read_geometry_experts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_atomic_update_uses_source_topology_masks",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_atomic_update_uses_source_topology_masks",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_budget_never_exceeds_capacity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_budget_never_exceeds_capacity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_receives_only_eligible_candidates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_receives_only_eligible_candidates",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_is_lazy_for_empty_candidates_or_capacity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_is_lazy_for_empty_candidates_or_capacity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_must_align_with_candidate_indices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_region_resolver_must_align_with_candidate_indices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_uniform_rgb_residual_does_not_bypass_absolute_gradient_gate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_uniform_rgb_residual_does_not_bypass_absolute_gradient_gate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_step_has_a_bounded_growth_budget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_step_has_a_bounded_growth_budget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_size_pruning_is_disabled_by_default_but_opacity_pruning_remains",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_size_pruning_is_disabled_by_default_but_opacity_pruning_remains",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_size_pruning_requires_explicit_enablement",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_size_pruning_requires_explicit_enablement",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_pre_cap_standard_candidate_keeps_original_refine_before_prune_order",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_pre_cap_standard_candidate_keeps_original_refine_before_prune_order",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_accumulation_window_round_trips",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_accumulation_window_round_trips",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_sparse_mesh_coverage_accumulates_duplicate_indices_and_valid_values",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_sparse_mesh_coverage_accumulates_duplicate_indices_and_valid_values",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_mesh_coverage_rejects_invalid_indices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_mesh_coverage_rejects_invalid_indices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_legacy_density_checkpoint_initializes_mesh_coverage_to_zero",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_legacy_density_checkpoint_initializes_mesh_coverage_to_zero",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_mesh_coverage_score_ranks_topology_candidates_and_clears_after_step",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_mesh_coverage_score_ranks_topology_candidates_and_clears_after_step",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_rejects_unknown_future_checkpoint_schema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_density_rejects_unknown_future_checkpoint_schema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_confidence_normalizes_residual_then_gates_once",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_confidence_normalizes_residual_then_gates_once",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:_surface_budget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:_surface_budget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_full_cap_uses_current_prune_donors_for_clone_replacement",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_full_cap_uses_current_prune_donors_for_clone_replacement",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_split_replacement_accounts_for_every_child_slot",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_split_replacement_accounts_for_every_child_slot",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_full_cap_without_donor_performs_no_mutation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_full_cap_without_donor_performs_no_mutation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_replacement_budget_caps_donor_churn",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_replacement_budget_caps_donor_churn",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_net_growth_budget_uses_only_existing_cap_room",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_net_growth_budget_uses_only_existing_cap_room",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_donors_protect_confident_boundaries_and_thin_structures",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_surface_donors_protect_confident_boundaries_and_thin_structures",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_near_cap_standard_window_can_prune_and_replace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_near_cap_standard_window_can_prune_and_replace",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_capacity_replacement_ablation_does_not_spend_donor_slots",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_capacity_replacement_ablation_does_not_spend_donor_slots",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_evidence_update_preserves_unobserved_gaussian_history",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_evidence_update_preserves_unobserved_gaussian_history",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_legacy_density_state_clears_once_at_surface_window_transition",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "function:tests/test_density_controller.py:test_legacy_density_state_clears_once_at_surface_window_transition",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "class:tests/test_density_controller.py:DummyGaussians",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "class:tests/test_density_controller.py:DummyGaussians",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "file:densification/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_first_topology_step_uses_the_complete_warmup_window",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_first_topology_step_uses_the_complete_warmup_window",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_size_pruning_is_opt_in_and_delayed_until_after_opacity_reset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_size_pruning_is_opt_in_and_delayed_until_after_opacity_reset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_density_observation_stops_at_exclusive_until_iteration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_density_observation_stops_at_exclusive_until_iteration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_surface_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_surface_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_surface_lifecycle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:_surface_lifecycle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_surface_topology_collects_a_complete_window_before_replacement",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_surface_topology_collects_a_complete_window_before_replacement",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_surface_topology_switch_disables_observation_and_mutation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_surface_topology_switch_disables_observation_and_mutation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_legacy_surface_config_infers_window_for_checkpoint_resume",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_legacy_surface_config_infers_window_for_checkpoint_resume",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_standard_window_wins_if_surface_window_overlaps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "function:tests/test_density_lifecycle.py:test_standard_window_wins_if_surface_window_overlaps",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

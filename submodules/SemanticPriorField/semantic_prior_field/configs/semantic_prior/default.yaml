@@ -1,0 +1,69 @@
+# Semantic Prior Field — default schedule and weights.
+#
+# Every channel is soft, confidence-gated and independently switchable from
+# the CLI (--sp_orient / --sp_flatten / --sp_sh / --sp_split / --sp_prune /
+# --sp_budget / --sp_boundary). The schedule follows the base pipeline:
+# mask-only channels start with the depth-normal regularization (7000),
+# embedding-dependent channels start once the joint semantic CE has had time
+# to converge (15000), and the orientation prior starts with the normal
+# field (20001).
+
+# --- Prior field refresh -------------------------------------------------
+# The joint semantic CE trains from iteration 0 on precomputed masks, so the
+# embedding is informative well before the standard densification window
+# closes at 15000 — starting at 7000 lets the budget channel overlap ADC.
+start_iter: 7000             # first SPF refresh (labels + proxies)
+refresh_interval: 500        # iterations between refreshes
+min_label_confidence: 0.3    # top1-top2 posterior margin below which a Gaussian is unlabeled
+min_instance_gaussians: 512  # smaller instances get no proxy
+max_instances: 256           # largest instances by Gaussian count
+max_points_per_instance: 20000
+background_label: 0
+skip_background_instance: true
+
+# --- Proxy fitting -------------------------------------------------------
+ransac_iterations: 32
+planar_inlier_threshold_rel: 0.01   # x instance bbox diagonal
+planar_inlier_ratio: 0.8
+quadric_min_points: 64
+quadric_max_residual_rel: 0.02
+thin_anisotropy_threshold: 4.0
+prior_weight_sigma: 0.5             # w = conf * exp(-fit_residual / sigma)
+
+# --- Orientation prior ---------------------------------------------------
+orient_start_iter: 20001
+orient_weight: 0.05
+
+# --- Selective flattening ------------------------------------------------
+flatten_weight: 10.0                # global PGSR scale loss uses 100 on everything
+
+# --- Spherical harmonics -------------------------------------------------
+sh_consistency_weight: 0.01
+sh_consistency_samples: 4096
+sh_consistency_neighbors: 5
+sh_decay_weight: 0.01
+sh_outlier_factor: 4.0
+
+# --- Boundary weighting (mask-only, active with depth-normal reg) --------
+boundary_radius: 4                  # pixels around a label discontinuity
+boundary_weight: 0.25               # loss weight floor inside the band
+
+# --- Densification budget ------------------------------------------------
+densify_multiplier_planar: 1.5      # planar instances densify less
+densify_multiplier_thin: 0.7        # thin instances densify more
+
+# --- Semantic-error splitting (offset from normal-field densification) ---
+use_densification: true
+start_iter_densification: 22500
+end_iter_densification: 26500
+densify_every_n_iterations: 1000
+densification_semantic_errors_quantile: 0.05
+densification_normalization_method: count   # "count" or "area" or "none"
+# Minimum accumulated iterations before the SPF-rasterizer conflict stats
+# replace the episodic full-camera sweep as the splitting signal.
+stats_min_updates: 100
+
+# --- Identity-stability pruning ------------------------------------------
+use_pruning: true
+pruning_iterations: [15000, 20000]
+prune_confidence_threshold: 0.1

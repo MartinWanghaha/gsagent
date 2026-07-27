@@ -1,0 +1,28 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/README.md",
+      "language": "markdown",
+      "sizeLines": 39,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/pyproject.toml",
+      "language": "toml",
+      "sizeLines": 11,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "submodules/diff-semantic-gaussian-rasterization/LICENSE.md": [],
+    "submodules/diff-semantic-gaussian-rasterization/README.md": [],
+    "submodules/diff-semantic-gaussian-rasterization/pyproject.toml": []
+  }
+}

@@ -1,0 +1,252 @@
+seed: 0
+device: cuda
+
+model:
+  sh_degree: 3
+  semantic_dim: 16
+  geometry_experts: 5
+  white_background: false
+
+data:
+  images: images
+  resolution: 1
+  eval: false
+  holdout: 8
+  data_device: cpu
+  semantic_path: sam_mask
+  semantic_method: gaga
+  semantic_confidence: ""
+  semantic_boundary: ""
+  ignore_label: -1
+  random_points: 100000
+
+renderer:
+  backend: auto
+  debug: false
+
+semantic:
+  temperature: 0.1
+  # Exact FP32 streaming soft region routing. Only foreground top-k
+  # probabilities are retained; background and omitted foreground mass remain
+  # explicit, so routing never turns into a hard class assignment.
+  region_decode_chunk_size: 32768
+  region_top_k: 3
+  confidence_floor: 0.05
+  geometry_confidence_threshold: 0.35
+  boundary_width: 2
+  evidence_interval: 100
+  evidence_samples: 2048
+  evidence_weight: 1.0
+  evidence_entropy_weight: 0.05
+  evidence_balance_weight: 0.10
+  geometry_evidence_temperature: 0.20
+  propagation_enabled: true
+  propagation_samples: 65536
+  propagation_neighbors: 12
+  propagation_min_seed_confidence: 0.35
+  propagation_max_confidence: 0.85
+  propagation_momentum: 0.5
+  propagation_decay: 0.995
+  propagation_semantic_floor: 0.25
+  propagation_support_sigma: 3.0
+  propagation_boundary_barrier: 2.0
+
+optimization:
+  iterations: 30000
+  position_lr_init: 0.00016
+  position_lr_final: 0.0000016
+  position_lr_delay_mult: 0.01
+  position_lr_delay_steps: 0
+  position_lr_max_steps: 30000
+  feature_dc_lr: 0.0025
+  feature_rest_lr: 0.000125
+  opacity_lr: 0.05
+  scaling_lr: 0.005
+  rotation_lr: 0.001
+  semantic_lr: 0.0025
+  geometry_lr: 0.001
+  semantic_head_lr: 0.0005
+
+phases:
+  semantic_from: 7000
+  joint_from: 12000
+  surface_from: 24000
+  ramp_iterations: 1000
+
+loss:
+  lambda_dssim: 0.2
+  # Depth-normal geometry is trusted only where a full 3x3 stencil has this
+  # much accumulated foreground alpha.
+  normal_alpha_threshold: 0.5
+  lambda_semantic: 0.1
+  # Region-normalized RGB gives small Gaga surface domains a useful gradient
+  # without replacing the global photometric objective.
+  lambda_region_rgb: 0.15
+  region_area_temperature: 0.5
+  region_geometry_mix: 0.5
+  lambda_boundary: 0.03
+  lambda_manifold: 0.01
+  lambda_geometry: 0.02
+  lambda_sh: 0.0001
+  lambda_surface: 0.02
+  lambda_mesh: 0.01
+  pareto_guard: true
+
+density:
+  from_iter: 500
+  until_iter: 20000
+  interval: 100
+  opacity_reset_interval: 3000
+  gradient_threshold: 0.0002
+  clone_scale_ratio: 0.01
+  min_opacity: 0.005
+  # Match the default GaussianWrapping lifecycle: size pruning is opt-in and,
+  # when enabled, starts only after the first opacity reset interval.
+  enable_size_pruning: false
+  max_screen_radius: 20.0
+  max_gaussians: 2000000
+  max_growth_fraction: 0.05
+  max_new_per_step: 100000
+  # Near the hard cap, low-utility points deleted in this same atomic step can
+  # finance replacement events without allowing net growth above the cap.
+  capacity_replacement_enabled: true
+  replace_near_cap_ratio: 0.98
+  max_replacements_per_step: 100000
+  split_children: 2
+  min_semantic_confidence: 0.35
+  semantic_residual_threshold: 0.25
+  boundary_threshold: 0.1
+  geometry_error_threshold: 0.1
+  rgb_weight: 1.0
+  boundary_weight: 0.75
+  semantic_weight: 0.5
+  geometry_weight: 0.75
+  # Sparse misses from the trusted local mesh matcher prioritize replacement
+  # candidates; they never create a long-range mesh attraction gradient.
+  mesh_coverage_weight: 0.5
+  thin_protection: 0.8
+  region_budget_temperature: 0.5
+
+surface:
+  enabled: true
+  # Surface refinement owns a second, explicitly bounded density window.
+  # With zero net growth it can improve spatial allocation after the standard
+  # densifier stops, but every new slot must be financed by a prune donor.
+  topology_enabled: true
+  topology_from: 24000
+  topology_until: 30000
+  topology_interval: 500
+  topology_max_net_growth: 0
+  topology_replacement_budget: 20000
+  topology_enable_size_pruning: true
+  topology_protect_min_confidence: 0.5
+  topology_protect_boundary: 0.25
+  topology_protect_thin_probability: 0.5
+  sample_points: 8192
+  occupancy_isovalue: 0.5
+  field_neighbors: 32
+  # One conservative shortlist is shared by global and region-conditioned
+  # reductions. It must be at least field_neighbors.
+  region_candidate_neighbors: 64
+  region_min_membership: 0.0001
+  region_surface_min_weight: 0.05
+  query_chunk: 2048
+  gaussian_chunk: 8192
+  neighbor_query_chunk: 2048
+  neighbor_backend: auto
+  # CPU KDTree routing is deliberately larger than the GPU rerank window.
+  # Candidate slices still obey max_distance_bytes on the query device.
+  support_routing_query_chunk: 8192
+  scipy_workers: 4
+  max_distance_bytes: 67108864
+  support_log_cutoff: -12.0
+  # Hard bound for the multi-scale SciPy shortlist before exact anisotropic
+  # Mahalanobis reranking. This makes surface query cost independent of dense
+  # radius matches and extreme Gaussian scales.
+  # Quality-first shortlist: real counter/24k validation gives exact top-1
+  # support and ~1.8e-4 SDF MAE while remaining well below the old query cost.
+  support_candidate_budget: 2048
+  spatial_index_refresh_interval: 100
+  consistency_interval: 1
+  mesh_refresh_interval: 500
+  mesh_feedback_resolution: 96
+  mesh_feedback_samples: 8192
+  mesh_feedback_async: true
+  mesh_feedback_snapshot_device: auto
+  # Keep asynchronous extraction from competing with live routing for all
+  # host cores. This changes scheduling only, not mesh samples or topology.
+  mesh_feedback_scipy_workers: 1
+  mesh_feedback_min_component_faces: 64
+  # Mesh-v4 candidate lifecycle. A refresh candidate is rejected once it is
+  # too old or crosses too much live-topology drift; rejected work is retried
+  # at a bounded cadence and accepted targets are introduced progressively.
+  mesh_feedback_max_candidate_age: 1000
+  mesh_feedback_max_topology_events: 1
+  mesh_feedback_max_churn_ratio: 0.015
+  mesh_feedback_retry_interval: 100
+  mesh_feedback_blend_iterations: 125
+  # Candidate quality gate over a bounded probe set.
+  mesh_feedback_gate_probes: 2048
+  mesh_feedback_gate_min_score: 0.70
+  mesh_feedback_gate_sdf_p90: 2.5
+  mesh_feedback_gate_normal: 0.60
+  mesh_feedback_gate_semantic: 0.50
+  # Only sufficiently visible and certain Gaussian support participates in
+  # feedback matching.
+  mesh_feedback_min_opacity: 0.05
+  mesh_feedback_min_confidence: 0.35
+  mesh_feedback_min_expert_certainty: 0.55
+  # Robust local candidate-to-live correspondence policy.
+  mesh_feedback_match_k: 16
+  mesh_feedback_match_radius: 3.0
+  mesh_feedback_match_semantic: 0.50
+  mesh_feedback_robust_delta: 1.5
+  mesh_feedback_min_matches: 256
+
+mesh:
+  # This compact section belongs only to asynchronous training feedback.
+  # Offline export is defined independently by mesh_export below.
+  method: marching_cubes
+  padding: 0.02
+  support_sigma: 3.0
+  isovalue: 0.0
+
+# Offline Region-Conditioned Gaussian Wrapping is independent from the compact
+# density-field mesh used by asynchronous training feedback.
+mesh_export:
+  max_gaussians: 500000
+  max_chart_gaussians: 12000
+  region_top_k: 3
+  decoder_chunk_size: 32768
+  min_opacity: 0.02
+  max_gaussian_extent_fraction: 0.05
+  min_region_gaussians: 12
+  confident_probability: 0.5
+  confident_semantic: 0.5
+  boundary_margin: 0.15
+  boundary_score_threshold: 0.5
+  boundary_fraction: 0.3
+  contact_neighbors: 8
+  contact_radius_factor: 2.5
+  chart_halo_factor: 1.5
+  background_id: null
+  view_stride: 1
+  camera_scale: 1.0
+  occupancy_threshold: 0.5
+  minimum_views: 1
+  candidate_views: 2
+  pivot_sigma_factor: 1.0
+  min_pivot_sigma_to_local: 0.05
+  max_pivot_sigma_to_local: 0.75
+  max_crossing_edge_factor: 2.0
+  binary_steps: 10
+  query_chunk_size: 65536
+  min_component_faces: 8
+  target_faces: null
+
+logging:
+  log_interval: 10
+  # CUDA synchronization is introduced only on sampled steps. Keep disabled
+  # for ordinary training; e.g. 100 profiles every hundredth iteration.
+  profile_interval: 0
+  save_iterations: [7000, 12000, 24000, 30000]

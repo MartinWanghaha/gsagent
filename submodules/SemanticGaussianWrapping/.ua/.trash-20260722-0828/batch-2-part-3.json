@@ -1,0 +1,1026 @@
+{
+  "nodes": [
+    {
+      "id": "file:tests/test_mesh_cli.py",
+      "type": "file",
+      "name": "test_mesh_cli.py",
+      "filePath": "tests/test_mesh_cli.py",
+      "summary": "验证 mesh cli 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:_arguments",
+      "type": "function",
+      "name": "_arguments",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        25,
+        26
+      ],
+      "summary": "实现 arguments 相关逻辑，供 test_mesh_cli.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_documented_cube_resolution_maps_to_finest_grid",
+      "type": "function",
+      "name": "test_documented_cube_resolution_maps_to_finest_grid",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        29,
+        34
+      ],
+      "summary": "验证 documented cube resolution maps to finest grid 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_documented_tetra_resolution_maps_to_covering_octree",
+      "type": "function",
+      "name": "test_documented_tetra_resolution_maps_to_covering_octree",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        37,
+        42
+      ],
+      "summary": "验证 documented tetra resolution maps to covering octree 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_native_model_mesh_config_supplies_defaults_and_cli_wins",
+      "type": "function",
+      "name": "test_native_model_mesh_config_supplies_defaults_and_cli_wins",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        45,
+        71
+      ],
+      "summary": "验证 native model mesh config supplies defaults and cli wins 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_native_cpu_fallback_is_not_overridden_by_raw_cuda",
+      "type": "function",
+      "name": "test_native_cpu_fallback_is_not_overridden_by_raw_cuda",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        74,
+        91
+      ],
+      "summary": "验证 native cpu fallback is not overridden by raw cuda 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_native_loader_retains_weakly_referenced_gaussian_provider",
+      "type": "function",
+      "name": "test_native_loader_retains_weakly_referenced_gaussian_provider",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        94,
+        138
+      ],
+      "summary": "验证 native loader retains weakly referenced gaussian provider 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_loader_releases_bundle_without_creating_field_container_cycle",
+      "type": "function",
+      "name": "test_loader_releases_bundle_without_creating_field_container_cycle",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        141,
+        172
+      ],
+      "summary": "验证 loader releases bundle without creating field container cycle 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_cli.py:test_cli_decoder_drives_auto_contact_graph_and_extractor",
+      "type": "function",
+      "name": "test_cli_decoder_drives_auto_contact_graph_and_extractor",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        175,
+        227
+      ],
+      "summary": "验证 cli decoder drives auto contact graph and extractor 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:tests/test_mesh_cli.py:_BufferedField",
+      "type": "class",
+      "name": "_BufferedField",
+      "filePath": "tests/test_mesh_cli.py",
+      "lineRange": [
+        16,
+        22
+      ],
+      "summary": "封装 Buffered Field 的状态与操作，承担 test_mesh_cli.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_conformity.py",
+      "type": "file",
+      "name": "test_mesh_conformity.py",
+      "filePath": "tests/test_mesh_conformity.py",
+      "summary": "验证 mesh conformity 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_mesh_conformity.py:test_touching_adaptive_blocks_use_conforming_boundary_lattices",
+      "type": "function",
+      "name": "test_touching_adaptive_blocks_use_conforming_boundary_lattices",
+      "filePath": "tests/test_mesh_conformity.py",
+      "lineRange": [
+        63,
+        80
+      ],
+      "summary": "验证 touching adaptive blocks use conforming boundary lattices 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_conformity.py:test_active_region_includes_one_face_neighbor_halo",
+      "type": "function",
+      "name": "test_active_region_includes_one_face_neighbor_halo",
+      "filePath": "tests/test_mesh_conformity.py",
+      "lineRange": [
+        83,
+        95
+      ],
+      "summary": "验证 active region includes one face neighbor halo 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_mesh_conformity.py:_DetailedHalfSphere",
+      "type": "class",
+      "name": "_DetailedHalfSphere",
+      "filePath": "tests/test_mesh_conformity.py",
+      "lineRange": [
+        16,
+        39
+      ],
+      "summary": "封装 Detailed Half Sphere 的状态与操作，承担 test_mesh_conformity.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_mesh_conformity.py:_SingleActiveProbe",
+      "type": "class",
+      "name": "_SingleActiveProbe",
+      "filePath": "tests/test_mesh_conformity.py",
+      "lineRange": [
+        42,
+        60
+      ],
+      "summary": "封装 Single Active Probe 的状态与操作，承担 test_mesh_conformity.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_io.py",
+      "type": "file",
+      "name": "test_mesh_io.py",
+      "filePath": "tests/test_mesh_io.py",
+      "summary": "验证 mesh io 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_mesh_io.py:_binary_vertices",
+      "type": "function",
+      "name": "_binary_vertices",
+      "filePath": "tests/test_mesh_io.py",
+      "lineRange": [
+        10,
+        19
+      ],
+      "summary": "实现 binary vertices 相关逻辑，供 test_mesh_io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_io.py:_write_binary_ply",
+      "type": "function",
+      "name": "_write_binary_ply",
+      "filePath": "tests/test_mesh_io.py",
+      "lineRange": [
+        22,
+        29
+      ],
+      "summary": "写出 write binary ply 相关逻辑，供 test_mesh_io.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_io.py:test_binary_little_endian_triangle_mesh_loads_with_normals",
+      "type": "function",
+      "name": "test_binary_little_endian_triangle_mesh_loads_with_normals",
+      "filePath": "tests/test_mesh_io.py",
+      "lineRange": [
+        32,
+        43
+      ],
+      "summary": "验证 binary little endian triangle mesh loads with normals 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_io.py:test_binary_little_endian_point_cloud_loads_without_faces",
+      "type": "function",
+      "name": "test_binary_little_endian_point_cloud_loads_without_faces",
+      "filePath": "tests/test_mesh_io.py",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "验证 binary little endian point cloud loads without faces 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_io.py:test_ascii_semantic_ply_keeps_custom_vertex_fields",
+      "type": "function",
+      "name": "test_ascii_semantic_ply_keeps_custom_vertex_fields",
+      "filePath": "tests/test_mesh_io.py",
+      "lineRange": [
+        57,
+        75
+      ],
+      "summary": "验证 ascii semantic ply keeps custom vertex fields 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_metrics.py",
+      "type": "file",
+      "name": "test_mesh_metrics.py",
+      "filePath": "tests/test_mesh_metrics.py",
+      "summary": "验证 mesh metrics 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_metrics.py:test_identical_point_cloud_metrics_are_perfect",
+      "type": "function",
+      "name": "test_identical_point_cloud_metrics_are_perfect",
+      "filePath": "tests/test_mesh_metrics.py",
+      "lineRange": [
+        18,
+        26
+      ],
+      "summary": "验证 identical point cloud metrics are perfect 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_metrics.py:test_translation_has_expected_symmetric_distance_and_f_score",
+      "type": "function",
+      "name": "test_translation_has_expected_symmetric_distance_and_f_score",
+      "filePath": "tests/test_mesh_metrics.py",
+      "lineRange": [
+        29,
+        41
+      ],
+      "summary": "验证 translation has expected symmetric distance and f score 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_metrics.py:test_surface_sampling_is_deterministic_and_stays_on_triangle",
+      "type": "function",
+      "name": "test_surface_sampling_is_deterministic_and_stays_on_triangle",
+      "filePath": "tests/test_mesh_metrics.py",
+      "lineRange": [
+        44,
+        54
+      ],
+      "summary": "验证 surface sampling is deterministic and stays on triangle 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_topology.py",
+      "type": "file",
+      "name": "test_mesh_topology.py",
+      "filePath": "tests/test_mesh_topology.py",
+      "summary": "验证 mesh topology 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:_mixed_triangle",
+      "type": "function",
+      "name": "_mixed_triangle",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        19,
+        26
+      ],
+      "summary": "实现 mixed triangle 相关逻辑，供 test_mesh_topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_contact_graph_preserves_real_contact_but_blocks_unknown_bridge",
+      "type": "function",
+      "name": "test_contact_graph_preserves_real_contact_but_blocks_unknown_bridge",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        29,
+        36
+      ],
+      "summary": "验证 contact graph preserves real contact but blocks unknown bridge 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_unknown_embedding_ids_do_not_bypass_cosine_compatibility",
+      "type": "function",
+      "name": "test_unknown_embedding_ids_do_not_bypass_cosine_compatibility",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        39,
+        56
+      ],
+      "summary": "验证 unknown embedding ids do not bypass cosine compatibility 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_seam_aware_clustering_does_not_merge_different_labels",
+      "type": "function",
+      "name": "test_seam_aware_clustering_does_not_merge_different_labels",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        59,
+        74
+      ],
+      "summary": "验证 seam aware clustering does not merge different labels 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_clustering_preserves_decoded_ids_for_continuous_gaga_embeddings",
+      "type": "function",
+      "name": "test_clustering_preserves_decoded_ids_for_continuous_gaga_embeddings",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        77,
+        86
+      ],
+      "summary": "验证 clustering preserves decoded ids for continuous gaga embeddings 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_small_unique_semantic_instance_is_retained",
+      "type": "function",
+      "name": "test_small_unique_semantic_instance_is_retained",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        89,
+        106
+      ],
+      "summary": "验证 small unique semantic instance is retained 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_uncertainty_gated_cleanup_does_not_trust_missing_uncertainty",
+      "type": "function",
+      "name": "test_uncertainty_gated_cleanup_does_not_trust_missing_uncertainty",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        109,
+        124
+      ],
+      "summary": "验证 uncertainty gated cleanup does not trust missing uncertainty 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_topology.py:test_cli_accepts_native_model_path_and_long_method_aliases",
+      "type": "function",
+      "name": "test_cli_accepts_native_model_path_and_long_method_aliases",
+      "filePath": "tests/test_mesh_topology.py",
+      "lineRange": [
+        127,
+        137
+      ],
+      "summary": "验证 cli accepts native model path and long method aliases 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:_arguments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:_arguments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_documented_cube_resolution_maps_to_finest_grid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_documented_cube_resolution_maps_to_finest_grid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_documented_tetra_resolution_maps_to_covering_octree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_documented_tetra_resolution_maps_to_covering_octree",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_model_mesh_config_supplies_defaults_and_cli_wins",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_model_mesh_config_supplies_defaults_and_cli_wins",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_cpu_fallback_is_not_overridden_by_raw_cuda",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_cpu_fallback_is_not_overridden_by_raw_cuda",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_loader_retains_weakly_referenced_gaussian_provider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_native_loader_retains_weakly_referenced_gaussian_provider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_loader_releases_bundle_without_creating_field_container_cycle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_loader_releases_bundle_without_creating_field_container_cycle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_cli_decoder_drives_auto_contact_graph_and_extractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "function:tests/test_mesh_cli.py:test_cli_decoder_drives_auto_contact_graph_and_extractor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "class:tests/test_mesh_cli.py:_BufferedField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "class:tests/test_mesh_cli.py:_BufferedField",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "function:tests/test_mesh_conformity.py:test_touching_adaptive_blocks_use_conforming_boundary_lattices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "function:tests/test_mesh_conformity.py:test_touching_adaptive_blocks_use_conforming_boundary_lattices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "function:tests/test_mesh_conformity.py:test_active_region_includes_one_face_neighbor_halo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "function:tests/test_mesh_conformity.py:test_active_region_includes_one_face_neighbor_halo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "class:tests/test_mesh_conformity.py:_DetailedHalfSphere",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "class:tests/test_mesh_conformity.py:_DetailedHalfSphere",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "class:tests/test_mesh_conformity.py:_SingleActiveProbe",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "class:tests/test_mesh_conformity.py:_SingleActiveProbe",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:_binary_vertices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:_binary_vertices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:_write_binary_ply",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:_write_binary_ply",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_binary_little_endian_triangle_mesh_loads_with_normals",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_binary_little_endian_triangle_mesh_loads_with_normals",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_binary_little_endian_point_cloud_loads_without_faces",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_binary_little_endian_point_cloud_loads_without_faces",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_ascii_semantic_ply_keeps_custom_vertex_fields",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "function:tests/test_mesh_io.py:test_ascii_semantic_ply_keeps_custom_vertex_fields",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_identical_point_cloud_metrics_are_perfect",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_identical_point_cloud_metrics_are_perfect",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_translation_has_expected_symmetric_distance_and_f_score",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_translation_has_expected_symmetric_distance_and_f_score",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_surface_sampling_is_deterministic_and_stays_on_triangle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "function:tests/test_mesh_metrics.py:test_surface_sampling_is_deterministic_and_stays_on_triangle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:_mixed_triangle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:_mixed_triangle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_contact_graph_preserves_real_contact_but_blocks_unknown_bridge",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_contact_graph_preserves_real_contact_but_blocks_unknown_bridge",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_unknown_embedding_ids_do_not_bypass_cosine_compatibility",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_unknown_embedding_ids_do_not_bypass_cosine_compatibility",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_seam_aware_clustering_does_not_merge_different_labels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_seam_aware_clustering_does_not_merge_different_labels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_clustering_preserves_decoded_ids_for_continuous_gaga_embeddings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_clustering_preserves_decoded_ids_for_continuous_gaga_embeddings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_small_unique_semantic_instance_is_retained",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_small_unique_semantic_instance_is_retained",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_uncertainty_gated_cleanup_does_not_trust_missing_uncertainty",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_uncertainty_gated_cleanup_does_not_trust_missing_uncertainty",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_cli_accepts_native_model_path_and_long_method_aliases",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "function:tests/test_mesh_topology.py:test_cli_accepts_native_model_path_and_long_method_aliases",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

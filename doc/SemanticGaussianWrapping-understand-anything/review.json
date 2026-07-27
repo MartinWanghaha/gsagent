@@ -1,0 +1,44 @@
+{
+  "issues": [],
+  "warnings": [
+    "Node 'document:ARCHITECTURE.md' has no edges (orphan)",
+    "Node 'document:LICENSE.md' has no edges (orphan)",
+    "Node 'document:README.md' has no edges (orphan)",
+    "Node 'document:THIRD_PARTY_NOTICES.md' has no edges (orphan)",
+    "Node 'config:pyproject.toml' has no edges (orphan)",
+    "Node 'document:requirements.txt' has no edges (orphan)",
+    "Node 'config:configs/default.yaml' has no edges (orphan)",
+    "Node 'config:configs/full.yaml' has no edges (orphan)",
+    "Node 'config:configs/full_no_confidence_propagation.yaml' has no edges (orphan)",
+    "Node 'config:configs/full_no_expert_certainty.yaml' has no edges (orphan)",
+    "Node 'config:configs/full_no_mesh_feedback.yaml' has no edges (orphan)",
+    "Node 'config:configs/full_no_prune_replace.yaml' has no edges (orphan)",
+    "Node 'config:configs/full_no_surface_topology.yaml' has no edges (orphan)",
+    "Node 'config:configs/rgb_only.yaml' has no edges (orphan)",
+    "Node 'config:configs/semantic_render_only.yaml' has no edges (orphan)",
+    "Node 'document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md' has no edges (orphan)",
+    "Node 'document:submodules/diff-semantic-gaussian-rasterization/README.md' has no edges (orphan)",
+    "Node 'config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml' has no edges (orphan)",
+    "Node 'file:configs/__init__.py' has no edges (orphan)",
+    "Node 'file:utils/__init__.py' has no edges (orphan)"
+  ],
+  "stats": {
+    "totalNodes": 790,
+    "totalEdges": 1509,
+    "totalLayers": 10,
+    "tourSteps": 11,
+    "nodeTypes": {
+      "file": 102,
+      "function": 569,
+      "class": 101,
+      "document": 7,
+      "config": 11
+    },
+    "edgeTypes": {
+      "imports": 161,
+      "contains": 670,
+      "exports": 657,
+      "tested_by": 21
+    }
+  }
+}

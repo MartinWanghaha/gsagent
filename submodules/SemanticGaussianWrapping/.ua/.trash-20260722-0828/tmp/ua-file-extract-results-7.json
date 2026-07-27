@@ -1,0 +1,2128 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 419,
+      "nonEmptyLines": 379,
+      "functions": [
+        {
+          "name": "has_cuda_extension",
+          "startLine": 62,
+          "endLine": 69,
+          "params": []
+        },
+        {
+          "name": "_principal_point",
+          "startLine": 72,
+          "endLine": 78,
+          "params": [
+            "settings"
+          ]
+        },
+        {
+          "name": "eval_sh",
+          "startLine": 87,
+          "endLine": 128,
+          "params": [
+            "degree",
+            "sh",
+            "directions"
+          ]
+        },
+        {
+          "name": "_reference_from_settings",
+          "startLine": 131,
+          "endLine": 163,
+          "params": [
+            "means3d",
+            "means2d",
+            "colors",
+            "semantic_features",
+            "opacities",
+            "scales",
+            "rotations",
+            "settings",
+            "depth_order"
+          ]
+        },
+        {
+          "name": "rasterize_gaussians",
+          "startLine": 294,
+          "endLine": 338,
+          "params": [
+            "means3d",
+            "means2d",
+            "colors",
+            "semantic_features",
+            "opacities",
+            "scales",
+            "rotations",
+            "raster_settings"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "GaussianRasterizationSettings",
+          "startLine": 29,
+          "endLine": 49,
+          "methods": [],
+          "properties": [
+            "image_height",
+            "image_width",
+            "tanfovx",
+            "tanfovy",
+            "bg",
+            "scale_modifier",
+            "viewmatrix",
+            "projmatrix",
+            "sh_degree",
+            "campos",
+            "prefiltered",
+            "debug",
+            "backend",
+            "chunk_size",
+            "antialias_sigma",
+            "cx",
+            "cy"
+          ]
+        },
+        {
+          "name": "RasterizationResult",
+          "startLine": 52,
+          "endLine": 59,
+          "methods": [],
+          "properties": [
+            "color",
+            "semantic",
+            "expected_depth",
+            "alpha",
+            "normal",
+            "radii",
+            "dominant_index"
+          ]
+        },
+        {
+          "name": "_CudaRasterize",
+          "startLine": 166,
+          "endLine": 291,
+          "methods": [
+            "forward",
+            "backward"
+          ],
+          "properties": []
+        },
+        {
+          "name": "GaussianRasterizer",
+          "startLine": 341,
+          "endLine": 407,
+          "methods": [
+            "__init__",
+            "markVisible",
+            "forward"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "GaussianRasterizationSettings",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "RasterizationResult",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "has_cuda_extension",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "_principal_point",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "eval_sh",
+          "line": 87,
+          "isDefault": false
+        },
+        {
+          "name": "_reference_from_settings",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "_CudaRasterize",
+          "line": 166,
+          "isDefault": false
+        },
+        {
+          "name": "rasterize_gaussians",
+          "line": 294,
+          "isDefault": false
+        },
+        {
+          "name": "GaussianRasterizer",
+          "line": 341,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "has_cuda_extension",
+          "callee": "hasattr",
+          "lineNumber": 67
+        },
+        {
+          "caller": "has_cuda_extension",
+          "callee": "hasattr",
+          "lineNumber": 68
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "float",
+          "lineNumber": 73
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "float",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "math.isfinite",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "float",
+          "lineNumber": 76
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "math.isfinite",
+          "lineNumber": 77
+        },
+        {
+          "caller": "_principal_point",
+          "callee": "float",
+          "lineNumber": 77
+        },
+        {
+          "caller": "eval_sh",
+          "callee": "ValueError",
+          "lineNumber": 96
+        },
+        {
+          "caller": "eval_sh",
+          "callee": "ValueError",
+          "lineNumber": 99
+        },
+        {
+          "caller": "_reference_from_settings",
+          "callee": "_principal_point",
+          "lineNumber": 142
+        },
+        {
+          "caller": "_reference_from_settings",
+          "callee": "rasterize_reference",
+          "lineNumber": 143
+        },
+        {
+          "caller": "forward",
+          "callee": "has_cuda_extension",
+          "lineNumber": 177
+        },
+        {
+          "caller": "forward",
+          "callee": "RuntimeError",
+          "lineNumber": 178
+        },
+        {
+          "caller": "forward",
+          "callee": "tuple",
+          "lineNumber": 179
+        },
+        {
+          "caller": "forward",
+          "callee": "tensor.contiguous",
+          "lineNumber": 179
+        },
+        {
+          "caller": "forward",
+          "callee": "settings.viewmatrix.to(means3d).contiguous",
+          "lineNumber": 188
+        },
+        {
+          "caller": "forward",
+          "callee": "settings.viewmatrix.to",
+          "lineNumber": 188
+        },
+        {
+          "caller": "forward",
+          "callee": "settings.bg.to(means3d).contiguous",
+          "lineNumber": 189
+        },
+        {
+          "caller": "forward",
+          "callee": "settings.bg.to",
+          "lineNumber": 189
+        },
+        {
+          "caller": "forward",
+          "callee": "_principal_point",
+          "lineNumber": 190
+        },
+        {
+          "caller": "forward",
+          "callee": "_C.rasterize_forward",
+          "lineNumber": 191
+        },
+        {
+          "caller": "forward",
+          "callee": "int",
+          "lineNumber": 195
+        },
+        {
+          "caller": "forward",
+          "callee": "int",
+          "lineNumber": 196
+        },
+        {
+          "caller": "forward",
+          "callee": "float",
+          "lineNumber": 197
+        },
+        {
+          "caller": "forward",
+          "callee": "float",
+          "lineNumber": 198
+        },
+        {
+          "caller": "forward",
+          "callee": "float",
+          "lineNumber": 201
+        },
+        {
+          "caller": "forward",
+          "callee": "float",
+          "lineNumber": 202
+        },
+        {
+          "caller": "forward",
+          "callee": "ctx.save_for_backward",
+          "lineNumber": 207
+        },
+        {
+          "caller": "forward",
+          "callee": "ctx.mark_non_differentiable",
+          "lineNumber": 223
+        },
+        {
+          "caller": "contiguous_or_zeros",
+          "callee": "torch.zeros_like",
+          "lineNumber": 252
+        },
+        {
+          "caller": "contiguous_or_zeros",
+          "callee": "gradient.contiguous",
+          "lineNumber": 252
+        },
+        {
+          "caller": "backward",
+          "callee": "_C.rasterize_backward",
+          "lineNumber": 254
+        },
+        {
+          "caller": "backward",
+          "callee": "contiguous_or_zeros",
+          "lineNumber": 275
+        },
+        {
+          "caller": "backward",
+          "callee": "torch.empty_like",
+          "lineNumber": 275
+        },
+        {
+          "caller": "backward",
+          "callee": "contiguous_or_zeros",
+          "lineNumber": 276
+        },
+        {
+          "caller": "backward",
+          "callee": "contiguous_or_zeros",
+          "lineNumber": 277
+        },
+        {
+          "caller": "backward",
+          "callee": "contiguous_or_zeros",
+          "lineNumber": 278
+        },
+        {
+          "caller": "backward",
+          "callee": "contiguous_or_zeros",
+          "lineNumber": 279
+        },
+        {
+          "caller": "backward",
+          "callee": "int",
+          "lineNumber": 280
+        },
+        {
+          "caller": "backward",
+          "callee": "int",
+          "lineNumber": 281
+        },
+        {
+          "caller": "backward",
+          "callee": "float",
+          "lineNumber": 282
+        },
+        {
+          "caller": "backward",
+          "callee": "float",
+          "lineNumber": 283
+        },
+        {
+          "caller": "backward",
+          "callee": "_principal_point",
+          "lineNumber": 284
+        },
+        {
+          "caller": "backward",
+          "callee": "float",
+          "lineNumber": 285
+        },
+        {
+          "caller": "backward",
+          "callee": "float",
+          "lineNumber": 286
+        },
+        {
+          "caller": "backward",
+          "callee": "zip",
+          "lineNumber": 290
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "raster_settings.backend.lower",
+          "lineNumber": 306
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "ValueError",
+          "lineNumber": 308
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "has_cuda_extension",
+          "lineNumber": 310
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "RuntimeError",
+          "lineNumber": 313
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "RuntimeError",
+          "lineNumber": 315
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "has_cuda_extension",
+          "lineNumber": 316
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "RuntimeError",
+          "lineNumber": 317
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "RasterizationResult",
+          "lineNumber": 319
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "_CudaRasterize.apply",
+          "lineNumber": 319
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "RasterizationResult",
+          "lineNumber": 329
+        },
+        {
+          "caller": "rasterize_gaussians",
+          "callee": "_reference_from_settings",
+          "lineNumber": 329
+        },
+        {
+          "caller": "__init__",
+          "callee": "super().__init__",
+          "lineNumber": 345
+        },
+        {
+          "caller": "__init__",
+          "callee": "super",
+          "lineNumber": 345
+        },
+        {
+          "caller": "markVisible",
+          "callee": "positions.new_zeros",
+          "lineNumber": 350
+        },
+        {
+          "caller": "markVisible",
+          "callee": "positions.new_ones",
+          "lineNumber": 351
+        },
+        {
+          "caller": "markVisible",
+          "callee": "positions.new_zeros",
+          "lineNumber": 352
+        },
+        {
+          "caller": "markVisible",
+          "callee": "project_gaussians",
+          "lineNumber": 354
+        },
+        {
+          "caller": "markVisible",
+          "callee": "_principal_point",
+          "lineNumber": 364
+        },
+        {
+          "caller": "markVisible",
+          "callee": "_principal_point",
+          "lineNumber": 365
+        },
+        {
+          "caller": "forward",
+          "callee": "ValueError",
+          "lineNumber": 382
+        },
+        {
+          "caller": "forward",
+          "callee": "NotImplementedError",
+          "lineNumber": 384
+        },
+        {
+          "caller": "forward",
+          "callee": "ValueError",
+          "lineNumber": 386
+        },
+        {
+          "caller": "forward",
+          "callee": "ValueError",
+          "lineNumber": 389
+        },
+        {
+          "caller": "forward",
+          "callee": "torch.zeros_like",
+          "lineNumber": 391
+        },
+        {
+          "caller": "forward",
+          "callee": "ValueError",
+          "lineNumber": 394
+        },
+        {
+          "caller": "forward",
+          "callee": "shs.transpose",
+          "lineNumber": 395
+        },
+        {
+          "caller": "forward",
+          "callee": "F.normalize",
+          "lineNumber": 396
+        },
+        {
+          "caller": "forward",
+          "callee": "self.raster_settings.campos.to",
+          "lineNumber": 396
+        },
+        {
+          "caller": "forward",
+          "callee": "torch.clamp_min",
+          "lineNumber": 397
+        },
+        {
+          "caller": "forward",
+          "callee": "eval_sh",
+          "lineNumber": 397
+        },
+        {
+          "caller": "forward",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 398
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 9,
+        "functionCount": 5,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 326,
+      "nonEmptyLines": 290,
+      "functions": [
+        {
+          "name": "quaternion_to_matrix",
+          "startLine": 44,
+          "endLine": 64,
+          "params": [
+            "quaternions"
+          ]
+        },
+        {
+          "name": "_transform_points_row",
+          "startLine": 67,
+          "endLine": 71,
+          "params": [
+            "points",
+            "matrix"
+          ]
+        },
+        {
+          "name": "project_gaussians",
+          "startLine": 74,
+          "endLine": 186,
+          "params": [
+            "means3d",
+            "means2d",
+            "scales",
+            "rotations",
+            "viewmatrix",
+            "image_height",
+            "image_width",
+            "tanfovx",
+            "tanfovy",
+            "scale_modifier",
+            "antialias_sigma",
+            "cx",
+            "cy"
+          ]
+        },
+        {
+          "name": "rasterize_reference",
+          "startLine": 189,
+          "endLine": 326,
+          "params": [
+            "means3d",
+            "means2d",
+            "colors",
+            "semantic_features",
+            "opacities",
+            "scales",
+            "rotations",
+            "viewmatrix",
+            "image_height",
+            "image_width",
+            "tanfovx",
+            "tanfovy",
+            "background",
+            "scale_modifier",
+            "antialias_sigma",
+            "chunk_size",
+            "depth_order",
+            "cx",
+            "cy"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ProjectedGaussians",
+          "startLine": 25,
+          "endLine": 31,
+          "methods": [],
+          "properties": [
+            "means",
+            "depth",
+            "conic",
+            "normals",
+            "radii",
+            "visible"
+          ]
+        },
+        {
+          "name": "ReferenceRasterizationResult",
+          "startLine": 34,
+          "endLine": 41,
+          "methods": [],
+          "properties": [
+            "color",
+            "semantic",
+            "expected_depth",
+            "alpha",
+            "normal",
+            "radii",
+            "dominant_index"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectedGaussians",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "ReferenceRasterizationResult",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "quaternion_to_matrix",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "_transform_points_row",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "project_gaussians",
+          "line": 74,
+          "isDefault": false
+        },
+        {
+          "name": "rasterize_reference",
+          "line": 189,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "quaternion_to_matrix",
+          "callee": "ValueError",
+          "lineNumber": 48
+        },
+        {
+          "caller": "quaternion_to_matrix",
+          "callee": "F.normalize",
+          "lineNumber": 49
+        },
+        {
+          "caller": "quaternion_to_matrix",
+          "callee": "q.unbind",
+          "lineNumber": 50
+        },
+        {
+          "caller": "quaternion_to_matrix",
+          "callee": "torch.stack(\n        (\n            1 - 2 * (y * y + z * z),\n            2 * (x * y - w * z),\n            2 * (x * z + w * y),\n            2 * (x * y + w * z),\n            1 - 2 * (x * x + z * z),\n            2 * (y * z - w * x),\n            2 * (x * z - w * y),\n            2 * (y * z + w * x),\n            1 - 2 * (x * x + y * y),\n        ),\n        dim=-1,\n    ).reshape",
+          "lineNumber": 51
+        },
+        {
+          "caller": "quaternion_to_matrix",
+          "callee": "torch.stack",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_transform_points_row",
+          "callee": "torch.ones_like",
+          "lineNumber": 70
+        },
+        {
+          "caller": "_transform_points_row",
+          "callee": "torch.cat",
+          "lineNumber": 71
+        },
+        {
+          "caller": "_transform_points_row",
+          "callee": "matrix.to",
+          "lineNumber": 71
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ValueError",
+          "lineNumber": 92
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ValueError",
+          "lineNumber": 94
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means2d.numel",
+          "lineNumber": 95
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ValueError",
+          "lineNumber": 96
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ValueError",
+          "lineNumber": 98
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means3d.new_empty",
+          "lineNumber": 102
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ProjectedGaussians",
+          "lineNumber": 103
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means3d.new_empty",
+          "lineNumber": 104
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means3d.new_empty",
+          "lineNumber": 106
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means3d.new_empty",
+          "lineNumber": 107
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.empty",
+          "lineNumber": 109
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "_transform_points_row",
+          "lineNumber": 112
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "view.unbind",
+          "lineNumber": 113
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "z.clamp_min",
+          "lineNumber": 116
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 117
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 117
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 118
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 118
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 119
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "math.isfinite",
+          "lineNumber": 119
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 119
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 119
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 120
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "math.isfinite",
+          "lineNumber": 120
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 120
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 120
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "means2d.numel",
+          "lineNumber": 123
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.stack",
+          "lineNumber": 126
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "quaternion_to_matrix",
+          "lineNumber": 128
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 129
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.diag_embed",
+          "lineNumber": 130
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "scaled.square",
+          "lineNumber": 130
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "rotation.transpose",
+          "lineNumber": 130
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "viewmatrix[:3, :3].to",
+          "lineNumber": 134
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "camera_linear.transpose",
+          "lineNumber": 135
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(x / safe_z).clamp",
+          "lineNumber": 140
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 140
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 140
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(y / safe_z).clamp",
+          "lineNumber": 141
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 141
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 141
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.zeros_like",
+          "lineNumber": 142
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.stack(\n        (\n            fx / safe_z,\n            zeros,\n            -fx * covariance_x / safe_z.square(),\n            zeros,\n            fy / safe_z,\n            -fy * covariance_y / safe_z.square(),\n        ),\n        dim=-1,\n    ).reshape",
+          "lineNumber": 143
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.stack",
+          "lineNumber": 143
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "safe_z.square",
+          "lineNumber": 147
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "safe_z.square",
+          "lineNumber": 150
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "jacobian.transpose",
+          "lineNumber": 154
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "float",
+          "lineNumber": 155
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.eye",
+          "lineNumber": 156
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(a * c - b.square()).clamp_min",
+          "lineNumber": 161
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "b.square",
+          "lineNumber": 161
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.stack",
+          "lineNumber": 162
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(half_trace.square() - determinant).clamp_min(0).sqrt",
+          "lineNumber": 165
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(half_trace.square() - determinant).clamp_min",
+          "lineNumber": 165
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "half_trace.square",
+          "lineNumber": 165
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "(half_trace + discriminant).clamp_min",
+          "lineNumber": 166
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.ceil",
+          "lineNumber": 167
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "max_eigenvalue.sqrt",
+          "lineNumber": 167
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.isfinite",
+          "lineNumber": 174
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.where",
+          "lineNumber": 175
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.zeros_like",
+          "lineNumber": 175
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "scaled.detach().argmin",
+          "lineNumber": 178
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "scaled.detach",
+          "lineNumber": 178
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "normal_axis[:, None, None].expand",
+          "lineNumber": 179
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "rotation.gather(2, gather_index).squeeze",
+          "lineNumber": 180
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "rotation.gather",
+          "lineNumber": 180
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "F.normalize",
+          "lineNumber": 182
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "torch.where",
+          "lineNumber": 185
+        },
+        {
+          "caller": "project_gaussians",
+          "callee": "ProjectedGaussians",
+          "lineNumber": 186
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 221
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 223
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "opacities.numel",
+          "lineNumber": 224
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 225
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "background.numel",
+          "lineNumber": 226
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 227
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 229
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "project_gaussians",
+          "lineNumber": 231
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.argsort",
+          "lineNumber": 247
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "projected.depth.detach",
+          "lineNumber": 247
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "depth_order.to",
+          "lineNumber": 249
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ValueError",
+          "lineNumber": 251
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.meshgrid",
+          "lineNumber": 254
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.arange",
+          "lineNumber": 255
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.arange",
+          "lineNumber": 256
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.ones",
+          "lineNumber": 259
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros",
+          "lineNumber": 260
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros",
+          "lineNumber": 261
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros",
+          "lineNumber": 262
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros",
+          "lineNumber": 263
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros",
+          "lineNumber": 264
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.full",
+          "lineNumber": 265
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "opacities.reshape",
+          "lineNumber": 266
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "range",
+          "lineNumber": 268
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "dx.square",
+          "lineNumber": 275
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "dy.square",
+          "lineNumber": 277
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.exp",
+          "lineNumber": 279
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "exponent.clamp",
+          "lineNumber": 279
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "dx.abs",
+          "lineNumber": 280
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "dy.abs",
+          "lineNumber": 280
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "projected.visible[ids, None, None].to",
+          "lineNumber": 281
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "support.to",
+          "lineNumber": 281
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "(opacity[ids, None, None] * footprint).clamp",
+          "lineNumber": 282
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 283
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros_like",
+          "lineNumber": 286
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "(1.0 - per_gaussian_alpha).clamp_min",
+          "lineNumber": 288
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.cumprod",
+          "lineNumber": 289
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.cat",
+          "lineNumber": 290
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.ones_like",
+          "lineNumber": 290
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.einsum",
+          "lineNumber": 295
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.einsum",
+          "lineNumber": 296
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.einsum",
+          "lineNumber": 297
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.einsum",
+          "lineNumber": 298
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "weights.max",
+          "lineNumber": 300
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 302
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.maximum",
+          "lineNumber": 303
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "one_minus_alpha.prod",
+          "lineNumber": 304
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "alpha.clamp_min",
+          "lineNumber": 307
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "background.to(device=device, dtype=dtype).reshape",
+          "lineNumber": 308
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "background.to",
+          "lineNumber": 308
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "F.normalize",
+          "lineNumber": 312
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 314
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros_like",
+          "lineNumber": 314
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 315
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros_like",
+          "lineNumber": 315
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 316
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.zeros_like",
+          "lineNumber": 316
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.where",
+          "lineNumber": 317
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "torch.full_like",
+          "lineNumber": 317
+        },
+        {
+          "caller": "rasterize_reference",
+          "callee": "ReferenceRasterizationResult",
+          "lineNumber": 318
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 4,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "language": "python",
+      "fileCategory": "code",
+      "totalLines": 235,
+      "nonEmptyLines": 207,
+      "functions": [
+        {
+          "name": "_settings",
+          "startLine": 14,
+          "endLine": 29,
+          "params": [
+            "device",
+            "backend"
+          ]
+        },
+        {
+          "name": "_inputs",
+          "startLine": 32,
+          "endLine": 59,
+          "params": [
+            "device"
+          ]
+        },
+        {
+          "name": "_loss",
+          "startLine": 62,
+          "endLine": 75,
+          "params": [
+            "outputs"
+          ]
+        },
+        {
+          "name": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "startLine": 78,
+          "endLine": 85,
+          "params": []
+        },
+        {
+          "name": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "startLine": 88,
+          "endLine": 109,
+          "params": []
+        },
+        {
+          "name": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "startLine": 112,
+          "endLine": 139,
+          "params": []
+        },
+        {
+          "name": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "startLine": 146,
+          "endLine": 162,
+          "params": []
+        },
+        {
+          "name": "test_native_cuda_forward_and_backward_match_reference",
+          "startLine": 169,
+          "endLine": 197,
+          "params": []
+        },
+        {
+          "name": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "startLine": 204,
+          "endLine": 235,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "_settings",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "_inputs",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "_loss",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "line": 88,
+          "isDefault": false
+        },
+        {
+          "name": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "line": 112,
+          "isDefault": false
+        },
+        {
+          "name": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "line": 142,
+          "isDefault": false
+        },
+        {
+          "name": "test_native_cuda_forward_and_backward_match_reference",
+          "line": 165,
+          "isDefault": false
+        },
+        {
+          "name": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "line": 200,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "_settings",
+          "callee": "GaussianRasterizationSettings",
+          "lineNumber": 15
+        },
+        {
+          "caller": "_settings",
+          "callee": "torch.tensor",
+          "lineNumber": 20
+        },
+        {
+          "caller": "_settings",
+          "callee": "torch.eye",
+          "lineNumber": 22
+        },
+        {
+          "caller": "_settings",
+          "callee": "torch.eye",
+          "lineNumber": 23
+        },
+        {
+          "caller": "_settings",
+          "callee": "torch.zeros",
+          "lineNumber": 25
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.Generator(device=device).manual_seed",
+          "lineNumber": 33
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.Generator",
+          "lineNumber": 33
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.tensor",
+          "lineNumber": 34
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.zeros",
+          "lineNumber": 38
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.rand",
+          "lineNumber": 39
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.randn",
+          "lineNumber": 40
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.tensor",
+          "lineNumber": 41
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.tensor",
+          "lineNumber": 43
+        },
+        {
+          "caller": "_inputs",
+          "callee": "torch.tensor",
+          "lineNumber": 47
+        },
+        {
+          "caller": "_inputs",
+          "callee": "tensor.requires_grad_",
+          "lineNumber": 51
+        },
+        {
+          "caller": "_loss",
+          "callee": "enumerate",
+          "lineNumber": 66
+        },
+        {
+          "caller": "_loss",
+          "callee": "torch.linspace(\n            -0.31 + index * 0.07,\n            0.47 + index * 0.03,\n            output.numel(),\n            device=output.device,\n            dtype=output.dtype,\n        ).reshape_as",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_loss",
+          "callee": "torch.linspace",
+          "lineNumber": 67
+        },
+        {
+          "caller": "_loss",
+          "callee": "output.numel",
+          "lineNumber": 70
+        },
+        {
+          "caller": "_loss",
+          "callee": "terms.append",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_loss",
+          "callee": "(output * weight).sum",
+          "lineNumber": 74
+        },
+        {
+          "caller": "_loss",
+          "callee": "torch.stack(terms).sum",
+          "lineNumber": 75
+        },
+        {
+          "caller": "_loss",
+          "callee": "torch.stack",
+          "lineNumber": 75
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "_inputs",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "torch.device",
+          "lineNumber": 79
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "_settings",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "torch.device",
+          "lineNumber": 80
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "_loss(outputs).backward",
+          "lineNumber": 81
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "_loss",
+          "lineNumber": 81
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "torch.isfinite(tensor.grad).all",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_reference_all_continuous_inputs_receive_finite_gradients",
+          "callee": "torch.isfinite",
+          "lineNumber": 85
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "torch.device",
+          "lineNumber": 89
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "tensor[:1].detach().clone",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "tensor[:1].detach",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "_inputs",
+          "lineNumber": 90
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "torch.tensor",
+          "lineNumber": 91
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "inputs[1].zero_",
+          "lineNumber": 92
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "_settings",
+          "lineNumber": 94
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "default_settings._replace",
+          "lineNumber": 95
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 96
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 97
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "zip",
+          "lineNumber": 98
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 99
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "torch.equal",
+          "lineNumber": 100
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "default_settings._replace",
+          "lineNumber": 104
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 105
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "int",
+          "lineNumber": 106
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "shifted.alpha.reshape(-1).argmax",
+          "lineNumber": 106
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "shifted.alpha.reshape",
+          "lineNumber": 106
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "divmod",
+          "lineNumber": 107
+        },
+        {
+          "caller": "test_reference_supports_off_center_principal_point_and_centered_default",
+          "callee": "shifted.dominant_index[peak_y, peak_x].item",
+          "lineNumber": 109
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.device",
+          "lineNumber": 113
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "_settings",
+          "lineNumber": 114
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.tensor",
+          "lineNumber": 117
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.zeros_like",
+          "lineNumber": 121
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.full_like",
+          "lineNumber": 122
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.tensor([[1.0, 0.0, 0.0, 0.0]]).repeat",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.tensor",
+          "lineNumber": 123
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "project_gaussians",
+          "lineNumber": 124
+        },
+        {
+          "caller": "test_reference_clamps_off_frustum_covariance_but_not_projected_mean",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 138
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.device",
+          "lineNumber": 147
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "_inputs",
+          "lineNumber": 148
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.no_grad",
+          "lineNumber": 149
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.tensor",
+          "lineNumber": 150
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "_settings",
+          "lineNumber": 153
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "(outputs.radii[1:] > 0).all",
+          "lineNumber": 156
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "_loss(outputs).backward",
+          "lineNumber": 157
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "_loss",
+          "lineNumber": 157
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.cuda.synchronize",
+          "lineNumber": 158
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.isfinite(tensor.grad).all",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.isfinite",
+          "lineNumber": 161
+        },
+        {
+          "caller": "test_native_cuda_culls_near_camera_outlier_with_finite_gradients",
+          "callee": "torch.count_nonzero",
+          "lineNumber": 162
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "torch.device",
+          "lineNumber": 170
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_inputs",
+          "lineNumber": 171
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "tensor.detach().clone().requires_grad_",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "tensor.detach().clone",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "tensor.detach",
+          "lineNumber": 172
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_settings(device, \"reference\")._replace",
+          "lineNumber": 173
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_settings",
+          "lineNumber": 173
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_settings(device, \"cuda\")._replace",
+          "lineNumber": 174
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_settings",
+          "lineNumber": 174
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 176
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 180
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_loss(reference).backward",
+          "lineNumber": 184
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_loss",
+          "lineNumber": 184
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_loss(native).backward",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "_loss",
+          "lineNumber": 185
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "torch.cuda.synchronize",
+          "lineNumber": 186
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "zip",
+          "lineNumber": 188
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 189
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "torch.equal",
+          "lineNumber": 190
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "zip",
+          "lineNumber": 191
+        },
+        {
+          "caller": "test_native_cuda_forward_and_backward_match_reference",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 192
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.device",
+          "lineNumber": 205
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_inputs",
+          "lineNumber": 206
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.no_grad",
+          "lineNumber": 207
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.tensor",
+          "lineNumber": 210
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.tensor",
+          "lineNumber": 211
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "tensor.detach().clone().requires_grad_",
+          "lineNumber": 212
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "tensor.detach().clone",
+          "lineNumber": 212
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "tensor.detach",
+          "lineNumber": 212
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 213
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_settings",
+          "lineNumber": 215
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "rasterize_gaussians",
+          "lineNumber": 217
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_settings",
+          "lineNumber": 219
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_loss(reference).backward",
+          "lineNumber": 222
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_loss",
+          "lineNumber": 222
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_loss(native).backward",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "_loss",
+          "lineNumber": 223
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.cuda.synchronize",
+          "lineNumber": 224
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "zip",
+          "lineNumber": 226
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 227
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.equal",
+          "lineNumber": 228
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "zip",
+          "lineNumber": 229
+        },
+        {
+          "caller": "test_native_cuda_off_frustum_covariance_clamp_matches_reference",
+          "callee": "torch.testing.assert_close",
+          "lineNumber": 230
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 9,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    }
+  ]
+}

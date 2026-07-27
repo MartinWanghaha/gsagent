@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+build/
+dist/
+output/
+outputs/
+wandb/
+.pytest_cache/
+.ruff_cache/
+*.ply
+*.pt
+*.pth
+

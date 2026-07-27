@@ -1,0 +1,1897 @@
+{
+  "nodes": [
+    {
+      "id": "file:gaussian_renderer/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "gaussian_renderer/__init__.py",
+      "summary": "封装 differentiable Gaussian rasterizer，将相机、Gaussian 属性和语义 embedding 组装为 RGB、depth、normal、alpha 与语义输出。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:gaussian_renderer/__init__.py:_resolve_value",
+      "type": "function",
+      "name": "_resolve_value",
+      "filePath": "gaussian_renderer/__init__.py",
+      "lineRange": [
+        37,
+        42
+      ],
+      "summary": "实现 resolve value，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:gaussian_renderer/__init__.py:_semantic_embedding",
+      "type": "function",
+      "name": "_semantic_embedding",
+      "filePath": "gaussian_renderer/__init__.py",
+      "lineRange": [
+        45,
+        69
+      ],
+      "summary": "实现 semantic embedding，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:gaussian_renderer/__init__.py:render",
+      "type": "function",
+      "name": "render",
+      "filePath": "gaussian_renderer/__init__.py",
+      "lineRange": [
+        72,
+        168
+      ],
+      "summary": "实现 render，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:model_io.py",
+      "type": "file",
+      "name": "model_io.py",
+      "filePath": "model_io.py",
+      "summary": "集中处理训练与推理模型装载，包括配置 namespace、iteration 解析、Gaussian checkpoint、Scene、邻域索引及 surface field 构建。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:model_io.py:resolve_device",
+      "type": "function",
+      "name": "resolve_device",
+      "filePath": "model_io.py",
+      "lineRange": [
+        18,
+        23
+      ],
+      "summary": "实现 resolve device，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:dataset_namespace",
+      "type": "function",
+      "name": "dataset_namespace",
+      "filePath": "model_io.py",
+      "lineRange": [
+        26,
+        55
+      ],
+      "summary": "实现 dataset namespace，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:optimization_namespace",
+      "type": "function",
+      "name": "optimization_namespace",
+      "filePath": "model_io.py",
+      "lineRange": [
+        58,
+        62
+      ],
+      "summary": "实现 optimization namespace，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:pipeline_namespace",
+      "type": "function",
+      "name": "pipeline_namespace",
+      "filePath": "model_io.py",
+      "lineRange": [
+        65,
+        73
+      ],
+      "summary": "实现 pipeline namespace，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:build_neighbor_index",
+      "type": "function",
+      "name": "build_neighbor_index",
+      "filePath": "model_io.py",
+      "lineRange": [
+        76,
+        94
+      ],
+      "summary": "实现 build neighbor index，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:build_surface_field",
+      "type": "function",
+      "name": "build_surface_field",
+      "filePath": "model_io.py",
+      "lineRange": [
+        97,
+        123
+      ],
+      "summary": "实现 build surface field，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:_resolved_config_path",
+      "type": "function",
+      "name": "_resolved_config_path",
+      "filePath": "model_io.py",
+      "lineRange": [
+        126,
+        131
+      ],
+      "summary": "实现 resolved config path，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:_checkpoint_iteration_numbers",
+      "type": "function",
+      "name": "_checkpoint_iteration_numbers",
+      "filePath": "model_io.py",
+      "lineRange": [
+        134,
+        140
+      ],
+      "summary": "实现 checkpoint iteration numbers，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:_point_cloud_iteration_numbers",
+      "type": "function",
+      "name": "_point_cloud_iteration_numbers",
+      "filePath": "model_io.py",
+      "lineRange": [
+        143,
+        151
+      ],
+      "summary": "实现 point cloud iteration numbers，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:_iteration_numbers",
+      "type": "function",
+      "name": "_iteration_numbers",
+      "filePath": "model_io.py",
+      "lineRange": [
+        154,
+        157
+      ],
+      "summary": "实现 iteration numbers，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:available_iterations",
+      "type": "function",
+      "name": "available_iterations",
+      "filePath": "model_io.py",
+      "lineRange": [
+        160,
+        165
+      ],
+      "summary": "实现 available iterations，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:resolve_iteration",
+      "type": "function",
+      "name": "resolve_iteration",
+      "filePath": "model_io.py",
+      "lineRange": [
+        168,
+        180
+      ],
+      "summary": "实现 resolve iteration，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:load_inference_gaussian_state",
+      "type": "function",
+      "name": "load_inference_gaussian_state",
+      "filePath": "model_io.py",
+      "lineRange": [
+        183,
+        215
+      ],
+      "summary": "加载并校验 load inference gaussian state 所需的数据与状态。",
+      "tags": [
+        "serialization",
+        "状态管理",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:model_io.py:load_trained_scene",
+      "type": "function",
+      "name": "load_trained_scene",
+      "filePath": "model_io.py",
+      "lineRange": [
+        218,
+        295
+      ],
+      "summary": "加载并校验 load trained scene 所需的数据与状态。",
+      "tags": [
+        "serialization",
+        "状态管理",
+        "utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:render.py",
+      "type": "file",
+      "name": "render.py",
+      "filePath": "render.py",
+      "summary": "实现离线渲染 CLI，支持 iteration/view 选择、RGB 与语义输出解码、ground-truth 对齐及逐 iteration 执行。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:render.py:_ground_truth_image",
+      "type": "function",
+      "name": "_ground_truth_image",
+      "filePath": "render.py",
+      "lineRange": [
+        19,
+        24
+      ],
+      "summary": "实现 ground truth image，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:_has_semantic_ground_truth",
+      "type": "function",
+      "name": "_has_semantic_ground_truth",
+      "filePath": "render.py",
+      "lineRange": [
+        27,
+        37
+      ],
+      "summary": "实现 has semantic ground truth，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:_view_name_aliases",
+      "type": "function",
+      "name": "_view_name_aliases",
+      "filePath": "render.py",
+      "lineRange": [
+        40,
+        45
+      ],
+      "summary": "实现 view name aliases，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:select_views",
+      "type": "function",
+      "name": "select_views",
+      "filePath": "render.py",
+      "lineRange": [
+        48,
+        74
+      ],
+      "summary": "实现 select views，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:_decode_semantic_labels",
+      "type": "function",
+      "name": "_decode_semantic_labels",
+      "filePath": "render.py",
+      "lineRange": [
+        77,
+        99
+      ],
+      "summary": "实现 decode semantic labels，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:render_set",
+      "type": "function",
+      "name": "render_set",
+      "filePath": "render.py",
+      "lineRange": [
+        103,
+        170
+      ],
+      "summary": "实现 render set，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:render.py:select_iterations",
+      "type": "function",
+      "name": "select_iterations",
+      "filePath": "render.py",
+      "lineRange": [
+        173,
+        198
+      ],
+      "summary": "实现 select iterations，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:render.py:_render_iteration",
+      "type": "function",
+      "name": "_render_iteration",
+      "filePath": "render.py",
+      "lineRange": [
+        201,
+        269
+      ],
+      "summary": "实现 render iteration，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:render.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "render.py",
+      "lineRange": [
+        272,
+        328
+      ],
+      "summary": "解析命令行输入并编排该工具的完整执行流程。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:semantic/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "semantic/__init__.py",
+      "summary": "提供 semantic 子系统的延迟导入入口，按需暴露 GaGa adapter、geometry policy 与 neighbor index 类型。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:semantic/__init__.py:__getattr__",
+      "type": "function",
+      "name": "__getattr__",
+      "filePath": "semantic/__init__.py",
+      "lineRange": [
+        13,
+        24
+      ],
+      "summary": "实现  getattr  ，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:semantic/gaga_adapter.py",
+      "type": "file",
+      "name": "gaga_adapter.py",
+      "filePath": "semantic/gaga_adapter.py",
+      "summary": "将 GaGa 风格语义观测文件解析为紧凑 label、置信度、边界和实例映射，供训练数据管线使用。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:semantic/gaga_adapter.py:_boundary",
+      "type": "function",
+      "name": "_boundary",
+      "filePath": "semantic/gaga_adapter.py",
+      "lineRange": [
+        31,
+        40
+      ],
+      "summary": "实现 boundary，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:semantic/gaga_adapter.py:_decode_color_ids",
+      "type": "function",
+      "name": "_decode_color_ids",
+      "filePath": "semantic/gaga_adapter.py",
+      "lineRange": [
+        43,
+        53
+      ],
+      "summary": "实现 decode color ids，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/gaga_adapter.py:SemanticObservation",
+      "type": "class",
+      "name": "SemanticObservation",
+      "filePath": "semantic/gaga_adapter.py",
+      "lineRange": [
+        18,
+        28
+      ],
+      "summary": "封装 SemanticObservation 的状态与行为，承担 gaga_adapter.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/gaga_adapter.py:GagaObservationAdapter",
+      "type": "class",
+      "name": "GagaObservationAdapter",
+      "filePath": "semantic/gaga_adapter.py",
+      "lineRange": [
+        56,
+        252
+      ],
+      "summary": "封装 GagaObservationAdapter 的状态与行为，承担 gaga_adapter.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_config.py",
+      "type": "file",
+      "name": "test_config.py",
+      "filePath": "tests/test_config.py",
+      "summary": "系统验证配置继承、ablation、训练维度、curriculum、surface/mesh feedback、profiling 和 checkpoint override 约束。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:tests/test_config.py:test_inherited_ablation_config",
+      "type": "function",
+      "name": "test_inherited_ablation_config",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        11,
+        19
+      ],
+      "summary": "验证 inherited ablation config 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_factorized_full_ablation_configs",
+      "type": "function",
+      "name": "test_factorized_full_ablation_configs",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        22,
+        30
+      ],
+      "summary": "验证 factorized full ablation configs 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_new_module_ablation_configs",
+      "type": "function",
+      "name": "test_new_module_ablation_configs",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        33,
+        46
+      ],
+      "summary": "验证 new module ablation configs 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_geometry_evidence_default_has_meaningful_two_million_point_coverage",
+      "type": "function",
+      "name": "test_geometry_evidence_default_has_meaningful_two_million_point_coverage",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        49,
+        51
+      ],
+      "summary": "验证 geometry evidence default has meaningful two million point coverage 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_coverage_density_signal_has_an_explicit_default",
+      "type": "function",
+      "name": "test_mesh_coverage_density_signal_has_an_explicit_default",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        54,
+        58
+      ],
+      "summary": "验证 mesh coverage density signal has an explicit default 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_coverage_weight_must_be_finite_non_negative",
+      "type": "function",
+      "name": "test_mesh_coverage_weight_must_be_finite_non_negative",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        62,
+        67
+      ],
+      "summary": "验证 mesh coverage weight must be finite non negative 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_profile_interval_must_be_a_non_negative_integer",
+      "type": "function",
+      "name": "test_profile_interval_must_be_a_non_negative_integer",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        71,
+        75
+      ],
+      "summary": "验证 profile interval must be a non negative integer 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_training_profiling_is_disabled_by_default",
+      "type": "function",
+      "name": "test_training_profiling_is_disabled_by_default",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        78,
+        80
+      ],
+      "summary": "验证 training profiling is disabled by default 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_compiled_dimensions_are_validated",
+      "type": "function",
+      "name": "test_compiled_dimensions_are_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        83,
+        87
+      ],
+      "summary": "验证 compiled dimensions are validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_unsupported_spherical_harmonic_degree_fails_before_training",
+      "type": "function",
+      "name": "test_unsupported_spherical_harmonic_degree_fails_before_training",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        90,
+        94
+      ],
+      "summary": "验证 unsupported spherical harmonic degree fails before training 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_depth_normal_alpha_threshold_is_validated",
+      "type": "function",
+      "name": "test_depth_normal_alpha_threshold_is_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        97,
+        101
+      ],
+      "summary": "验证 depth normal alpha threshold is validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_size_pruning_switch_must_be_boolean",
+      "type": "function",
+      "name": "test_size_pruning_switch_must_be_boolean",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        104,
+        108
+      ],
+      "summary": "验证 size pruning switch must be boolean 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_region_decode_chunk_size_must_be_a_positive_integer",
+      "type": "function",
+      "name": "test_region_decode_chunk_size_must_be_a_positive_integer",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        112,
+        116
+      ],
+      "summary": "验证 region decode chunk size must be a positive integer 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_legacy_config_without_region_decode_chunk_remains_valid",
+      "type": "function",
+      "name": "test_legacy_config_without_region_decode_chunk_remains_valid",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        119,
+        122
+      ],
+      "summary": "验证 legacy config without region decode chunk remains valid 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_surface_routing_execution_policy_is_validated",
+      "type": "function",
+      "name": "test_surface_routing_execution_policy_is_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        138,
+        146
+      ],
+      "summary": "验证 surface routing execution policy is validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_surface_topology_and_feedback_configuration_is_validated",
+      "type": "function",
+      "name": "test_surface_topology_and_feedback_configuration_is_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        165,
+        173
+      ],
+      "summary": "验证 surface topology and feedback configuration is validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_surface_topology_window_must_stay_inside_surface_phase",
+      "type": "function",
+      "name": "test_surface_topology_window_must_stay_inside_surface_phase",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        176,
+        180
+      ],
+      "summary": "验证 surface topology window must stay inside surface phase 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_feedback_uncertainty_preservation_can_be_disabled",
+      "type": "function",
+      "name": "test_mesh_feedback_uncertainty_preservation_can_be_disabled",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        183,
+        186
+      ],
+      "summary": "验证 mesh feedback uncertainty preservation can be disabled 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_v4_feedback_schema_has_quality_first_defaults",
+      "type": "function",
+      "name": "test_mesh_v4_feedback_schema_has_quality_first_defaults",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        189,
+        238
+      ],
+      "summary": "验证 mesh v4 feedback schema has quality first defaults 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_v4_feedback_controls_are_strictly_validated",
+      "type": "function",
+      "name": "test_mesh_v4_feedback_controls_are_strictly_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        266,
+        271
+      ],
+      "summary": "验证 mesh v4 feedback controls are strictly validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_mesh_v4_match_counts_cannot_exceed_gate_probes",
+      "type": "function",
+      "name": "test_mesh_v4_match_counts_cannot_exceed_gate_probes",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        281,
+        286
+      ],
+      "summary": "验证 mesh v4 match counts cannot exceed gate probes 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_semantic_confidence_floor_must_leave_a_baseline_interval",
+      "type": "function",
+      "name": "test_semantic_confidence_floor_must_leave_a_baseline_interval",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        290,
+        294
+      ],
+      "summary": "验证 semantic confidence floor must leave a baseline interval 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_new_density_and_semantic_controls_are_validated",
+      "type": "function",
+      "name": "test_new_density_and_semantic_controls_are_validated",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        320,
+        329
+      ],
+      "summary": "验证 new density and semantic controls are validated 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_legacy_checkpoint_config_without_new_controls_remains_valid",
+      "type": "function",
+      "name": "test_legacy_checkpoint_config_without_new_controls_remains_valid",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        332,
+        361
+      ],
+      "summary": "验证 legacy checkpoint config without new controls remains valid 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_config.py:test_checkpoint_override_allowlist_rejects_objective_changes",
+      "type": "function",
+      "name": "test_checkpoint_override_allowlist_rejects_objective_changes",
+      "filePath": "tests/test_config.py",
+      "lineRange": [
+        364,
+        387
+      ],
+      "summary": "验证 checkpoint override allowlist rejects objective changes 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:_resolve_value",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:_resolve_value",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:_semantic_embedding",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:_semantic_embedding",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:render",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:gaussian_renderer/__init__.py",
+      "target": "function:gaussian_renderer/__init__.py:render",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:resolve_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:resolve_device",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:dataset_namespace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:dataset_namespace",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:optimization_namespace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:optimization_namespace",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:pipeline_namespace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:pipeline_namespace",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:build_neighbor_index",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:build_neighbor_index",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:build_surface_field",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:build_surface_field",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_resolved_config_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_resolved_config_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_checkpoint_iteration_numbers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_checkpoint_iteration_numbers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_point_cloud_iteration_numbers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_point_cloud_iteration_numbers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_iteration_numbers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:_iteration_numbers",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:available_iterations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:available_iterations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:resolve_iteration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:resolve_iteration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:load_inference_gaussian_state",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:load_inference_gaussian_state",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:load_trained_scene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "function:model_io.py:load_trained_scene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_ground_truth_image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_ground_truth_image",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_has_semantic_ground_truth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_has_semantic_ground_truth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_view_name_aliases",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_view_name_aliases",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:select_views",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:select_views",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_decode_semantic_labels",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_decode_semantic_labels",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:render_set",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:render_set",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:select_iterations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:select_iterations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_render_iteration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:_render_iteration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:render.py",
+      "target": "function:render.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/io_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "function:semantic/__init__.py:__getattr__",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "function:semantic/__init__.py:__getattr__",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/gaga_adapter.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "function:semantic/gaga_adapter.py:_boundary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "function:semantic/gaga_adapter.py:_boundary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "function:semantic/gaga_adapter.py:_decode_color_ids",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "function:semantic/gaga_adapter.py:_decode_color_ids",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "class:semantic/gaga_adapter.py:SemanticObservation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "class:semantic/gaga_adapter.py:SemanticObservation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "class:semantic/gaga_adapter.py:GagaObservationAdapter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/gaga_adapter.py",
+      "target": "class:semantic/gaga_adapter.py:GagaObservationAdapter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_inherited_ablation_config",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_inherited_ablation_config",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_factorized_full_ablation_configs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_factorized_full_ablation_configs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_new_module_ablation_configs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_new_module_ablation_configs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_geometry_evidence_default_has_meaningful_two_million_point_coverage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_geometry_evidence_default_has_meaningful_two_million_point_coverage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_coverage_density_signal_has_an_explicit_default",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_coverage_density_signal_has_an_explicit_default",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_coverage_weight_must_be_finite_non_negative",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_coverage_weight_must_be_finite_non_negative",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_profile_interval_must_be_a_non_negative_integer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_profile_interval_must_be_a_non_negative_integer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_training_profiling_is_disabled_by_default",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_training_profiling_is_disabled_by_default",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_compiled_dimensions_are_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_compiled_dimensions_are_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_unsupported_spherical_harmonic_degree_fails_before_training",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_unsupported_spherical_harmonic_degree_fails_before_training",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_depth_normal_alpha_threshold_is_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_depth_normal_alpha_threshold_is_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_size_pruning_switch_must_be_boolean",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_size_pruning_switch_must_be_boolean",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_region_decode_chunk_size_must_be_a_positive_integer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_region_decode_chunk_size_must_be_a_positive_integer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_legacy_config_without_region_decode_chunk_remains_valid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_legacy_config_without_region_decode_chunk_remains_valid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_routing_execution_policy_is_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_routing_execution_policy_is_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_topology_and_feedback_configuration_is_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_topology_and_feedback_configuration_is_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_topology_window_must_stay_inside_surface_phase",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_surface_topology_window_must_stay_inside_surface_phase",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_feedback_uncertainty_preservation_can_be_disabled",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_feedback_uncertainty_preservation_can_be_disabled",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_feedback_schema_has_quality_first_defaults",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_feedback_schema_has_quality_first_defaults",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_feedback_controls_are_strictly_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_feedback_controls_are_strictly_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_match_counts_cannot_exceed_gate_probes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_mesh_v4_match_counts_cannot_exceed_gate_probes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_semantic_confidence_floor_must_leave_a_baseline_interval",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_semantic_confidence_floor_must_leave_a_baseline_interval",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_new_density_and_semantic_controls_are_validated",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_new_density_and_semantic_controls_are_validated",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_legacy_checkpoint_config_without_new_controls_remains_valid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_legacy_checkpoint_config_without_new_controls_remains_valid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_checkpoint_override_allowlist_rejects_objective_changes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "function:tests/test_config.py:test_checkpoint_override_allowlist_rejects_objective_changes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

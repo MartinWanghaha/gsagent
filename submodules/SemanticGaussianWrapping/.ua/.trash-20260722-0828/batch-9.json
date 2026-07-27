@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "id": "config:configs/default.yaml",
+      "type": "config",
+      "name": "default.yaml",
+      "filePath": "configs/default.yaml",
+      "summary": "训练与渲染的完整默认配置，覆盖模型、数据、renderer、semantic、optimization、density、surface、mesh 和 logging。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:configs/full.yaml",
+      "type": "config",
+      "name": "full.yaml",
+      "filePath": "configs/full.yaml",
+      "summary": "启用完整 Semantic Gaussian Wrapping 实验方案的精简配置覆盖层。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_confidence_propagation.yaml",
+      "type": "config",
+      "name": "full_no_confidence_propagation.yaml",
+      "filePath": "configs/full_no_confidence_propagation.yaml",
+      "summary": "完整方案消融配置，关闭 confidence propagation 以隔离其训练影响。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_expert_certainty.yaml",
+      "type": "config",
+      "name": "full_no_expert_certainty.yaml",
+      "filePath": "configs/full_no_expert_certainty.yaml",
+      "summary": "完整方案消融配置，关闭 expert certainty 相关监督或门控。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_mesh_feedback.yaml",
+      "type": "config",
+      "name": "full_no_mesh_feedback.yaml",
+      "filePath": "configs/full_no_mesh_feedback.yaml",
+      "summary": "完整方案消融配置，关闭 mesh feedback regularization。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_prune_replace.yaml",
+      "type": "config",
+      "name": "full_no_prune_replace.yaml",
+      "filePath": "configs/full_no_prune_replace.yaml",
+      "summary": "完整方案消融配置，关闭 Gaussian prune-and-replace 机制。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_surface_topology.yaml",
+      "type": "config",
+      "name": "full_no_surface_topology.yaml",
+      "filePath": "configs/full_no_surface_topology.yaml",
+      "summary": "完整方案消融配置，关闭 surface topology 约束。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/rgb_only.yaml",
+      "type": "config",
+      "name": "rgb_only.yaml",
+      "filePath": "configs/rgb_only.yaml",
+      "summary": "RGB-only 对照实验配置，禁用语义与 surface 相关扩展并保留基础 3D Gaussian Splatting 路径。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/semantic_render_only.yaml",
+      "type": "config",
+      "name": "semantic_render_only.yaml",
+      "filePath": "configs/semantic_render_only.yaml",
+      "summary": "只启用 semantic rendering 的对照配置，用于隔离语义渲染本身的效果。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": []
+}

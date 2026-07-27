@@ -1,0 +1,91 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "regularization/__init__.py",
+      "language": "python",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "regularization/mesh_correspondence.py",
+      "language": "python",
+      "sizeLines": 438,
+      "fileCategory": "code"
+    },
+    {
+      "path": "regularization/mesh_feedback.py",
+      "language": "python",
+      "sizeLines": 2007,
+      "fileCategory": "code"
+    },
+    {
+      "path": "regularization/pareto.py",
+      "language": "python",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "regularization/scheduler.py",
+      "language": "python",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_mesh_correspondence.py",
+      "language": "python",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_mesh_feedback.py",
+      "language": "python",
+      "sizeLines": 546,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_mesh_feedback_v4.py",
+      "language": "python",
+      "sizeLines": 387,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_pareto.py",
+      "language": "python",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "regularization/__init__.py": [
+      "regularization/losses.py",
+      "regularization/mesh_feedback.py",
+      "regularization/pareto.py",
+      "regularization/scheduler.py"
+    ],
+    "regularization/mesh_correspondence.py": [],
+    "regularization/mesh_feedback.py": [
+      "mesh/__init__.py",
+      "regularization/mesh_correspondence.py",
+      "utils/general_utils.py"
+    ],
+    "regularization/pareto.py": [],
+    "regularization/scheduler.py": [],
+    "tests/test_mesh_correspondence.py": [
+      "regularization/mesh_correspondence.py"
+    ],
+    "tests/test_mesh_feedback.py": [
+      "mesh/__init__.py",
+      "regularization/__init__.py",
+      "regularization/mesh_feedback.py",
+      "training/engine.py"
+    ],
+    "tests/test_mesh_feedback_v4.py": [
+      "mesh/__init__.py",
+      "regularization/mesh_feedback.py"
+    ],
+    "tests/test_pareto.py": [
+      "regularization/pareto.py"
+    ]
+  }
+}

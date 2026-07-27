@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# Evaluation outputs
+**/evaluation/
+**/uniform_sampling_evaluation/
+**/virtual_scan_sampling_evaluation/
+*.precision.ply
+*.recall.ply
+*.normal_consistency.txt
+*.curvature_consistency.txt
+
+# Data
+*.ply
+*.log
+*.txt
+*.json
+*.npy
+
+# Misc
+.DS_Store
+*.swp

@@ -1,0 +1,1311 @@
+{
+  "nodes": [
+    {
+      "id": "file:mesh/pipeline.py",
+      "type": "file",
+      "name": "pipeline.py",
+      "filePath": "mesh/pipeline.py",
+      "summary": "编排 surface field 采样、等值面提取、语义拓扑过滤、后处理和导出的完整网格流水线。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:mesh/pipeline.py:MeshExtractionConfig",
+      "type": "class",
+      "name": "MeshExtractionConfig",
+      "filePath": "mesh/pipeline.py",
+      "lineRange": [
+        26,
+        65
+      ],
+      "summary": "封装 Mesh Extraction Config 的状态与操作，承担 pipeline.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/pipeline.py:SemanticMeshExtractor",
+      "type": "class",
+      "name": "SemanticMeshExtractor",
+      "filePath": "mesh/pipeline.py",
+      "lineRange": [
+        68,
+        180
+      ],
+      "summary": "封装 Semantic Mesh Extractor 的状态与操作，承担 pipeline.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/postprocess.py",
+      "type": "file",
+      "name": "postprocess.py",
+      "filePath": "mesh/postprocess.py",
+      "summary": "实现法线重算、退化面清理、小连通分量移除、seam-aware 聚类与面数简化。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:mesh/postprocess.py:recompute_vertex_normals",
+      "type": "function",
+      "name": "recompute_vertex_normals",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        13,
+        25
+      ],
+      "summary": "计算 recompute vertex normals 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/postprocess.py:_clean_faces",
+      "type": "function",
+      "name": "_clean_faces",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        28,
+        50
+      ],
+      "summary": "实现 clean faces 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/postprocess.py:remove_small_components",
+      "type": "function",
+      "name": "remove_small_components",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        53,
+        125
+      ],
+      "summary": "移除 remove small components 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/postprocess.py:seam_aware_vertex_clustering",
+      "type": "function",
+      "name": "seam_aware_vertex_clustering",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        128,
+        226
+      ],
+      "summary": "实现 seam aware vertex clustering 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/postprocess.py:simplify_to_face_budget",
+      "type": "function",
+      "name": "simplify_to_face_budget",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        229,
+        257
+      ],
+      "summary": "简化 simplify to face budget 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/postprocess.py:postprocess_mesh",
+      "type": "function",
+      "name": "postprocess_mesh",
+      "filePath": "mesh/postprocess.py",
+      "lineRange": [
+        260,
+        291
+      ],
+      "summary": "后处理 postprocess mesh 相关逻辑，供 postprocess.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:mesh/sampling.py",
+      "type": "file",
+      "name": "sampling.py",
+      "filePath": "mesh/sampling.py",
+      "summary": "定义空间 Bounds、octree 与 blocked grid 自适应采样器，依据场值、语义边界和不确定性细化采样。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:mesh/sampling.py:_semantic_boundary",
+      "type": "function",
+      "name": "_semantic_boundary",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        100,
+        106
+      ],
+      "summary": "实现 semantic boundary 相关逻辑，供 sampling.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/sampling.py:refinement_decision",
+      "type": "function",
+      "name": "refinement_decision",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        109,
+        150
+      ],
+      "summary": "实现 refinement decision 相关逻辑，供 sampling.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/sampling.py:Bounds",
+      "type": "class",
+      "name": "Bounds",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        16,
+        71
+      ],
+      "summary": "封装 Bounds 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:mesh/sampling.py:AdaptiveSamplingConfig",
+      "type": "class",
+      "name": "AdaptiveSamplingConfig",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        75,
+        83
+      ],
+      "summary": "封装 Adaptive Sampling Config 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/sampling.py:RefinementDecision",
+      "type": "class",
+      "name": "RefinementDecision",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        87,
+        97
+      ],
+      "summary": "封装 Refinement Decision 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/sampling.py:OctreeLeaf",
+      "type": "class",
+      "name": "OctreeLeaf",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        154,
+        157
+      ],
+      "summary": "封装 Octree Leaf 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/sampling.py:AdaptiveOctreeSampler",
+      "type": "class",
+      "name": "AdaptiveOctreeSampler",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        160,
+        217
+      ],
+      "summary": "封装 Adaptive Octree Sampler 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:mesh/sampling.py:GridBlock",
+      "type": "class",
+      "name": "GridBlock",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        221,
+        232
+      ],
+      "summary": "封装 Grid Block 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/sampling.py:BlockedGridSampler",
+      "type": "class",
+      "name": "BlockedGridSampler",
+      "filePath": "mesh/sampling.py",
+      "lineRange": [
+        235,
+        393
+      ],
+      "summary": "封装 Blocked Grid Sampler 的状态与操作，承担 sampling.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/topology.py",
+      "type": "file",
+      "name": "topology.py",
+      "filePath": "mesh/topology.py",
+      "summary": "构建语义 contact graph 并根据标签、embedding 与置信度过滤网格拓扑，同时提供 seam 和连通分量分析。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:mesh/topology.py:cosine_similarity",
+      "type": "function",
+      "name": "cosine_similarity",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        220,
+        225
+      ],
+      "summary": "实现 cosine similarity 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:compatible_pairs",
+      "type": "function",
+      "name": "compatible_pairs",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        228,
+        255
+      ],
+      "summary": "实现 compatible pairs 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:semantic_edge_compatibility",
+      "type": "function",
+      "name": "semantic_edge_compatibility",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        258,
+        274
+      ],
+      "summary": "实现 semantic edge compatibility 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:face_compatibility_mask",
+      "type": "function",
+      "name": "face_compatibility_mask",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        277,
+        305
+      ],
+      "summary": "实现 face compatibility mask 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:filter_semantic_topology",
+      "type": "function",
+      "name": "filter_semantic_topology",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        308,
+        324
+      ],
+      "summary": "过滤 filter semantic topology 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:seam_vertices",
+      "type": "function",
+      "name": "seam_vertices",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        327,
+        348
+      ],
+      "summary": "实现 seam vertices 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:mesh/topology.py:connected_face_components",
+      "type": "function",
+      "name": "connected_face_components",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        351,
+        377
+      ],
+      "summary": "实现 connected face components 相关逻辑，供 topology.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/topology.py:ContactGraph",
+      "type": "class",
+      "name": "ContactGraph",
+      "filePath": "mesh/topology.py",
+      "lineRange": [
+        16,
+        217
+      ],
+      "summary": "封装 Contact Graph 的状态与操作，承担 topology.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/types.py",
+      "type": "file",
+      "name": "types.py",
+      "filePath": "mesh/types.py",
+      "summary": "定义 surface samples 与 triangle mesh 的核心数据结构，集中执行形状、dtype 和索引一致性校验。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:mesh/types.py:_as_float_array",
+      "type": "function",
+      "name": "_as_float_array",
+      "filePath": "mesh/types.py",
+      "lineRange": [
+        11,
+        15
+      ],
+      "summary": "实现 as float array 相关逻辑，供 types.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:mesh/types.py:SurfaceSamples",
+      "type": "class",
+      "name": "SurfaceSamples",
+      "filePath": "mesh/types.py",
+      "lineRange": [
+        19,
+        91
+      ],
+      "summary": "封装 Surface Samples 的状态与操作，承担 types.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:mesh/types.py:TriangleMesh",
+      "type": "class",
+      "name": "TriangleMesh",
+      "filePath": "mesh/types.py",
+      "lineRange": [
+        95,
+        175
+      ],
+      "summary": "封装 Triangle Mesh 的状态与操作，承担 types.py 中的核心领域职责。",
+      "tags": [
+        "data-model",
+        "领域对象",
+        "核心组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_contact_learning.py",
+      "type": "file",
+      "name": "test_contact_learning.py",
+      "filePath": "tests/test_contact_learning.py",
+      "summary": "验证 contact learning 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_contact_learning.py:test_contact_graph_is_learned_from_confident_covariance_overlap",
+      "type": "function",
+      "name": "test_contact_graph_is_learned_from_confident_covariance_overlap",
+      "filePath": "tests/test_contact_learning.py",
+      "lineRange": [
+        8,
+        29
+      ],
+      "summary": "验证 contact graph is learned from confident covariance overlap 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_contact_learning.py:test_contact_graph_requires_a_semantic_decoder",
+      "type": "function",
+      "name": "test_contact_graph_requires_a_semantic_decoder",
+      "filePath": "tests/test_contact_learning.py",
+      "lineRange": [
+        32,
+        40
+      ],
+      "summary": "验证 contact graph requires a semantic decoder 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_bounds.py",
+      "type": "file",
+      "name": "test_mesh_bounds.py",
+      "filePath": "tests/test_mesh_bounds.py",
+      "summary": "验证 mesh bounds 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:_axis_aligned_gaussians",
+      "type": "function",
+      "name": "_axis_aligned_gaussians",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        10,
+        19
+      ],
+      "summary": "实现 axis aligned gaussians 相关逻辑，供 test_mesh_bounds.py 的处理流程复用。",
+      "tags": [
+        "utility",
+        "核心逻辑",
+        "内部-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:test_bounds_include_rotated_three_sigma_support",
+      "type": "function",
+      "name": "test_bounds_include_rotated_three_sigma_support",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        22,
+        34
+      ],
+      "summary": "验证 bounds include rotated three sigma support 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:test_bounds_selection_accepts_equivalent_indices_and_boolean_mask",
+      "type": "function",
+      "name": "test_bounds_selection_accepts_equivalent_indices_and_boolean_mask",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        37,
+        65
+      ],
+      "summary": "验证 bounds selection accepts equivalent indices and boolean mask 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:test_default_zero_trim_is_exact_and_positive_trim_removes_outlier",
+      "type": "function",
+      "name": "test_default_zero_trim_is_exact_and_positive_trim_removes_outlier",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        68,
+        98
+      ],
+      "summary": "验证 default zero trim is exact and positive trim removes outlier 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_selection",
+      "type": "function",
+      "name": "test_bounds_reject_invalid_selection",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        111,
+        115
+      ],
+      "summary": "验证 bounds reject invalid selection 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_trim_quantile",
+      "type": "function",
+      "name": "test_bounds_reject_invalid_trim_quantile",
+      "filePath": "tests/test_mesh_bounds.py",
+      "lineRange": [
+        119,
+        123
+      ],
+      "summary": "验证 bounds reject invalid trim quantile 的预期行为及关键回归条件。",
+      "tags": [
+        "test",
+        "回归测试",
+        "边界条件"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "class:mesh/pipeline.py:MeshExtractionConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "class:mesh/pipeline.py:MeshExtractionConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "class:mesh/pipeline.py:SemanticMeshExtractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "class:mesh/pipeline.py:SemanticMeshExtractor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:recompute_vertex_normals",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:recompute_vertex_normals",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:_clean_faces",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:_clean_faces",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:remove_small_components",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:remove_small_components",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:seam_aware_vertex_clustering",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:seam_aware_vertex_clustering",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:simplify_to_face_budget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:simplify_to_face_budget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:postprocess_mesh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "function:mesh/postprocess.py:postprocess_mesh",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "function:mesh/sampling.py:_semantic_boundary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "function:mesh/sampling.py:_semantic_boundary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "function:mesh/sampling.py:refinement_decision",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "function:mesh/sampling.py:refinement_decision",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:Bounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:Bounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:AdaptiveSamplingConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:AdaptiveSamplingConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:RefinementDecision",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:RefinementDecision",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:OctreeLeaf",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:OctreeLeaf",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:AdaptiveOctreeSampler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:AdaptiveOctreeSampler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:GridBlock",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:GridBlock",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:BlockedGridSampler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "class:mesh/sampling.py:BlockedGridSampler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:cosine_similarity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:cosine_similarity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:compatible_pairs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:compatible_pairs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:semantic_edge_compatibility",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:semantic_edge_compatibility",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:face_compatibility_mask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:face_compatibility_mask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:filter_semantic_topology",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:filter_semantic_topology",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:seam_vertices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:seam_vertices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:connected_face_components",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "function:mesh/topology.py:connected_face_components",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "class:mesh/topology.py:ContactGraph",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "class:mesh/topology.py:ContactGraph",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "function:mesh/types.py:_as_float_array",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "function:mesh/types.py:_as_float_array",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "class:mesh/types.py:SurfaceSamples",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "class:mesh/types.py:SurfaceSamples",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "class:mesh/types.py:TriangleMesh",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:mesh/types.py",
+      "target": "class:mesh/types.py:TriangleMesh",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "function:tests/test_contact_learning.py:test_contact_graph_is_learned_from_confident_covariance_overlap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "function:tests/test_contact_learning.py:test_contact_graph_is_learned_from_confident_covariance_overlap",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "function:tests/test_contact_learning.py:test_contact_graph_requires_a_semantic_decoder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "function:tests/test_contact_learning.py:test_contact_graph_requires_a_semantic_decoder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:_axis_aligned_gaussians",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:_axis_aligned_gaussians",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_include_rotated_three_sigma_support",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_include_rotated_three_sigma_support",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_selection_accepts_equivalent_indices_and_boolean_mask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_selection_accepts_equivalent_indices_and_boolean_mask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_default_zero_trim_is_exact_and_positive_trim_removes_outlier",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_default_zero_trim_is_exact_and_positive_trim_removes_outlier",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_selection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_selection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_trim_quantile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "function:tests/test_mesh_bounds.py:test_bounds_reject_invalid_trim_quantile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "gaussian_renderer/__init__.py",
+      "language": "python",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "model_io.py",
+      "language": "python",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "render.py",
+      "language": "python",
+      "sizeLines": 332,
+      "fileCategory": "code"
+    },
+    {
+      "path": "semantic/__init__.py",
+      "language": "python",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "semantic/gaga_adapter.py",
+      "language": "python",
+      "sizeLines": 255,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_config.py",
+      "language": "python",
+      "sizeLines": 387,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_end_to_end_smoke.py",
+      "language": "python",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_mipnerf360_launcher.py",
+      "language": "python",
+      "sizeLines": 556,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_model_io_inference.py",
+      "language": "python",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_reference_rasterizer.py",
+      "language": "python",
+      "sizeLines": 338,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_render_outputs.py",
+      "language": "python",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_train_configuration_wiring.py",
+      "language": "python",
+      "sizeLines": 193,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tools/benchmark_surface_query.py",
+      "language": "python",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "train.py",
+      "language": "python",
+      "sizeLines": 283,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/config_utils.py",
+      "language": "python",
+      "sizeLines": 414,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/io_utils.py",
+      "language": "python",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "gaussian_renderer/__init__.py": [],
+    "model_io.py": [
+      "scene/__init__.py",
+      "semantic/__init__.py",
+      "utils/config_utils.py"
+    ],
+    "render.py": [
+      "gaussian_renderer/__init__.py",
+      "model_io.py",
+      "utils/image_utils.py",
+      "utils/io_utils.py"
+    ],
+    "semantic/__init__.py": [
+      "semantic/gaga_adapter.py",
+      "semantic/geometry_policy.py",
+      "semantic/neighbor_index.py"
+    ],
+    "semantic/gaga_adapter.py": [],
+    "tests/test_config.py": [
+      "utils/config_utils.py"
+    ],
+    "tests/test_end_to_end_smoke.py": [
+      "gaussian_renderer/__init__.py",
+      "model_io.py",
+      "scene/__init__.py",
+      "semantic/__init__.py",
+      "training/__init__.py",
+      "utils/config_utils.py"
+    ],
+    "tests/test_mipnerf360_launcher.py": [
+      "utils/config_utils.py"
+    ],
+    "tests/test_model_io_inference.py": [
+      "model_io.py"
+    ],
+    "tests/test_reference_rasterizer.py": [
+      "gaussian_renderer/__init__.py"
+    ],
+    "tests/test_render_outputs.py": [
+      "render.py"
+    ],
+    "tests/test_train_configuration_wiring.py": [
+      "model_io.py",
+      "scene/__init__.py",
+      "train.py",
+      "utils/config_utils.py"
+    ],
+    "tools/benchmark_surface_query.py": [
+      "model_io.py",
+      "regularization/surface.py",
+      "semantic/__init__.py"
+    ],
+    "train.py": [
+      "model_io.py",
+      "regularization/__init__.py",
+      "scene/__init__.py",
+      "semantic/__init__.py",
+      "training/__init__.py",
+      "utils/config_utils.py"
+    ],
+    "utils/config_utils.py": [],
+    "utils/io_utils.py": []
+  }
+}

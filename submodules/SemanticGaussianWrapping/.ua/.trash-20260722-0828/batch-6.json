@@ -1,0 +1,1196 @@
+{
+  "nodes": [
+    {
+      "id": "file:evaluation/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "evaluation/__init__.py",
+      "summary": "汇总图像质量与语义评估接口，作为 evaluation 子系统入口。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:evaluation/image_metrics.py",
+      "type": "file",
+      "name": "image_metrics.py",
+      "filePath": "evaluation/image_metrics.py",
+      "summary": "实现 ignore-aware confusion matrix、mean IoU 与累积式 PSNR/SSIM/LPIPS/语义指标统计。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:evaluation/image_metrics.py:confusion_matrix",
+      "type": "function",
+      "name": "confusion_matrix",
+      "filePath": "evaluation/image_metrics.py",
+      "lineRange": [
+        13,
+        44
+      ],
+      "summary": "实现 confusion matrix，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:evaluation/image_metrics.py:mean_iou",
+      "type": "function",
+      "name": "mean_iou",
+      "filePath": "evaluation/image_metrics.py",
+      "lineRange": [
+        47,
+        59
+      ],
+      "summary": "实现 mean iou，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:evaluation/image_metrics.py:ImageMetricAccumulator",
+      "type": "class",
+      "name": "ImageMetricAccumulator",
+      "filePath": "evaluation/image_metrics.py",
+      "lineRange": [
+        63,
+        106
+      ],
+      "summary": "封装 ImageMetricAccumulator 的状态与行为，承担 image_metrics.py 中的核心职责。",
+      "tags": [
+        "class",
+        "核心组件",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:metrics.py",
+      "type": "file",
+      "name": "metrics.py",
+      "filePath": "metrics.py",
+      "summary": "实现渲染结果评估 CLI，选择 method/iteration，计算图像和语义指标，并按 iteration 安全写入 JSON。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:metrics.py:_image",
+      "type": "function",
+      "name": "_image",
+      "filePath": "metrics.py",
+      "lineRange": [
+        22,
+        24
+      ],
+      "summary": "实现 image，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:_method_iteration",
+      "type": "function",
+      "name": "_method_iteration",
+      "filePath": "metrics.py",
+      "lineRange": [
+        27,
+        29
+      ],
+      "summary": "实现 method iteration，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:_available_methods",
+      "type": "function",
+      "name": "_available_methods",
+      "filePath": "metrics.py",
+      "lineRange": [
+        32,
+        40
+      ],
+      "summary": "实现 available methods，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:_latest_method",
+      "type": "function",
+      "name": "_latest_method",
+      "filePath": "metrics.py",
+      "lineRange": [
+        43,
+        44
+      ],
+      "summary": "实现 latest method，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:select_methods",
+      "type": "function",
+      "name": "select_methods",
+      "filePath": "metrics.py",
+      "lineRange": [
+        47,
+        73
+      ],
+      "summary": "实现 select methods，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:_lpips_model",
+      "type": "function",
+      "name": "_lpips_model",
+      "filePath": "metrics.py",
+      "lineRange": [
+        76,
+        83
+      ],
+      "summary": "实现 lpips model，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:evaluate_directory",
+      "type": "function",
+      "name": "evaluate_directory",
+      "filePath": "metrics.py",
+      "lineRange": [
+        86,
+        137
+      ],
+      "summary": "实现 evaluate directory，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:metrics.py:_write_json_preserving",
+      "type": "function",
+      "name": "_write_json_preserving",
+      "filePath": "metrics.py",
+      "lineRange": [
+        140,
+        159
+      ],
+      "summary": "以受控方式写出 write json preserving 相关结果或状态。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "内部实现"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:result_output_path",
+      "type": "function",
+      "name": "result_output_path",
+      "filePath": "metrics.py",
+      "lineRange": [
+        162,
+        163
+      ],
+      "summary": "实现 result output path，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:resolve_metric_device",
+      "type": "function",
+      "name": "resolve_metric_device",
+      "filePath": "metrics.py",
+      "lineRange": [
+        166,
+        170
+      ],
+      "summary": "实现 resolve metric device，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:metrics.py:main",
+      "type": "function",
+      "name": "main",
+      "filePath": "metrics.py",
+      "lineRange": [
+        173,
+        242
+      ],
+      "summary": "解析命令行输入并编排该工具的完整执行流程。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_blender_alpha.py",
+      "type": "file",
+      "name": "test_blender_alpha.py",
+      "filePath": "tests/test_blender_alpha.py",
+      "summary": "验证 Blender reader 保留前景 RGB/alpha、延迟分辨率 materialization 与随机背景合成目标。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_blender_alpha.py:test_blender_reader_preserves_foreground_rgb_and_alpha",
+      "type": "function",
+      "name": "test_blender_reader_preserves_foreground_rgb_and_alpha",
+      "filePath": "tests/test_blender_alpha.py",
+      "lineRange": [
+        14,
+        52
+      ],
+      "summary": "验证 blender reader preserves foreground rgb and alpha 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_blender_alpha.py:test_deferred_reader_materializes_only_target_resolution",
+      "type": "function",
+      "name": "test_deferred_reader_materializes_only_target_resolution",
+      "filePath": "tests/test_blender_alpha.py",
+      "lineRange": [
+        55,
+        110
+      ],
+      "summary": "验证 deferred reader materializes only target resolution 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_blender_alpha.py:test_random_background_target_uses_preserved_alpha",
+      "type": "function",
+      "name": "test_random_background_target_uses_preserved_alpha",
+      "filePath": "tests/test_blender_alpha.py",
+      "lineRange": [
+        113,
+        120
+      ],
+      "summary": "验证 random background target uses preserved alpha 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_image_metrics.py",
+      "type": "file",
+      "name": "test_image_metrics.py",
+      "filePath": "tests/test_image_metrics.py",
+      "summary": "验证 confusion matrix、IoU、ignore label、非法预测与全忽略语义的序列化行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_image_metrics.py:test_confusion_and_iou_respect_ignore",
+      "type": "function",
+      "name": "test_confusion_and_iou_respect_ignore",
+      "filePath": "tests/test_image_metrics.py",
+      "lineRange": [
+        6,
+        13
+      ],
+      "summary": "验证 confusion and iou respect ignore 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_image_metrics.py:test_invalid_prediction_counts_as_false_negative",
+      "type": "function",
+      "name": "test_invalid_prediction_counts_as_false_negative",
+      "filePath": "tests/test_image_metrics.py",
+      "lineRange": [
+        16,
+        23
+      ],
+      "summary": "验证 invalid prediction counts as false negative 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_image_metrics.py:test_perfect_image_metrics",
+      "type": "function",
+      "name": "test_perfect_image_metrics",
+      "filePath": "tests/test_image_metrics.py",
+      "lineRange": [
+        26,
+        32
+      ],
+      "summary": "验证 perfect image metrics 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_image_metrics.py:test_all_ignored_semantics_serialize_as_null",
+      "type": "function",
+      "name": "test_all_ignored_semantics_serialize_as_null",
+      "filePath": "tests/test_image_metrics.py",
+      "lineRange": [
+        35,
+        40
+      ],
+      "summary": "验证 all ignored semantics serialize as null 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_metrics_cli.py",
+      "type": "file",
+      "name": "test_metrics_cli.py",
+      "filePath": "tests/test_metrics_cli.py",
+      "summary": "验证 metrics CLI 的多 iteration 选择、结果隔离、陈旧文件过滤和 CUDA 到 CPU 回退。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_metrics_cli.py:test_metrics_can_select_several_explicit_or_all_iterations",
+      "type": "function",
+      "name": "test_metrics_can_select_several_explicit_or_all_iterations",
+      "filePath": "tests/test_metrics_cli.py",
+      "lineRange": [
+        19,
+        33
+      ],
+      "summary": "验证 metrics can select several explicit or all iterations 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_metrics_cli.py:test_metric_outputs_are_iteration_scoped_and_never_replace_different_results",
+      "type": "function",
+      "name": "test_metric_outputs_are_iteration_scoped_and_never_replace_different_results",
+      "filePath": "tests/test_metrics_cli.py",
+      "lineRange": [
+        36,
+        45
+      ],
+      "summary": "验证 metric outputs are iteration scoped and never replace different results 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_metrics_cli.py:test_metrics_ignore_stale_files_outside_latest_render_selection",
+      "type": "function",
+      "name": "test_metrics_ignore_stale_files_outside_latest_render_selection",
+      "filePath": "tests/test_metrics_cli.py",
+      "lineRange": [
+        48,
+        64
+      ],
+      "summary": "验证 metrics ignore stale files outside latest render selection 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_metrics_cli.py:test_metric_cuda_index_falls_back_to_cpu_when_cuda_is_unavailable",
+      "type": "function",
+      "name": "test_metric_cuda_index_falls_back_to_cpu_when_cuda_is_unavailable",
+      "filePath": "tests/test_metrics_cli.py",
+      "lineRange": [
+        67,
+        69
+      ],
+      "summary": "验证 metric cuda index falls back to cpu when cuda is unavailable 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/image_utils.py",
+      "type": "file",
+      "name": "image_utils.py",
+      "filePath": "utils/image_utils.py",
+      "summary": "提供 alpha background compositing、MSE 和 PSNR 等轻量图像计算工具。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/image_utils.py:composite_background",
+      "type": "function",
+      "name": "composite_background",
+      "filePath": "utils/image_utils.py",
+      "lineRange": [
+        8,
+        25
+      ],
+      "summary": "实现 composite background，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/image_utils.py:mse",
+      "type": "function",
+      "name": "mse",
+      "filePath": "utils/image_utils.py",
+      "lineRange": [
+        28,
+        29
+      ],
+      "summary": "实现 mse，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/image_utils.py:psnr",
+      "type": "function",
+      "name": "psnr",
+      "filePath": "utils/image_utils.py",
+      "lineRange": [
+        32,
+        35
+      ],
+      "summary": "实现 psnr，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/loss_utils.py",
+      "type": "file",
+      "name": "loss_utils.py",
+      "filePath": "utils/loss_utils.py",
+      "summary": "提供 L1、SSIM、置信度加权 cross entropy、soft Dice 与 symmetric KL 损失原语。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:utils/loss_utils.py:l1_loss",
+      "type": "function",
+      "name": "l1_loss",
+      "filePath": "utils/loss_utils.py",
+      "lineRange": [
+        9,
+        15
+      ],
+      "summary": "计算 l1 loss，为训练目标提供可微分的 regularization 信号。",
+      "tags": [
+        "损失函数",
+        "regularization",
+        "tensor"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/loss_utils.py:ssim",
+      "type": "function",
+      "name": "ssim",
+      "filePath": "utils/loss_utils.py",
+      "lineRange": [
+        18,
+        43
+      ],
+      "summary": "实现 ssim，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/loss_utils.py:confidence_weighted_cross_entropy",
+      "type": "function",
+      "name": "confidence_weighted_cross_entropy",
+      "filePath": "utils/loss_utils.py",
+      "lineRange": [
+        46,
+        55
+      ],
+      "summary": "实现 confidence weighted cross entropy，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/loss_utils.py:soft_dice_loss",
+      "type": "function",
+      "name": "soft_dice_loss",
+      "filePath": "utils/loss_utils.py",
+      "lineRange": [
+        58,
+        74
+      ],
+      "summary": "计算 soft dice loss，为训练目标提供可微分的 regularization 信号。",
+      "tags": [
+        "损失函数",
+        "regularization",
+        "tensor"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:utils/loss_utils.py:symmetric_kl",
+      "type": "function",
+      "name": "symmetric_kl",
+      "filePath": "utils/loss_utils.py",
+      "lineRange": [
+        77,
+        84
+      ],
+      "summary": "实现 symmetric kl，完成该模块对应的数据处理与控制逻辑。",
+      "tags": [
+        "function",
+        "核心逻辑",
+        "公开接口"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:evaluation/__init__.py",
+      "target": "file:evaluation/image_metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "function:evaluation/image_metrics.py:confusion_matrix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "function:evaluation/image_metrics.py:confusion_matrix",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "function:evaluation/image_metrics.py:mean_iou",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "function:evaluation/image_metrics.py:mean_iou",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "class:evaluation/image_metrics.py:ImageMetricAccumulator",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "class:evaluation/image_metrics.py:ImageMetricAccumulator",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_image",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_image",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_method_iteration",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_method_iteration",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_available_methods",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_available_methods",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_latest_method",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_latest_method",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:select_methods",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:select_methods",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_lpips_model",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_lpips_model",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:evaluate_directory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:evaluate_directory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_write_json_preserving",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:_write_json_preserving",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:result_output_path",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:result_output_path",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:resolve_metric_device",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:resolve_metric_device",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:main",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "function:metrics.py:main",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_blender_reader_preserves_foreground_rgb_and_alpha",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_blender_reader_preserves_foreground_rgb_and_alpha",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_deferred_reader_materializes_only_target_resolution",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_deferred_reader_materializes_only_target_resolution",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_random_background_target_uses_preserved_alpha",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "function:tests/test_blender_alpha.py:test_random_background_target_uses_preserved_alpha",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_confusion_and_iou_respect_ignore",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_confusion_and_iou_respect_ignore",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_invalid_prediction_counts_as_false_negative",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_invalid_prediction_counts_as_false_negative",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_perfect_image_metrics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_perfect_image_metrics",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_all_ignored_semantics_serialize_as_null",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "function:tests/test_image_metrics.py:test_all_ignored_semantics_serialize_as_null",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metrics_can_select_several_explicit_or_all_iterations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metrics_can_select_several_explicit_or_all_iterations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metric_outputs_are_iteration_scoped_and_never_replace_different_results",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metric_outputs_are_iteration_scoped_and_never_replace_different_results",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metrics_ignore_stale_files_outside_latest_render_selection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metrics_ignore_stale_files_outside_latest_render_selection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metric_cuda_index_falls_back_to_cpu_when_cuda_is_unavailable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "function:tests/test_metrics_cli.py:test_metric_cuda_index_falls_back_to_cpu_when_cuda_is_unavailable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "file:metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:composite_background",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:composite_background",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:mse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:mse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:psnr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/image_utils.py",
+      "target": "function:utils/image_utils.py:psnr",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:l1_loss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:l1_loss",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:ssim",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:ssim",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:confidence_weighted_cross_entropy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:confidence_weighted_cross_entropy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:soft_dice_loss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:soft_dice_loss",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:symmetric_kl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:utils/loss_utils.py",
+      "target": "function:utils/loss_utils.py:symmetric_kl",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

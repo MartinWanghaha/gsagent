@@ -1,0 +1,1228 @@
+{
+  "nodes": [
+    {
+      "id": "file:tests/test_depth_normal_validity.py",
+      "type": "file",
+      "name": "test_depth_normal_validity.py",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "summary": "验证 depth-to-normal 几何转换、轮廓侵蚀、alpha 有效域和残差梯度行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:_camera",
+      "type": "function",
+      "name": "_camera",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        11,
+        20
+      ],
+      "summary": "验证 camera 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:_silhouette_step",
+      "type": "function",
+      "name": "_silhouette_step",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        23,
+        28
+      ],
+      "summary": "验证 silhouette step 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_depth_to_points_uses_depth_device_and_dtype_for_camera_transform",
+      "type": "function",
+      "name": "test_depth_to_points_uses_depth_device_and_dtype_for_camera_transform",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        31,
+        44
+      ],
+      "summary": "验证 depth to points uses depth device and dtype for camera transform 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_depth_to_points_accepts_cpu_camera_transform_for_cuda_depth",
+      "type": "function",
+      "name": "test_depth_to_points_accepts_cpu_camera_transform_for_cuda_depth",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        48,
+        70
+      ],
+      "summary": "验证 depth to points accepts cpu camera transform for cuda depth 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_depth_to_normal_erodes_silhouette_but_keeps_plane_interior",
+      "type": "function",
+      "name": "test_depth_to_normal_erodes_silhouette_but_keeps_plane_interior",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        73,
+        83
+      ],
+      "summary": "验证 depth to normal erodes silhouette but keeps plane interior 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_normal_loss_ignores_wrong_normals_at_depth_silhouette",
+      "type": "function",
+      "name": "test_normal_loss_ignores_wrong_normals_at_depth_silhouette",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        86,
+        108
+      ],
+      "summary": "验证 normal loss ignores wrong normals at depth silhouette 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_low_alpha_has_zero_loss_gradient_and_zero_density_residual",
+      "type": "function",
+      "name": "test_low_alpha_has_zero_loss_gradient_and_zero_density_residual",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        111,
+        135
+      ],
+      "summary": "验证 low alpha has zero loss gradient and zero density residual 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_depth_normal_validity.py:test_depth_normal_residual_keeps_valid_plane_evidence",
+      "type": "function",
+      "name": "test_depth_normal_residual_keeps_valid_plane_evidence",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "lineRange": [
+        138,
+        150
+      ],
+      "summary": "验证 depth normal residual keeps valid plane evidence 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_loss_curriculum.py",
+      "type": "file",
+      "name": "test_loss_curriculum.py",
+      "filePath": "tests/test_loss_curriculum.py",
+      "summary": "验证损失 curriculum 在 bootstrap、ignore label、置信度门控和几何证据 checkpoint 恢复场景下的行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_loss_curriculum.py:_render_package",
+      "type": "function",
+      "name": "_render_package",
+      "filePath": "tests/test_loss_curriculum.py",
+      "lineRange": [
+        9,
+        13
+      ],
+      "summary": "验证 render package 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_loss_curriculum.py:test_bootstrap_does_not_touch_missing_gaussian_auxiliary_api",
+      "type": "function",
+      "name": "test_bootstrap_does_not_touch_missing_gaussian_auxiliary_api",
+      "filePath": "tests/test_loss_curriculum.py",
+      "lineRange": [
+        16,
+        21
+      ],
+      "summary": "验证 bootstrap does not touch missing gaussian auxiliary api 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_loss_curriculum.py:test_all_ignore_semantics_has_zero_image_losses_for_custom_ignore_label",
+      "type": "function",
+      "name": "test_all_ignore_semantics_has_zero_image_losses_for_custom_ignore_label",
+      "filePath": "tests/test_loss_curriculum.py",
+      "lineRange": [
+        24,
+        35
+      ],
+      "summary": "验证 all ignore semantics has zero image losses for custom ignore label 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_loss_curriculum.py:test_zero_confidence_pixels_do_not_affect_semantic_or_boundary_loss",
+      "type": "function",
+      "name": "test_zero_confidence_pixels_do_not_affect_semantic_or_boundary_loss",
+      "filePath": "tests/test_loss_curriculum.py",
+      "lineRange": [
+        38,
+        59
+      ],
+      "summary": "验证 zero confidence pixels do not affect semantic or boundary loss 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_loss_curriculum.py:test_geometry_evidence_checkpoint_restores_propagation_cursor",
+      "type": "function",
+      "name": "test_geometry_evidence_checkpoint_restores_propagation_cursor",
+      "filePath": "tests/test_loss_curriculum.py",
+      "lineRange": [
+        62,
+        81
+      ],
+      "summary": "验证 geometry evidence checkpoint restores propagation cursor 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_semantic_region_routing.py",
+      "type": "file",
+      "name": "test_semantic_region_routing.py",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "summary": "验证语义候选点的 chunked region decoding 与索引、空输入及 chunk size 契约。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_semantic_region_routing.py:test_chunked_candidate_ids_equal_dense_fp32_argmax",
+      "type": "function",
+      "name": "test_chunked_candidate_ids_equal_dense_fp32_argmax",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "lineRange": [
+        23,
+        47
+      ],
+      "summary": "验证 chunked candidate ids equal dense fp32 argmax 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_semantic_region_routing.py:test_empty_candidate_decode_does_not_call_decoder",
+      "type": "function",
+      "name": "test_empty_candidate_decode_does_not_call_decoder",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "lineRange": [
+        50,
+        61
+      ],
+      "summary": "验证 empty candidate decode does not call decoder 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_semantic_region_routing.py:test_candidate_decode_rejects_invalid_chunk_size",
+      "type": "function",
+      "name": "test_candidate_decode_rejects_invalid_chunk_size",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "lineRange": [
+        65,
+        72
+      ],
+      "summary": "验证 candidate decode rejects invalid chunk size 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_semantic_region_routing.py:test_candidate_decode_validates_index_contract",
+      "type": "function",
+      "name": "test_candidate_decode_validates_index_contract",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "lineRange": [
+        75,
+        95
+      ],
+      "summary": "验证 candidate decode validates index contract 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_semantic_region_routing.py:RecordingDecoder",
+      "type": "class",
+      "name": "RecordingDecoder",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "lineRange": [
+        11,
+        20
+      ],
+      "summary": "提供 RecordingDecoder 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_surface_regularization.py",
+      "type": "file",
+      "name": "test_surface_regularization.py",
+      "filePath": "tests/test_surface_regularization.py",
+      "summary": "验证 surface consistency 的合并查询、零采样退化路径和原始几何候选采集。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_surface_regularization.py:test_surface_consistency_combines_center_and_pivots_into_one_query",
+      "type": "function",
+      "name": "test_surface_consistency_combines_center_and_pivots_into_one_query",
+      "filePath": "tests/test_surface_regularization.py",
+      "lineRange": [
+        57,
+        73
+      ],
+      "summary": "验证 surface consistency combines center and pivots into one query 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_surface_regularization.py:test_zero_surface_samples_return_finite_zero_without_querying",
+      "type": "function",
+      "name": "test_zero_surface_samples_return_finite_zero_without_querying",
+      "filePath": "tests/test_surface_regularization.py",
+      "lineRange": [
+        76,
+        88
+      ],
+      "summary": "验证 zero surface samples return finite zero without querying 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_surface_regularization.py:test_surface_sampling_gathers_raw_candidates_before_activation",
+      "type": "function",
+      "name": "test_surface_sampling_gathers_raw_candidates_before_activation",
+      "filePath": "tests/test_surface_regularization.py",
+      "lineRange": [
+        91,
+        135
+      ],
+      "summary": "验证 surface sampling gathers raw candidates before activation 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_surface_regularization.py:_Gaussians",
+      "type": "class",
+      "name": "_Gaussians",
+      "filePath": "tests/test_surface_regularization.py",
+      "lineRange": [
+        14,
+        43
+      ],
+      "summary": "提供 Gaussians 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_surface_regularization.py:_RecordingField",
+      "type": "class",
+      "name": "_RecordingField",
+      "filePath": "tests/test_surface_regularization.py",
+      "lineRange": [
+        46,
+        54
+      ],
+      "summary": "提供 RecordingField 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_training_diagnostics.py",
+      "type": "file",
+      "name": "test_training_diagnostics.py",
+      "filePath": "tests/test_training_diagnostics.py",
+      "summary": "验证训练语义几何诊断采用有界均匀采样，并兼容缺少辅助 API 的 Gaussian 模型。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_use_bounded_uniform_sample",
+      "type": "function",
+      "name": "test_semantic_geometry_diagnostics_use_bounded_uniform_sample",
+      "filePath": "tests/test_training_diagnostics.py",
+      "lineRange": [
+        9,
+        37
+      ],
+      "summary": "验证 semantic geometry diagnostics use bounded uniform sample 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_are_optional_for_plain_gaussians",
+      "type": "function",
+      "name": "test_semantic_geometry_diagnostics_are_optional_for_plain_gaussians",
+      "filePath": "tests/test_training_diagnostics.py",
+      "lineRange": [
+        40,
+        47
+      ],
+      "summary": "验证 semantic geometry diagnostics are optional for plain gaussians 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_training_log_resume.py",
+      "type": "file",
+      "name": "test_training_log_resume.py",
+      "filePath": "tests/test_training_log_resume.py",
+      "summary": "验证 resume 时 JSONL 日志回卷、废弃尾部归档和截断记录保留。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:_record",
+      "type": "function",
+      "name": "_record",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        12,
+        13
+      ],
+      "summary": "验证 record 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:test_rewind_archives_abandoned_tail_and_never_overwrites_archive",
+      "type": "function",
+      "name": "test_rewind_archives_abandoned_tail_and_never_overwrites_archive",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        16,
+        40
+      ],
+      "summary": "验证 rewind archives abandoned tail and never overwrites archive 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:test_rewind_is_noop_without_a_log_or_future_records",
+      "type": "function",
+      "name": "test_rewind_is_noop_without_a_log_or_future_records",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        43,
+        53
+      ],
+      "summary": "验证 rewind is noop without a log or future records 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:test_rewind_preserves_a_truncated_crash_tail_in_archive",
+      "type": "function",
+      "name": "test_rewind_preserves_a_truncated_crash_tail_in_archive",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        56,
+        66
+      ],
+      "summary": "验证 rewind preserves a truncated crash tail in archive 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:_empty_trainer",
+      "type": "function",
+      "name": "_empty_trainer",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        77,
+        91
+      ],
+      "summary": "验证 empty trainer 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_log_resume.py:test_train_rewinds_log_exactly_once_only_for_resume",
+      "type": "function",
+      "name": "test_train_rewinds_log_exactly_once_only_for_resume",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        94,
+        102
+      ],
+      "summary": "验证 train rewinds log exactly once only for resume 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:tests/test_training_log_resume.py:_RecordingLogger",
+      "type": "class",
+      "name": "_RecordingLogger",
+      "filePath": "tests/test_training_log_resume.py",
+      "lineRange": [
+        69,
+        74
+      ],
+      "summary": "提供 RecordingLogger 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试夹具"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_training_profiling.py",
+      "type": "file",
+      "name": "test_training_profiling.py",
+      "filePath": "tests/test_training_profiling.py",
+      "summary": "验证 CUDA step profiler 的采样开关与同步边界。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_profiling.py:test_profile_sampling_is_disabled_at_zero_interval",
+      "type": "function",
+      "name": "test_profile_sampling_is_disabled_at_zero_interval",
+      "filePath": "tests/test_training_profiling.py",
+      "lineRange": [
+        10,
+        16
+      ],
+      "summary": "验证 profile sampling is disabled at zero interval 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_training_profiling.py:test_cuda_step_profiler_synchronizes_only_at_sampled_boundaries",
+      "type": "function",
+      "name": "test_cuda_step_profiler_synchronizes_only_at_sampled_boundaries",
+      "filePath": "tests/test_training_profiling.py",
+      "lineRange": [
+        19,
+        47
+      ],
+      "summary": "验证 cuda step profiler synchronizes only at sampled boundaries 的测试场景与边界行为。",
+      "tags": [
+        "test",
+        "验证",
+        "测试用例"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:_camera",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:_camera",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:_silhouette_step",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:_silhouette_step",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_points_uses_depth_device_and_dtype_for_camera_transform",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_points_uses_depth_device_and_dtype_for_camera_transform",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_points_accepts_cpu_camera_transform_for_cuda_depth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_points_accepts_cpu_camera_transform_for_cuda_depth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_normal_erodes_silhouette_but_keeps_plane_interior",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_to_normal_erodes_silhouette_but_keeps_plane_interior",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_normal_loss_ignores_wrong_normals_at_depth_silhouette",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_normal_loss_ignores_wrong_normals_at_depth_silhouette",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_low_alpha_has_zero_loss_gradient_and_zero_density_residual",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_low_alpha_has_zero_loss_gradient_and_zero_density_residual",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_normal_residual_keeps_valid_plane_evidence",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "function:tests/test_depth_normal_validity.py:test_depth_normal_residual_keeps_valid_plane_evidence",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:_render_package",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:_render_package",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_bootstrap_does_not_touch_missing_gaussian_auxiliary_api",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_bootstrap_does_not_touch_missing_gaussian_auxiliary_api",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_all_ignore_semantics_has_zero_image_losses_for_custom_ignore_label",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_all_ignore_semantics_has_zero_image_losses_for_custom_ignore_label",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_zero_confidence_pixels_do_not_affect_semantic_or_boundary_loss",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_zero_confidence_pixels_do_not_affect_semantic_or_boundary_loss",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_geometry_evidence_checkpoint_restores_propagation_cursor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "function:tests/test_loss_curriculum.py:test_geometry_evidence_checkpoint_restores_propagation_cursor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_chunked_candidate_ids_equal_dense_fp32_argmax",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_chunked_candidate_ids_equal_dense_fp32_argmax",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_empty_candidate_decode_does_not_call_decoder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_empty_candidate_decode_does_not_call_decoder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_candidate_decode_rejects_invalid_chunk_size",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_candidate_decode_rejects_invalid_chunk_size",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_candidate_decode_validates_index_contract",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "function:tests/test_semantic_region_routing.py:test_candidate_decode_validates_index_contract",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "class:tests/test_semantic_region_routing.py:RecordingDecoder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "class:tests/test_semantic_region_routing.py:RecordingDecoder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_surface_consistency_combines_center_and_pivots_into_one_query",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_surface_consistency_combines_center_and_pivots_into_one_query",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_zero_surface_samples_return_finite_zero_without_querying",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_zero_surface_samples_return_finite_zero_without_querying",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_surface_sampling_gathers_raw_candidates_before_activation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "function:tests/test_surface_regularization.py:test_surface_sampling_gathers_raw_candidates_before_activation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "class:tests/test_surface_regularization.py:_Gaussians",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "class:tests/test_surface_regularization.py:_Gaussians",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "class:tests/test_surface_regularization.py:_RecordingField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "class:tests/test_surface_regularization.py:_RecordingField",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_use_bounded_uniform_sample",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_use_bounded_uniform_sample",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_are_optional_for_plain_gaussians",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "function:tests/test_training_diagnostics.py:test_semantic_geometry_diagnostics_are_optional_for_plain_gaussians",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:_record",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:_record",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_archives_abandoned_tail_and_never_overwrites_archive",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_archives_abandoned_tail_and_never_overwrites_archive",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_is_noop_without_a_log_or_future_records",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_is_noop_without_a_log_or_future_records",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_preserves_a_truncated_crash_tail_in_archive",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_rewind_preserves_a_truncated_crash_tail_in_archive",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:_empty_trainer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:_empty_trainer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_train_rewinds_log_exactly_once_only_for_resume",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "function:tests/test_training_log_resume.py:test_train_rewinds_log_exactly_once_only_for_resume",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "class:tests/test_training_log_resume.py:_RecordingLogger",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "class:tests/test_training_log_resume.py:_RecordingLogger",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "function:tests/test_training_profiling.py:test_profile_sampling_is_disabled_at_zero_interval",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "function:tests/test_training_profiling.py:test_profile_sampling_is_disabled_at_zero_interval",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "function:tests/test_training_profiling.py:test_cuda_step_profiler_synchronizes_only_at_sampled_boundaries",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "function:tests/test_training_profiling.py:test_cuda_step_profiler_synchronizes_only_at_sampled_boundaries",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

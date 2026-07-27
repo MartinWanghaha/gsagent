@@ -1,0 +1,78 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "evaluation/__init__.py",
+      "language": "python",
+      "sizeLines": 5,
+      "fileCategory": "code"
+    },
+    {
+      "path": "evaluation/image_metrics.py",
+      "language": "python",
+      "sizeLines": 106,
+      "fileCategory": "code"
+    },
+    {
+      "path": "metrics.py",
+      "language": "python",
+      "sizeLines": 246,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_blender_alpha.py",
+      "language": "python",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_image_metrics.py",
+      "language": "python",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_metrics_cli.py",
+      "language": "python",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/image_utils.py",
+      "language": "python",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "utils/loss_utils.py",
+      "language": "python",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "evaluation/__init__.py": [
+      "evaluation/image_metrics.py"
+    ],
+    "evaluation/image_metrics.py": [
+      "utils/image_utils.py",
+      "utils/loss_utils.py"
+    ],
+    "metrics.py": [
+      "evaluation/__init__.py"
+    ],
+    "tests/test_blender_alpha.py": [
+      "scene/__init__.py",
+      "scene/dataset_readers.py",
+      "utils/image_utils.py"
+    ],
+    "tests/test_image_metrics.py": [
+      "evaluation/__init__.py"
+    ],
+    "tests/test_metrics_cli.py": [
+      "metrics.py"
+    ],
+    "utils/image_utils.py": [],
+    "utils/loss_utils.py": []
+  }
+}

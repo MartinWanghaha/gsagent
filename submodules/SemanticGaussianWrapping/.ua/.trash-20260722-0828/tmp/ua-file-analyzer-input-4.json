@@ -1,0 +1,140 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "scene/__init__.py",
+      "language": "python",
+      "sizeLines": 249,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scene/cameras.py",
+      "language": "python",
+      "sizeLines": 339,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scene/colmap_loader.py",
+      "language": "python",
+      "sizeLines": 297,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scene/dataset_readers.py",
+      "language": "python",
+      "sizeLines": 610,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scene/gaussian_attributes.py",
+      "language": "python",
+      "sizeLines": 627,
+      "fileCategory": "code"
+    },
+    {
+      "path": "scene/gaussian_model.py",
+      "language": "python",
+      "sizeLines": 1072,
+      "fileCategory": "code"
+    },
+    {
+      "path": "semantic/geometry_policy.py",
+      "language": "python",
+      "sizeLines": 575,
+      "fileCategory": "code"
+    },
+    {
+      "path": "semantic/neighbor_index.py",
+      "language": "python",
+      "sizeLines": 958,
+      "fileCategory": "code"
+    },
+    {
+      "path": "semantic/surface_field.py",
+      "language": "python",
+      "sizeLines": 429,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_attribute_registry.py",
+      "language": "python",
+      "sizeLines": 315,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_camera_intrinsics.py",
+      "language": "python",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_neighbor_index.py",
+      "language": "python",
+      "sizeLines": 399,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_semantic_evidence.py",
+      "language": "python",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "tests/test_surface_field.py",
+      "language": "python",
+      "sizeLines": 466,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "scene/__init__.py": [
+      "scene/cameras.py",
+      "scene/dataset_readers.py",
+      "scene/gaussian_attributes.py",
+      "scene/gaussian_model.py"
+    ],
+    "scene/cameras.py": [],
+    "scene/colmap_loader.py": [],
+    "scene/dataset_readers.py": [
+      "scene/colmap_loader.py"
+    ],
+    "scene/gaussian_attributes.py": [],
+    "scene/gaussian_model.py": [
+      "scene/gaussian_attributes.py"
+    ],
+    "semantic/geometry_policy.py": [
+      "semantic/neighbor_index.py"
+    ],
+    "semantic/neighbor_index.py": [],
+    "semantic/surface_field.py": [
+      "semantic/geometry_policy.py",
+      "semantic/neighbor_index.py"
+    ],
+    "tests/test_attribute_registry.py": [
+      "scene/__init__.py",
+      "scene/dataset_readers.py",
+      "scene/gaussian_attributes.py",
+      "scene/gaussian_model.py"
+    ],
+    "tests/test_camera_intrinsics.py": [
+      "scene/colmap_loader.py",
+      "scene/dataset_readers.py"
+    ],
+    "tests/test_neighbor_index.py": [
+      "semantic/neighbor_index.py"
+    ],
+    "tests/test_semantic_evidence.py": [
+      "scene/dataset_readers.py",
+      "scene/gaussian_model.py",
+      "semantic/geometry_policy.py",
+      "semantic/neighbor_index.py"
+    ],
+    "tests/test_surface_field.py": [
+      "scene/dataset_readers.py",
+      "scene/gaussian_model.py",
+      "semantic/geometry_policy.py",
+      "semantic/neighbor_index.py",
+      "semantic/surface_field.py"
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "torch>=2.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "semantic-gaussian-wrapping"
+version = "0.1.0"
+description = "Semantic field-conditioned 3D Gaussian Splatting and mesh reconstruction"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {file = "LICENSE.md"}
+dependencies = [
+  "numpy>=1.24",
+  "Pillow>=10.0",
+  "plyfile>=1.0",
+  "PyYAML>=6.0",
+  "scipy>=1.10",
+  "scikit-image>=0.21",
+  "trimesh>=4.0",
+  "tqdm>=4.65",
+]
+
+[project.scripts]
+sgw-train = "train:main"
+sgw-render = "render:main"
+sgw-metrics = "metrics:main"
+sgw-mesh = "extract_mesh:main"
+sgw-convert = "convert:main"
+
+[tool.setuptools]
+py-modules = ["convert", "extract_mesh", "metrics", "model_io", "render", "train"]
+license-files = ["LICENSE.md", "THIRD_PARTY_NOTICES.md"]
+
+[tool.setuptools.packages.find]
+where = [".", "submodules/diff-semantic-gaussian-rasterization"]
+include = [
+  "arguments*",
+  "configs*",
+  "densification*",
+  "diff_semantic_gaussian_rasterization*",
+  "evaluation*",
+  "gaussian_renderer*",
+  "mesh*",
+  "regularization*",
+  "scene*",
+  "semantic*",
+  "training*",
+  "utils*",
+]
+exclude = ["tests*", "submodules*"]
+
+[tool.setuptools.package-data]
+configs = ["*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = ["F401"]
+"tests/*.py" = ["E402"]

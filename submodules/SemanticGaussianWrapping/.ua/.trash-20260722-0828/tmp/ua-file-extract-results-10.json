@@ -1,0 +1,106 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 83,
+      "nonEmptyLines": 63,
+      "sections": [
+        {
+          "heading": "1.  Definitions",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "2.  Purpose",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "3.  Rights granted",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "4.  Limitations",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "5.  Disclaimer",
+          "level": 2,
+          "line": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 39,
+      "nonEmptyLines": 31,
+      "sections": [
+        {
+          "heading": "diff-semantic-gaussian-rasterization",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "submodules/diff-semantic-gaussian-rasterization/pyproject.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 11,
+      "nonEmptyLines": 10,
+      "sections": [
+        {
+          "heading": "build-system",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "project",
+          "level": 1,
+          "line": 5
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ]
+}

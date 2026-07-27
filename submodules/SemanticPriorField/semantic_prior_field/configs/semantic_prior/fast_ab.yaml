@@ -1,0 +1,49 @@
+# Compressed 6k-iteration schedule for A/B experiments on the splitting
+# channel. Orientation/flatten/SH channels are disabled here (and further
+# gated by --no-sp_* flags) so the comparison isolates boundary splitting:
+#   V0 --no-sp_split | V1 sweep attribution | V2 SPF-rasterizer conflict stats.
+
+start_iter: 2000
+refresh_interval: 250
+min_label_confidence: 0.3
+min_instance_gaussians: 256
+max_instances: 256
+max_points_per_instance: 20000
+background_label: 0
+skip_background_instance: true
+
+ransac_iterations: 32
+planar_inlier_threshold_rel: 0.01
+planar_inlier_ratio: 0.8
+quadric_min_points: 64
+quadric_max_residual_rel: 0.02
+thin_anisotropy_threshold: 4.0
+prior_weight_sigma: 0.5
+
+orient_start_iter: 99999
+orient_weight: 0.05
+flatten_weight: 10.0
+sh_consistency_weight: 0.0
+sh_consistency_samples: 4096
+sh_consistency_neighbors: 5
+sh_decay_weight: 0.0
+sh_outlier_factor: 4.0
+
+boundary_radius: 4
+boundary_weight: 0.25
+
+densify_multiplier_planar: 1.5
+densify_multiplier_thin: 0.7
+
+use_densification: true
+start_iter_densification: 3000
+end_iter_densification: 5500
+densify_every_n_iterations: 1000
+densification_semantic_errors_quantile: 0.05
+densification_normalization_method: count
+
+use_pruning: true
+pruning_iterations: [2500]
+prune_confidence_threshold: 0.1
+
+stats_min_updates: 50

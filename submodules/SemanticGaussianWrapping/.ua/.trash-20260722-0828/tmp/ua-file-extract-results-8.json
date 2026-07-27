@@ -1,0 +1,265 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 5,
+  "filesSkipped": [
+    "requirements.txt"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 5,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "results": [
+    {
+      "path": "ARCHITECTURE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 194,
+      "nonEmptyLines": 159,
+      "sections": [
+        {
+          "heading": "Semantic Gaussian Wrapping Architecture",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Runtime data contract",
+          "level": 2,
+          "line": 6
+        },
+        {
+          "heading": "Gaussian state contract",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Renderer contract",
+          "level": 2,
+          "line": 36
+        },
+        {
+          "heading": "Shared neighborhood contract",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "Semantic surface field contract",
+          "level": 2,
+          "line": 62
+        },
+        {
+          "heading": "Training lifecycle",
+          "level": 2,
+          "line": 80
+        },
+        {
+          "heading": "Topology lifecycle",
+          "level": 2,
+          "line": 99
+        },
+        {
+          "heading": "Checkpoint and extraction contract",
+          "level": 2,
+          "line": 175
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "LICENSE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 83,
+      "nonEmptyLines": 63,
+      "sections": [
+        {
+          "heading": "1.  Definitions",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "2.  Purpose",
+          "level": 2,
+          "line": 27
+        },
+        {
+          "heading": "3.  Rights granted",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "4.  Limitations",
+          "level": 2,
+          "line": 44
+        },
+        {
+          "heading": "5.  Disclaimer",
+          "level": 2,
+          "line": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 5
+      }
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 369,
+      "nonEmptyLines": 314,
+      "sections": [
+        {
+          "heading": "Semantic Gaussian Wrapping",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "What is implemented",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Installation",
+          "level": 2,
+          "line": 63
+        },
+        {
+          "heading": "Dataset layout",
+          "level": 2,
+          "line": 94
+        },
+        {
+          "heading": "Training",
+          "level": 2,
+          "line": 129
+        },
+        {
+          "heading": "Rendering and evaluation",
+          "level": 2,
+          "line": 276
+        },
+        {
+          "heading": "Mesh extraction and evaluation",
+          "level": 2,
+          "line": 298
+        },
+        {
+          "heading": "Verifying the checkout",
+          "level": 2,
+          "line": 353
+        },
+        {
+          "heading": "Research and licensing",
+          "level": 2,
+          "line": 364
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "THIRD_PARTY_NOTICES.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 13,
+      "nonEmptyLines": 10,
+      "sections": [
+        {
+          "heading": "Third-party notices",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "pyproject.toml",
+      "language": "toml",
+      "fileCategory": "config",
+      "totalLines": 65,
+      "nonEmptyLines": 57,
+      "sections": [
+        {
+          "heading": "build-system",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "project",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "project.scripts",
+          "level": 2,
+          "line": 23
+        },
+        {
+          "heading": "tool.setuptools",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "tool.setuptools.packages.find",
+          "level": 4,
+          "line": 34
+        },
+        {
+          "heading": "tool.setuptools.package-data",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "tool.pytest.ini_options",
+          "level": 3,
+          "line": 55
+        },
+        {
+          "heading": "tool.ruff",
+          "level": 2,
+          "line": 59
+        },
+        {
+          "heading": "tool.ruff.lint.per-file-ignores",
+          "level": 4,
+          "line": 63
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    }
+  ]
+}

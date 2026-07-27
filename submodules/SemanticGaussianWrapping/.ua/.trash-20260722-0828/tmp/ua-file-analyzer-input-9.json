@@ -1,0 +1,70 @@
+{
+  "projectRoot": "/home/martin/code/gsagent/submodules/SemanticGaussianWrapping",
+  "batchFiles": [
+    {
+      "path": "configs/default.yaml",
+      "language": "yaml",
+      "sizeLines": 214,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full.yaml",
+      "language": "yaml",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full_no_confidence_propagation.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full_no_expert_certainty.yaml",
+      "language": "yaml",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full_no_mesh_feedback.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full_no_prune_replace.yaml",
+      "language": "yaml",
+      "sizeLines": 7,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/full_no_surface_topology.yaml",
+      "language": "yaml",
+      "sizeLines": 6,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/rgb_only.yaml",
+      "language": "yaml",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "configs/semantic_render_only.yaml",
+      "language": "yaml",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "configs/default.yaml": [],
+    "configs/full.yaml": [],
+    "configs/full_no_confidence_propagation.yaml": [],
+    "configs/full_no_expert_certainty.yaml": [],
+    "configs/full_no_mesh_feedback.yaml": [],
+    "configs/full_no_prune_replace.yaml": [],
+    "configs/full_no_surface_topology.yaml": [],
+    "configs/rgb_only.yaml": [],
+    "configs/semantic_render_only.yaml": []
+  }
+}

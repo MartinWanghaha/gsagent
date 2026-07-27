@@ -1,0 +1,11 @@
+[build-system]
+requires = ["setuptools>=68", "wheel", "torch>=2.0", "ninja>=1.11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "diff-semantic-gaussian-rasterization"
+version = "0.1.0"
+description = "Differentiable joint semantic Gaussian rasterization"
+requires-python = ">=3.9"
+dependencies = ["torch>=2.0"]
+license = {file = "LICENSE.md"}

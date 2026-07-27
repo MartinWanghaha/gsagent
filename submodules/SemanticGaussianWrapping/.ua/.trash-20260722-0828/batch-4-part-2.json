@@ -1,0 +1,1182 @@
+{
+  "nodes": [
+    {
+      "id": "file:scene/gaussian_model.py",
+      "type": "file",
+      "name": "gaussian_model.py",
+      "filePath": "scene/gaussian_model.py",
+      "summary": "实现 Semantic Gaussian 核心模型，管理渲染、语义和几何属性，支持训练配置、证据更新、checkpoint 以及 densification/pruning。",
+      "tags": [
+        "Gaussian-模型",
+        "语义-表示",
+        "拓扑-变更"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:RGB2SH",
+      "type": "function",
+      "name": "RGB2SH",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        55,
+        56
+      ],
+      "summary": "实现 RGB2SH 操作，供 gaussian_model.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:SH2RGB",
+      "type": "function",
+      "name": "SH2RGB",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        59,
+        60
+      ],
+      "summary": "实现 SH2RGB 操作，供 gaussian_model.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:inverse_sigmoid",
+      "type": "function",
+      "name": "inverse_sigmoid",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        63,
+        65
+      ],
+      "summary": "实现 inverse sigmoid 操作，供 gaussian_model.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:quaternion_to_matrix",
+      "type": "function",
+      "name": "quaternion_to_matrix",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        68,
+        78
+      ],
+      "summary": "将归一化 quaternion 批量转换为旋转矩阵。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:strip_symmetric",
+      "type": "function",
+      "name": "strip_symmetric",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        81,
+        89
+      ],
+      "summary": "实现 strip symmetric 操作，供 gaussian_model.py 的主要流程复用。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:_selection_mask",
+      "type": "function",
+      "name": "_selection_mask",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        92,
+        105
+      ],
+      "summary": "把索引、布尔 mask 或切片规范化为 Gaussian 选择掩码。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:scene/gaussian_model.py:_exponential_lr",
+      "type": "function",
+      "name": "_exponential_lr",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        108,
+        124
+      ],
+      "summary": "构造带 delay 的指数学习率调度函数。",
+      "tags": [
+        "核心-函数",
+        "数据-处理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/gaussian_model.py:TopologyStamp",
+      "type": "class",
+      "name": "TopologyStamp",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        41,
+        52
+      ],
+      "summary": "记录 Gaussian 拓扑版本和变更计数以驱动缓存失效。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/gaussian_model.py:SemanticDecoder",
+      "type": "class",
+      "name": "SemanticDecoder",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        127,
+        138
+      ],
+      "summary": "将 Gaussian semantic embedding 解码为类别 logits。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:scene/gaussian_model.py:GaussianModel",
+      "type": "class",
+      "name": "GaussianModel",
+      "filePath": "scene/gaussian_model.py",
+      "lineRange": [
+        141,
+        1060
+      ],
+      "summary": "管理 Gaussian 全量属性、训练状态、证据、持久化和 densification/pruning 生命周期。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/geometry_policy.py",
+      "type": "file",
+      "name": "geometry_policy.py",
+      "filePath": "semantic/geometry_policy.py",
+      "summary": "将 Gaussian 的语义与几何证据转换为软策略分布，并借助邻域结构传播置信度和采样监督目标。",
+      "tags": [
+        "几何-策略",
+        "证据-传播",
+        "置信度"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:semantic/geometry_policy.py:_TensorMapping",
+      "type": "class",
+      "name": "_TensorMapping",
+      "filePath": "semantic/geometry_policy.py",
+      "lineRange": [
+        19,
+        35
+      ],
+      "summary": "为 dataclass 输出提供 Mapping、to 与 detach 语义。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/geometry_policy.py:GeometryPolicyOutput",
+      "type": "class",
+      "name": "GeometryPolicyOutput",
+      "filePath": "semantic/geometry_policy.py",
+      "lineRange": [
+        39,
+        49
+      ],
+      "summary": "承载几何策略 logits、posterior 与相关置信度输出。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/geometry_policy.py:SoftGeometryPolicyBank",
+      "type": "class",
+      "name": "SoftGeometryPolicyBank",
+      "filePath": "semantic/geometry_policy.py",
+      "lineRange": [
+        52,
+        194
+      ],
+      "summary": "融合多个几何 expert，生成可正则化的软策略 posterior。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:semantic/geometry_policy.py:GeometryEvidenceProjector",
+      "type": "class",
+      "name": "GeometryEvidenceProjector",
+      "filePath": "semantic/geometry_policy.py",
+      "lineRange": [
+        197,
+        567
+      ],
+      "summary": "借助邻域属性投影几何证据并传播语义置信度。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/neighbor_index.py",
+      "type": "file",
+      "name": "neighbor_index.py",
+      "filePath": "semantic/neighbor_index.py",
+      "summary": "实现 Gaussian 邻域索引，提供 SciPy 与精确 PyTorch 后端，并按各向异性支撑范围进行分块候选筛选和重排。",
+      "tags": [
+        "邻域-索引",
+        "空间-查询",
+        "内存-分块"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:semantic/neighbor_index.py:_SupportBucket",
+      "type": "class",
+      "name": "_SupportBucket",
+      "filePath": "semantic/neighbor_index.py",
+      "lineRange": [
+        20,
+        24
+      ],
+      "summary": "记录 ragged 支撑候选的长度分桶。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/neighbor_index.py:GaussianSupportAttributes",
+      "type": "class",
+      "name": "GaussianSupportAttributes",
+      "filePath": "semantic/neighbor_index.py",
+      "lineRange": [
+        28,
+        53
+      ],
+      "summary": "封装支撑排序使用的 scaling、rotation 与 opacity 属性。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/neighbor_index.py:GaussianNeighborIndex",
+      "type": "class",
+      "name": "GaussianNeighborIndex",
+      "filePath": "semantic/neighbor_index.py",
+      "lineRange": [
+        56,
+        955
+      ],
+      "summary": "维护可失效的 Gaussian 空间索引，并执行精确或 SciPy 分块邻域与支撑查询。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/surface_field.py",
+      "type": "file",
+      "name": "surface_field.py",
+      "filePath": "semantic/surface_field.py",
+      "summary": "基于 Gaussian 邻域插值构建可微语义表面场，分块查询 SDF、法线、语义与几何置信度。",
+      "tags": [
+        "表面-场",
+        "可微-查询",
+        "语义-几何"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:semantic/surface_field.py:_ResultMapping",
+      "type": "class",
+      "name": "_ResultMapping",
+      "filePath": "semantic/surface_field.py",
+      "lineRange": [
+        18,
+        34
+      ],
+      "summary": "为表面查询结果提供 Mapping、设备迁移与 detach 操作。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/surface_field.py:SurfaceQueryResult",
+      "type": "class",
+      "name": "SurfaceQueryResult",
+      "filePath": "semantic/surface_field.py",
+      "lineRange": [
+        38,
+        48
+      ],
+      "summary": "承载 SDF、法线、语义和置信度等表面查询结果。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/surface_field.py:SurfaceQueryContext",
+      "type": "class",
+      "name": "SurfaceQueryContext",
+      "filePath": "semantic/surface_field.py",
+      "lineRange": [
+        52,
+        65
+      ],
+      "summary": "缓存一次查询中可复用的紧凑 Gaussian 属性上下文。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:semantic/surface_field.py:SemanticSurfaceField",
+      "type": "class",
+      "name": "SemanticSurfaceField",
+      "filePath": "semantic/surface_field.py",
+      "lineRange": [
+        68,
+        426
+      ],
+      "summary": "通过邻域 Gaussian 的各向异性支撑构造可微语义表面查询。",
+      "tags": [
+        "核心-类型",
+        "状态-管理",
+        "Python"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_attribute_registry.py",
+      "type": "file",
+      "name": "test_attribute_registry.py",
+      "filePath": "tests/test_attribute_registry.py",
+      "summary": "验证动态 Gaussian 属性注册、optimizer 状态迁移、拓扑戳、PLY/checkpoint 往返及 COLMAP 语义观测对齐。",
+      "tags": [
+        "测试",
+        "属性-注册表",
+        "拓扑-一致性"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_registry_clone_prune_updates_every_attribute_and_adam_state",
+      "type": "function",
+      "name": "test_registry_clone_prune_updates_every_attribute_and_adam_state",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        22,
+        49
+      ],
+      "summary": "验证 registry clone prune updates every attribute and adam state 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_position_schedule_has_no_implicit_full_training_warmup",
+      "type": "function",
+      "name": "test_position_schedule_has_no_implicit_full_training_warmup",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        52,
+        57
+      ],
+      "summary": "验证 position schedule has no implicit full training warmup 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_feature_dc_and_rest_learning_rates_are_independent",
+      "type": "function",
+      "name": "test_feature_dc_and_rest_learning_rates_are_independent",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        60,
+        69
+      ],
+      "summary": "验证 feature dc and rest learning rates are independent 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_single_attribute_replace_preserves_sibling_parameters_and_resets_moments",
+      "type": "function",
+      "name": "test_single_attribute_replace_preserves_sibling_parameters_and_resets_moments",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        72,
+        98
+      ],
+      "summary": "验证 single attribute replace preserves sibling parameters and resets moments 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_semantic_lift_keeps_rgb_and_semantic_parameters_trainable",
+      "type": "function",
+      "name": "test_semantic_lift_keeps_rgb_and_semantic_parameters_trainable",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        101,
+        112
+      ],
+      "summary": "验证 semantic lift keeps rgb and semantic parameters trainable 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_registry_ply_round_trip_preserves_dynamic_schema",
+      "type": "function",
+      "name": "test_registry_ply_round_trip_preserves_dynamic_schema",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        115,
+        128
+      ],
+      "summary": "验证 registry ply round trip preserves dynamic schema 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_gaussian_model_combined_topology_is_based_on_old_indices",
+      "type": "function",
+      "name": "test_gaussian_model_combined_topology_is_based_on_old_indices",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        131,
+        180
+      ],
+      "summary": "验证 gaussian model combined topology is based on old indices 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_zero_net_growth_prune_and_replace_advances_topology_stamp",
+      "type": "function",
+      "name": "test_zero_net_growth_prune_and_replace_advances_topology_stamp",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        183,
+        209
+      ],
+      "summary": "验证 zero net growth prune and replace advances topology stamp 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_topology_stamp_round_trips_and_legacy_snapshots_default_to_zero",
+      "type": "function",
+      "name": "test_topology_stamp_round_trips_and_legacy_snapshots_default_to_zero",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        212,
+        240
+      ],
+      "summary": "验证 topology stamp round trips and legacy snapshots default to zero 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_point_cloud_and_ply_import_define_fresh_topology_baselines",
+      "type": "function",
+      "name": "test_point_cloud_and_ply_import_define_fresh_topology_baselines",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        243,
+        265
+      ],
+      "summary": "验证 point cloud and ply import define fresh topology baselines 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:tests/test_attribute_registry.py:test_colmap_scene_loads_aligned_gaga_observations",
+      "type": "function",
+      "name": "test_colmap_scene_loads_aligned_gaga_observations",
+      "filePath": "tests/test_attribute_registry.py",
+      "lineRange": [
+        268,
+        315
+      ],
+      "summary": "验证 colmap scene loads aligned gaga observations 场景下的行为、数值约束与回归不变量。",
+      "tags": [
+        "测试",
+        "回归-验证",
+        "行为-契约"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:RGB2SH",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:RGB2SH",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:SH2RGB",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:SH2RGB",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:inverse_sigmoid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:inverse_sigmoid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:quaternion_to_matrix",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:quaternion_to_matrix",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:strip_symmetric",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:strip_symmetric",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:_selection_mask",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:_selection_mask",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:_exponential_lr",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "function:scene/gaussian_model.py:_exponential_lr",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:TopologyStamp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:TopologyStamp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:SemanticDecoder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:SemanticDecoder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:GaussianModel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "class:scene/gaussian_model.py:GaussianModel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:_TensorMapping",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:_TensorMapping",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:GeometryPolicyOutput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:GeometryPolicyOutput",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:SoftGeometryPolicyBank",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:SoftGeometryPolicyBank",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:GeometryEvidenceProjector",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "class:semantic/geometry_policy.py:GeometryEvidenceProjector",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:_SupportBucket",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:_SupportBucket",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:GaussianSupportAttributes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:GaussianSupportAttributes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:GaussianNeighborIndex",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "class:semantic/neighbor_index.py:GaussianNeighborIndex",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:_ResultMapping",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:_ResultMapping",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SurfaceQueryResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SurfaceQueryResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SurfaceQueryContext",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SurfaceQueryContext",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SemanticSurfaceField",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "class:semantic/surface_field.py:SemanticSurfaceField",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_registry_clone_prune_updates_every_attribute_and_adam_state",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_registry_clone_prune_updates_every_attribute_and_adam_state",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_position_schedule_has_no_implicit_full_training_warmup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_position_schedule_has_no_implicit_full_training_warmup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_feature_dc_and_rest_learning_rates_are_independent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_feature_dc_and_rest_learning_rates_are_independent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_single_attribute_replace_preserves_sibling_parameters_and_resets_moments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_single_attribute_replace_preserves_sibling_parameters_and_resets_moments",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_semantic_lift_keeps_rgb_and_semantic_parameters_trainable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_semantic_lift_keeps_rgb_and_semantic_parameters_trainable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_registry_ply_round_trip_preserves_dynamic_schema",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_registry_ply_round_trip_preserves_dynamic_schema",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_gaussian_model_combined_topology_is_based_on_old_indices",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_gaussian_model_combined_topology_is_based_on_old_indices",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_zero_net_growth_prune_and_replace_advances_topology_stamp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_zero_net_growth_prune_and_replace_advances_topology_stamp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_topology_stamp_round_trips_and_legacy_snapshots_default_to_zero",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_topology_stamp_round_trips_and_legacy_snapshots_default_to_zero",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_point_cloud_and_ply_import_define_fresh_topology_baselines",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_point_cloud_and_ply_import_define_fresh_topology_baselines",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_colmap_scene_loads_aligned_gaga_observations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "function:tests/test_attribute_registry.py:test_colmap_scene_loads_aligned_gaga_observations",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_neighbor_index.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

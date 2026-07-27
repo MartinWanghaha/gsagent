@@ -1,0 +1,1 @@
+We copy this code from the [From Blobs to Spokes: High-Fidelity Surface Reconstruction via Oriented Gaussians](https://diego1401.github.io/BlobsToSpokesWebsite/index.html) project to make this repository easily portable to other projects.

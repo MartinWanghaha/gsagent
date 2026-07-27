@@ -1,0 +1,3982 @@
+{
+  "fileNodes": [
+    {
+      "id": "file:densification/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "densification/__init__.py",
+      "summary": "汇总 densification 子系统的公开接口，为训练流程提供密度控制器及其决策数据结构。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:densification/controller.py",
+      "type": "file",
+      "name": "controller.py",
+      "filePath": "densification/controller.py",
+      "summary": "实现 Gaussian 点的自适应 densification 控制，根据 RGB、语义、几何与 mesh coverage 信号完成 clone、split、prune 和容量预算管理。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/losses.py",
+      "type": "file",
+      "name": "losses.py",
+      "filePath": "regularization/losses.py",
+      "summary": "组合 photometric、semantic、manifold、geometry-policy、normal 与 SH prior 等训练损失，并管理邻域索引和几何证据状态。",
+      "tags": [
+        "损失函数",
+        "regularization",
+        "训练目标"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/surface.py",
+      "type": "file",
+      "name": "surface.py",
+      "filePath": "regularization/surface.py",
+      "summary": "构造 Gaussian 中心与 pivot 的 surface consistency 查询批次，并对采样、置信度和退化输入进行稳健处理。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_checkpointing.py",
+      "type": "file",
+      "name": "test_checkpointing.py",
+      "filePath": "tests/test_checkpointing.py",
+      "summary": "验证 checkpoint 原子保存、配置恢复、来源校验、RNG 状态和 schema 兼容性。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_density_controller.py",
+      "type": "file",
+      "name": "test_density_controller.py",
+      "filePath": "tests/test_density_controller.py",
+      "summary": "覆盖 DensityController 的语义门控、区域预算、容量替换、mesh coverage、状态恢复与拓扑变异边界条件。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_density_lifecycle.py",
+      "type": "file",
+      "name": "test_density_lifecycle.py",
+      "filePath": "tests/test_density_lifecycle.py",
+      "summary": "验证标准与 surface densification 生命周期的观测窗口、切换时机、延迟 pruning 和旧配置恢复。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_depth_normal_validity.py",
+      "type": "file",
+      "name": "test_depth_normal_validity.py",
+      "filePath": "tests/test_depth_normal_validity.py",
+      "summary": "验证 depth-to-normal 几何转换、轮廓侵蚀、alpha 有效域和残差梯度行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_loss_curriculum.py",
+      "type": "file",
+      "name": "test_loss_curriculum.py",
+      "filePath": "tests/test_loss_curriculum.py",
+      "summary": "验证损失 curriculum 在 bootstrap、ignore label、置信度门控和几何证据 checkpoint 恢复场景下的行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_semantic_region_routing.py",
+      "type": "file",
+      "name": "test_semantic_region_routing.py",
+      "filePath": "tests/test_semantic_region_routing.py",
+      "summary": "验证语义候选点的 chunked region decoding 与索引、空输入及 chunk size 契约。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_surface_regularization.py",
+      "type": "file",
+      "name": "test_surface_regularization.py",
+      "filePath": "tests/test_surface_regularization.py",
+      "summary": "验证 surface consistency 的合并查询、零采样退化路径和原始几何候选采集。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_training_diagnostics.py",
+      "type": "file",
+      "name": "test_training_diagnostics.py",
+      "filePath": "tests/test_training_diagnostics.py",
+      "summary": "验证训练语义几何诊断采用有界均匀采样，并兼容缺少辅助 API 的 Gaussian 模型。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_training_log_resume.py",
+      "type": "file",
+      "name": "test_training_log_resume.py",
+      "filePath": "tests/test_training_log_resume.py",
+      "summary": "验证 resume 时 JSONL 日志回卷、废弃尾部归档和截断记录保留。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_training_profiling.py",
+      "type": "file",
+      "name": "test_training_profiling.py",
+      "filePath": "tests/test_training_profiling.py",
+      "summary": "验证 CUDA step profiler 的采样开关与同步边界。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:training/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "training/__init__.py",
+      "summary": "汇总训练引擎与 checkpointing 的公开接口，作为训练子系统入口。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:training/checkpointing.py",
+      "type": "file",
+      "name": "checkpointing.py",
+      "filePath": "training/checkpointing.py",
+      "summary": "提供训练配置恢复、resume 来源验证、原子 checkpoint 写入以及 CPU/CUDA RNG 状态捕获与恢复。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:training/engine.py",
+      "type": "file",
+      "name": "engine.py",
+      "filePath": "training/engine.py",
+      "summary": "实现 Semantic Gaussian 的完整训练引擎，编排渲染、复合损失、densification、surface/mesh feedback、日志、profiling 与状态恢复。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:utils/general_utils.py",
+      "type": "file",
+      "name": "general_utils.py",
+      "filePath": "utils/general_utils.py",
+      "summary": "提供 inverse sigmoid、指数学习率、quaternion 旋转、协方差构造及随机种子初始化等通用数学工具。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:utils/graphics_utils.py",
+      "type": "file",
+      "name": "graphics_utils.py",
+      "filePath": "utils/graphics_utils.py",
+      "summary": "提供相机视图/投影矩阵、焦距与 FOV 转换，以及 depth point、normal 和有效域残差计算。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:extract_mesh.py",
+      "type": "file",
+      "name": "extract_mesh.py",
+      "filePath": "extract_mesh.py",
+      "summary": "网格提取命令行入口：加载训练场景或 surface field，推导采样边界与分辨率，并驱动语义网格提取和导出。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "mesh/__init__.py",
+      "summary": "网格子系统的公共 API 聚合层，集中暴露采样、提取、拓扑过滤、后处理、I/O 与质量评估能力。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/bounds.py",
+      "type": "file",
+      "name": "bounds.py",
+      "filePath": "mesh/bounds.py",
+      "summary": "根据 Gaussian 的位置、尺度和旋转估计空间支持边界，并支持选择与离群点裁剪。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/extractors.py",
+      "type": "file",
+      "name": "extractors.py",
+      "filePath": "mesh/extractors.py",
+      "summary": "实现 blocked marching cubes、marching tetrahedra 与 Delaunay tetrahedralization 等等值面提取算法，并负责合并和定向三角网格。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/field.py",
+      "type": "file",
+      "name": "field.py",
+      "filePath": "mesh/field.py",
+      "summary": "把不同模型查询接口适配为统一的语义 surface field contract，规范几何值、语义、置信度和设备转换。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/io.py",
+      "type": "file",
+      "name": "io.py",
+      "filePath": "mesh/io.py",
+      "summary": "提供带法线、语义标签和自定义顶点属性的 PLY/OBJ 网格读写，以及点云加载。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/metrics.py",
+      "type": "file",
+      "name": "metrics.py",
+      "filePath": "mesh/metrics.py",
+      "summary": "提供确定性表面采样、最近邻距离、Chamfer distance、precision/recall/F-score 等网格质量指标。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/pipeline.py",
+      "type": "file",
+      "name": "pipeline.py",
+      "filePath": "mesh/pipeline.py",
+      "summary": "编排 surface field 采样、等值面提取、语义拓扑过滤、后处理和导出的完整网格流水线。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:mesh/postprocess.py",
+      "type": "file",
+      "name": "postprocess.py",
+      "filePath": "mesh/postprocess.py",
+      "summary": "实现法线重算、退化面清理、小连通分量移除、seam-aware 聚类与面数简化。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/sampling.py",
+      "type": "file",
+      "name": "sampling.py",
+      "filePath": "mesh/sampling.py",
+      "summary": "定义空间 Bounds、octree 与 blocked grid 自适应采样器，依据场值、语义边界和不确定性细化采样。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/topology.py",
+      "type": "file",
+      "name": "topology.py",
+      "filePath": "mesh/topology.py",
+      "summary": "构建语义 contact graph 并根据标签、embedding 与置信度过滤网格拓扑，同时提供 seam 和连通分量分析。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:mesh/types.py",
+      "type": "file",
+      "name": "types.py",
+      "filePath": "mesh/types.py",
+      "summary": "定义 surface samples 与 triangle mesh 的核心数据结构，集中执行形状、dtype 和索引一致性校验。",
+      "tags": [
+        "mesh",
+        "geometry",
+        "surface-reconstruction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_contact_learning.py",
+      "type": "file",
+      "name": "test_contact_learning.py",
+      "filePath": "tests/test_contact_learning.py",
+      "summary": "验证 contact learning 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_bounds.py",
+      "type": "file",
+      "name": "test_mesh_bounds.py",
+      "filePath": "tests/test_mesh_bounds.py",
+      "summary": "验证 mesh bounds 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mesh_cli.py",
+      "type": "file",
+      "name": "test_mesh_cli.py",
+      "filePath": "tests/test_mesh_cli.py",
+      "summary": "验证 mesh cli 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mesh_conformity.py",
+      "type": "file",
+      "name": "test_mesh_conformity.py",
+      "filePath": "tests/test_mesh_conformity.py",
+      "summary": "验证 mesh conformity 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mesh_io.py",
+      "type": "file",
+      "name": "test_mesh_io.py",
+      "filePath": "tests/test_mesh_io.py",
+      "summary": "验证 mesh io 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mesh_metrics.py",
+      "type": "file",
+      "name": "test_mesh_metrics.py",
+      "filePath": "tests/test_mesh_metrics.py",
+      "summary": "验证 mesh metrics 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_topology.py",
+      "type": "file",
+      "name": "test_mesh_topology.py",
+      "filePath": "tests/test_mesh_topology.py",
+      "summary": "验证 mesh topology 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:gaussian_renderer/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "gaussian_renderer/__init__.py",
+      "summary": "封装 differentiable Gaussian rasterizer，将相机、Gaussian 属性和语义 embedding 组装为 RGB、depth、normal、alpha 与语义输出。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:model_io.py",
+      "type": "file",
+      "name": "model_io.py",
+      "filePath": "model_io.py",
+      "summary": "集中处理训练与推理模型装载，包括配置 namespace、iteration 解析、Gaussian checkpoint、Scene、邻域索引及 surface field 构建。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:render.py",
+      "type": "file",
+      "name": "render.py",
+      "filePath": "render.py",
+      "summary": "实现离线渲染 CLI，支持 iteration/view 选择、RGB 与语义输出解码、ground-truth 对齐及逐 iteration 执行。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "semantic/__init__.py",
+      "summary": "提供 semantic 子系统的延迟导入入口，按需暴露 GaGa adapter、geometry policy 与 neighbor index 类型。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:semantic/gaga_adapter.py",
+      "type": "file",
+      "name": "gaga_adapter.py",
+      "filePath": "semantic/gaga_adapter.py",
+      "summary": "将 GaGa 风格语义观测文件解析为紧凑 label、置信度、边界和实例映射，供训练数据管线使用。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_config.py",
+      "type": "file",
+      "name": "test_config.py",
+      "filePath": "tests/test_config.py",
+      "summary": "系统验证配置继承、ablation、训练维度、curriculum、surface/mesh feedback、profiling 和 checkpoint override 约束。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_end_to_end_smoke.py",
+      "type": "file",
+      "name": "test_end_to_end_smoke.py",
+      "filePath": "tests/test_end_to_end_smoke.py",
+      "summary": "构造最小 Blender 场景，执行训练、checkpoint reload 与 rendering 的端到端 smoke test。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mipnerf360_launcher.py",
+      "type": "file",
+      "name": "test_mipnerf360_launcher.py",
+      "filePath": "tests/test_mipnerf360_launcher.py",
+      "summary": "验证 Mip-NeRF 360 launcher 的参数翻译、resume 安全性、语义数据校验、输出目录隔离和 iteration 选择。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_model_io_inference.py",
+      "type": "file",
+      "name": "test_model_io_inference.py",
+      "filePath": "tests/test_model_io_inference.py",
+      "summary": "验证推理 checkpoint 的 CPU-only mmap 加载、兼容回退及完整 iteration 优先策略。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_reference_rasterizer.py",
+      "type": "file",
+      "name": "test_reference_rasterizer.py",
+      "filePath": "tests/test_reference_rasterizer.py",
+      "summary": "验证 reference rasterizer 的张量契约、联合梯度、chunking、CPU fallback、viewport 梯度及 CUDA 一致性。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_render_outputs.py",
+      "type": "file",
+      "name": "test_render_outputs.py",
+      "filePath": "tests/test_render_outputs.py",
+      "summary": "验证透明背景合成、RGB-only 相机、view/iteration 选择、文件命名与 chunked semantic decode。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_train_configuration_wiring.py",
+      "type": "file",
+      "name": "test_train_configuration_wiring.py",
+      "filePath": "tests/test_train_configuration_wiring.py",
+      "summary": "验证 geometry evidence、async mesh feedback、checkpoint 发布、resume 释放及 surface field 参数的训练 wiring。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tools/benchmark_surface_query.py",
+      "type": "file",
+      "name": "benchmark_surface_query.py",
+      "filePath": "tools/benchmark_surface_query.py",
+      "summary": "提供 surface query benchmark，测量不同采样规模和查询策略的耗时、吞吐与显存表现。",
+      "tags": [
+        "benchmark",
+        "开发工具",
+        "性能分析"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:train.py",
+      "type": "file",
+      "name": "train.py",
+      "filePath": "train.py",
+      "summary": "训练 CLI 入口，解析配置与 resume 状态，构建 Scene、Gaussian、regularizer 和 trainer，并发布 checkpoint/PLY。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:utils/config_utils.py",
+      "type": "file",
+      "name": "config_utils.py",
+      "filePath": "utils/config_utils.py",
+      "summary": "实现 YAML 配置继承、deep merge、命令行 override、严格 schema/范围验证、namespace 转换和保存。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:utils/io_utils.py",
+      "type": "file",
+      "name": "io_utils.py",
+      "filePath": "utils/io_utils.py",
+      "summary": "提供 RGB、16-bit 灰度、语义 label palette 与 NumPy array 的确定性输出工具。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scene/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "scene/__init__.py",
+      "summary": "组装数据集、相机与 GaussianModel 的场景生命周期，负责分辨率选择、训练/测试相机构建以及检查点和点云保存。",
+      "tags": [
+        "场景-管理",
+        "入口点",
+        "相机-装配",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:scene/cameras.py",
+      "type": "file",
+      "name": "cameras.py",
+      "filePath": "scene/cameras.py",
+      "summary": "定义完整相机与轻量 MiniCam 表示，并实现投影矩阵、图像/语义观测缩放裁剪和语义边界计算。",
+      "tags": [
+        "相机-模型",
+        "几何-变换",
+        "观测-预处理"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:scene/colmap_loader.py",
+      "type": "file",
+      "name": "colmap_loader.py",
+      "filePath": "scene/colmap_loader.py",
+      "summary": "解析 COLMAP 文本及二进制稀疏重建模型，将相机内外参、图像姿态与三维点转换为 Python 数据结构。",
+      "tags": [
+        "COLMAP",
+        "数据-解析",
+        "相机-标定",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:scene/dataset_readers.py",
+      "type": "file",
+      "name": "dataset_readers.py",
+      "filePath": "scene/dataset_readers.py",
+      "summary": "统一读取 COLMAP 与 Blender/NeRF Synthetic 数据集，构造相机载荷、点云和训练测试划分，并支持 PLY 输入输出。",
+      "tags": [
+        "数据集-加载",
+        "点云",
+        "相机-观测",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:scene/gaussian_attributes.py",
+      "type": "file",
+      "name": "gaussian_attributes.py",
+      "filePath": "scene/gaussian_attributes.py",
+      "summary": "提供可扩展 Gaussian 属性注册表，统一管理 Parameter、optimizer 状态、拓扑变更以及 checkpoint/PLY 序列化。",
+      "tags": [
+        "属性-注册表",
+        "optimizer",
+        "序列化",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:scene/gaussian_model.py",
+      "type": "file",
+      "name": "gaussian_model.py",
+      "filePath": "scene/gaussian_model.py",
+      "summary": "实现 Semantic Gaussian 核心模型，管理渲染、语义和几何属性，支持训练配置、证据更新、checkpoint 以及 densification/pruning。",
+      "tags": [
+        "Gaussian-模型",
+        "语义-表示",
+        "拓扑-变更",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/geometry_policy.py",
+      "type": "file",
+      "name": "geometry_policy.py",
+      "filePath": "semantic/geometry_policy.py",
+      "summary": "将 Gaussian 的语义与几何证据转换为软策略分布，并借助邻域结构传播置信度和采样监督目标。",
+      "tags": [
+        "几何-策略",
+        "证据-传播",
+        "置信度",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/neighbor_index.py",
+      "type": "file",
+      "name": "neighbor_index.py",
+      "filePath": "semantic/neighbor_index.py",
+      "summary": "实现 Gaussian 邻域索引，提供 SciPy 与精确 PyTorch 后端，并按各向异性支撑范围进行分块候选筛选和重排。",
+      "tags": [
+        "邻域-索引",
+        "空间-查询",
+        "内存-分块",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:semantic/surface_field.py",
+      "type": "file",
+      "name": "surface_field.py",
+      "filePath": "semantic/surface_field.py",
+      "summary": "基于 Gaussian 邻域插值构建可微语义表面场，分块查询 SDF、法线、语义与几何置信度。",
+      "tags": [
+        "表面-场",
+        "可微-查询",
+        "语义-几何",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_attribute_registry.py",
+      "type": "file",
+      "name": "test_attribute_registry.py",
+      "filePath": "tests/test_attribute_registry.py",
+      "summary": "验证动态 Gaussian 属性注册、optimizer 状态迁移、拓扑戳、PLY/checkpoint 往返及 COLMAP 语义观测对齐。",
+      "tags": [
+        "测试",
+        "属性-注册表",
+        "拓扑-一致性"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_camera_intrinsics.py",
+      "type": "file",
+      "name": "test_camera_intrinsics.py",
+      "filePath": "tests/test_camera_intrinsics.py",
+      "summary": "验证非中心针孔内参得到保留，并拒绝当前管线不支持的畸变 COLMAP 相机。",
+      "tags": [
+        "测试",
+        "相机-内参",
+        "COLMAP"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_neighbor_index.py",
+      "type": "file",
+      "name": "test_neighbor_index.py",
+      "filePath": "tests/test_neighbor_index.py",
+      "summary": "覆盖精确与 SciPy 邻域查询、各向异性支撑排序、拓扑失效机制以及候选和 workspace 内存上界。",
+      "tags": [
+        "测试",
+        "邻域-索引",
+        "内存-约束"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_semantic_evidence.py",
+      "type": "file",
+      "name": "test_semantic_evidence.py",
+      "filePath": "tests/test_semantic_evidence.py",
+      "summary": "验证语义置信度传播、边界抑制、checkpoint schema 迁移以及不可变推理快照。",
+      "tags": [
+        "测试",
+        "语义-证据",
+        "checkpoint"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_surface_field.py",
+      "type": "file",
+      "name": "test_surface_field.py",
+      "filePath": "tests/test_surface_field.py",
+      "summary": "验证表面场快照、梯度、紧凑查询上下文、分块复用、远场 SDF 与空间索引失效行为。",
+      "tags": [
+        "测试",
+        "表面-场",
+        "梯度-一致性"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "regularization/__init__.py",
+      "summary": "汇总并公开 regularization 子系统的损失、mesh feedback、Pareto 梯度守卫和训练阶段调度接口。",
+      "tags": [
+        "正则化",
+        "入口点",
+        "公共-接口",
+        "tested"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:regularization/mesh_correspondence.py",
+      "type": "file",
+      "name": "mesh_correspondence.py",
+      "filePath": "regularization/mesh_correspondence.py",
+      "summary": "将查询点稳健投影到 triangle mesh，结合局部尺度、法线和语义门控计算 point-to-plane correspondence。",
+      "tags": [
+        "mesh-对应",
+        "鲁棒-损失",
+        "几何-投影",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/mesh_feedback.py",
+      "type": "file",
+      "name": "mesh_feedback.py",
+      "filePath": "regularization/mesh_feedback.py",
+      "summary": "实现异步 mesh feedback 正则器，管理 mesh 抽取、清理、质量门控、缓存恢复、平滑切换与可微损失。",
+      "tags": [
+        "mesh-feedback",
+        "异步-刷新",
+        "质量-门控",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:regularization/pareto.py",
+      "type": "file",
+      "name": "pareto.py",
+      "filePath": "regularization/pareto.py",
+      "summary": "通过梯度投影组合 photometric 主目标与辅助目标，避免冲突梯度破坏主任务优化方向。",
+      "tags": [
+        "Pareto-优化",
+        "梯度-投影",
+        "多目标",
+        "tested"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:regularization/scheduler.py",
+      "type": "file",
+      "name": "scheduler.py",
+      "filePath": "regularization/scheduler.py",
+      "summary": "定义训练阶段及线性 ramp，按迭代生成 photometric、semantic、geometry 与 mesh 正则权重。",
+      "tags": [
+        "阶段-调度",
+        "损失-权重",
+        "训练-课程"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_mesh_correspondence.py",
+      "type": "file",
+      "name": "test_mesh_correspondence.py",
+      "filePath": "tests/test_mesh_correspondence.py",
+      "summary": "验证 triangle projection、鲁棒 point-to-plane 损失、尺度不变性、语义门控与 CUDA 窄相计算。",
+      "tags": [
+        "测试",
+        "mesh-对应",
+        "CUDA"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_mesh_feedback.py",
+      "type": "file",
+      "name": "test_mesh_feedback.py",
+      "filePath": "tests/test_mesh_feedback.py",
+      "summary": "覆盖 mesh feedback 的可微性、异步刷新、缓存迁移、异常隔离、资源清理和训练查询复用。",
+      "tags": [
+        "测试",
+        "mesh-feedback",
+        "异步-缓存"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_mesh_feedback_v4.py",
+      "type": "file",
+      "name": "test_mesh_feedback_v4.py",
+      "filePath": "tests/test_mesh_feedback_v4.py",
+      "summary": "验证 v4 mesh feedback 的 post-commit 刷新、freshness/quality gate、平滑 promotion、尺度归一化与 checkpoint 行为。",
+      "tags": [
+        "测试",
+        "mesh-feedback",
+        "质量-门控"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_pareto.py",
+      "type": "file",
+      "name": "test_pareto.py",
+      "filePath": "tests/test_pareto.py",
+      "summary": "验证 Pareto 梯度守卫能投影冲突辅助梯度，同时保留方向一致的辅助梯度。",
+      "tags": [
+        "测试",
+        "Pareto-优化",
+        "梯度-投影"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:evaluation/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "evaluation/__init__.py",
+      "summary": "汇总图像质量与语义评估接口，作为 evaluation 子系统入口。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "模块接口"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:evaluation/image_metrics.py",
+      "type": "file",
+      "name": "image_metrics.py",
+      "filePath": "evaluation/image_metrics.py",
+      "summary": "实现 ignore-aware confusion matrix、mean IoU 与累积式 PSNR/SSIM/LPIPS/语义指标统计。",
+      "tags": [
+        "核心逻辑",
+        "python",
+        "组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:metrics.py",
+      "type": "file",
+      "name": "metrics.py",
+      "filePath": "metrics.py",
+      "summary": "实现渲染结果评估 CLI，选择 method/iteration，计算图像和语义指标，并按 iteration 安全写入 JSON。",
+      "tags": [
+        "entry-point",
+        "cli",
+        "工作流编排"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:tests/test_blender_alpha.py",
+      "type": "file",
+      "name": "test_blender_alpha.py",
+      "filePath": "tests/test_blender_alpha.py",
+      "summary": "验证 Blender reader 保留前景 RGB/alpha、延迟分辨率 materialization 与随机背景合成目标。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_image_metrics.py",
+      "type": "file",
+      "name": "test_image_metrics.py",
+      "filePath": "tests/test_image_metrics.py",
+      "summary": "验证 confusion matrix、IoU、ignore label、非法预测与全忽略语义的序列化行为。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_metrics_cli.py",
+      "type": "file",
+      "name": "test_metrics_cli.py",
+      "filePath": "tests/test_metrics_cli.py",
+      "summary": "验证 metrics CLI 的多 iteration 选择、结果隔离、陈旧文件过滤和 CUDA 到 CPU 回退。",
+      "tags": [
+        "test",
+        "验证",
+        "回归测试"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:utils/image_utils.py",
+      "type": "file",
+      "name": "image_utils.py",
+      "filePath": "utils/image_utils.py",
+      "summary": "提供 alpha background compositing、MSE 和 PSNR 等轻量图像计算工具。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/loss_utils.py",
+      "type": "file",
+      "name": "loss_utils.py",
+      "filePath": "utils/loss_utils.py",
+      "summary": "提供 L1、SSIM、置信度加权 cross entropy、soft Dice 与 symmetric KL 损失原语。",
+      "tags": [
+        "utility",
+        "数值计算",
+        "共享组件"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "summary": "提供可微语义 Gaussian rasterizer 的 Python API，在 native CUDA extension 与 PyTorch reference 实现之间调度并封装 autograd。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "type": "file",
+      "name": "reference.py",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "summary": "以纯 PyTorch 实现 Gaussian 投影、协方差传播、tile-free alpha compositing 及 RGB、语义、深度、法线输出，作为 CUDA 对照实现。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "type": "file",
+      "name": "test_cuda_backward.py",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "summary": "验证 cuda backward 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:ARCHITECTURE.md",
+      "type": "document",
+      "name": "ARCHITECTURE.md",
+      "filePath": "ARCHITECTURE.md",
+      "summary": "说明 Semantic Gaussian Wrapping 的运行时数据、Gaussian state、renderer、邻域、surface field、训练、拓扑和 checkpoint contract。",
+      "tags": [
+        "documentation",
+        "项目指南",
+        "参考资料"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:LICENSE.md",
+      "type": "document",
+      "name": "LICENSE.md",
+      "filePath": "LICENSE.md",
+      "summary": "项目研究用途许可证，规定源码使用、再分发、责任限制及商业用途约束。",
+      "tags": [
+        "documentation",
+        "许可",
+        "合规"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "项目总览与操作指南，覆盖安装、数据布局、训练、渲染评估、网格提取、验证和许可信息。",
+      "tags": [
+        "documentation",
+        "项目指南",
+        "参考资料"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "document:THIRD_PARTY_NOTICES.md",
+      "type": "document",
+      "name": "THIRD_PARTY_NOTICES.md",
+      "filePath": "THIRD_PARTY_NOTICES.md",
+      "summary": "列出项目包含或改编的第三方组件及其许可归属。",
+      "tags": [
+        "documentation",
+        "项目指南",
+        "参考资料"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:pyproject.toml",
+      "type": "config",
+      "name": "pyproject.toml",
+      "filePath": "pyproject.toml",
+      "summary": "定义主项目的 PEP 517 构建、包元数据、命令行入口、package data、pytest 与 Ruff 配置。",
+      "tags": [
+        "configuration",
+        "build-system",
+        "可复现性"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:requirements.txt",
+      "type": "document",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "声明训练、图像处理、几何处理、评估和 CUDA extension 构建所需的 Python 依赖及最低版本。",
+      "tags": [
+        "documentation",
+        "项目指南",
+        "参考资料"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/default.yaml",
+      "type": "config",
+      "name": "default.yaml",
+      "filePath": "configs/default.yaml",
+      "summary": "训练与渲染的完整默认配置，覆盖模型、数据、renderer、semantic、optimization、density、surface、mesh 和 logging。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "config:configs/full.yaml",
+      "type": "config",
+      "name": "full.yaml",
+      "filePath": "configs/full.yaml",
+      "summary": "启用完整 Semantic Gaussian Wrapping 实验方案的精简配置覆盖层。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_confidence_propagation.yaml",
+      "type": "config",
+      "name": "full_no_confidence_propagation.yaml",
+      "filePath": "configs/full_no_confidence_propagation.yaml",
+      "summary": "完整方案消融配置，关闭 confidence propagation 以隔离其训练影响。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_expert_certainty.yaml",
+      "type": "config",
+      "name": "full_no_expert_certainty.yaml",
+      "filePath": "configs/full_no_expert_certainty.yaml",
+      "summary": "完整方案消融配置，关闭 expert certainty 相关监督或门控。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_mesh_feedback.yaml",
+      "type": "config",
+      "name": "full_no_mesh_feedback.yaml",
+      "filePath": "configs/full_no_mesh_feedback.yaml",
+      "summary": "完整方案消融配置，关闭 mesh feedback regularization。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_prune_replace.yaml",
+      "type": "config",
+      "name": "full_no_prune_replace.yaml",
+      "filePath": "configs/full_no_prune_replace.yaml",
+      "summary": "完整方案消融配置，关闭 Gaussian prune-and-replace 机制。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/full_no_surface_topology.yaml",
+      "type": "config",
+      "name": "full_no_surface_topology.yaml",
+      "filePath": "configs/full_no_surface_topology.yaml",
+      "summary": "完整方案消融配置，关闭 surface topology 约束。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/rgb_only.yaml",
+      "type": "config",
+      "name": "rgb_only.yaml",
+      "filePath": "configs/rgb_only.yaml",
+      "summary": "RGB-only 对照实验配置，禁用语义与 surface 相关扩展并保留基础 3D Gaussian Splatting 路径。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:configs/semantic_render_only.yaml",
+      "type": "config",
+      "name": "semantic_render_only.yaml",
+      "filePath": "configs/semantic_render_only.yaml",
+      "summary": "只启用 semantic rendering 的对照配置，用于隔离语义渲染本身的效果。",
+      "tags": [
+        "configuration",
+        "实验配置",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "type": "document",
+      "name": "LICENSE.md",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/LICENSE.md",
+      "summary": "语义 Gaussian rasterization 子模块继承的研究用途许可证与权利声明。",
+      "tags": [
+        "documentation",
+        "许可",
+        "合规"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "document:submodules/diff-semantic-gaussian-rasterization/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/README.md",
+      "summary": "介绍可微语义 Gaussian rasterizer 的构建方式、Python API、输出 contract 与测试方法。",
+      "tags": [
+        "documentation",
+        "项目指南",
+        "参考资料"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:submodules/diff-semantic-gaussian-rasterization/pyproject.toml",
+      "type": "config",
+      "name": "pyproject.toml",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/pyproject.toml",
+      "summary": "为 CUDA rasterization extension 声明最小 PEP 517 build-system 依赖。",
+      "tags": [
+        "configuration",
+        "build-system",
+        "可复现性"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:arguments/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "arguments/__init__.py",
+      "summary": "构建训练、渲染和语义流程的 argparse 参数组，并合并命令行参数与已有模型配置。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:configs/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "configs/__init__.py",
+      "summary": "将 configs 目录标记为 Python package，供配置相关模块稳定导入。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:convert.py",
+      "type": "file",
+      "name": "convert.py",
+      "filePath": "convert.py",
+      "summary": "封装 COLMAP 特征提取、匹配、三角化、去畸变和图像缩放，将原始数据转换为训练布局。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:install.py",
+      "type": "file",
+      "name": "install.py",
+      "filePath": "install.py",
+      "summary": "检测 CUDA 环境并安装语义 Gaussian rasterization extension，可转发显式 GPU architecture 设置。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu",
+      "type": "file",
+      "name": "rasterize.cu",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/cuda_rasterizer/rasterize.cu",
+      "summary": "实现 RGB、语义、深度、alpha 与法线联合输出的 CUDA Gaussian rasterization forward/backward kernels，并以 dual number 回放投影导数。",
+      "tags": [
+        "cuda",
+        "rasterization",
+        "autograd",
+        "gpu-kernel"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "type": "file",
+      "name": "ext.cpp",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "summary": "通过 pybind11 注册 native rasterizer 的 forward/backward C++ 接口。",
+      "tags": [
+        "cuda-extension",
+        "native-binding",
+        "rasterization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "type": "file",
+      "name": "rasterize.h",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "summary": "声明语义 Gaussian rasterizer 的 C++ forward/backward extension API。",
+      "tags": [
+        "cuda-extension",
+        "native-binding",
+        "rasterization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:submodules/diff-semantic-gaussian-rasterization/setup.py",
+      "type": "file",
+      "name": "setup.py",
+      "filePath": "submodules/diff-semantic-gaussian-rasterization/setup.py",
+      "summary": "配置并构建 PyTorch CUDAExtension，处理 headless/PEP 517 环境与 CUDA architecture 默认值。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_ablation_runner.py",
+      "type": "file",
+      "name": "test_ablation_runner.py",
+      "filePath": "tests/test_ablation_runner.py",
+      "summary": "验证 ablation runner 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:tests/test_cuda_build_setup.py",
+      "type": "file",
+      "name": "test_cuda_build_setup.py",
+      "filePath": "tests/test_cuda_build_setup.py",
+      "summary": "验证 cuda build setup 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:tests/test_gaga_association_launcher.py",
+      "type": "file",
+      "name": "test_gaga_association_launcher.py",
+      "filePath": "tests/test_gaga_association_launcher.py",
+      "summary": "验证 gaga association launcher 相关行为、边界条件与回归约束的自动化测试。",
+      "tags": [
+        "test",
+        "回归测试",
+        "质量保障"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/__init__.py",
+      "type": "file",
+      "name": "__init__.py",
+      "filePath": "utils/__init__.py",
+      "summary": "将通用工具目录标记为 Python package。",
+      "tags": [
+        "entry-point",
+        "barrel",
+        "公共-api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:utils/sh_utils.py",
+      "type": "file",
+      "name": "sh_utils.py",
+      "filePath": "utils/sh_utils.py",
+      "summary": "实现 RGB 与 spherical harmonics 表示转换及分阶 SH 求值。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:utils/system_utils.py",
+      "type": "file",
+      "name": "system_utils.py",
+      "filePath": "utils/system_utils.py",
+      "summary": "提供递归建目录和扫描最大 checkpoint iteration 的文件系统辅助函数。",
+      "tags": [
+        "python",
+        "核心逻辑",
+        "工具函数"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "importEdges": [
+    {
+      "source": "file:densification/__init__.py",
+      "target": "file:densification/controller.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "file:densification/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/__init__.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/__init__.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/checkpointing.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:densification/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/bounds.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/pipeline.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/io_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/gaga_adapter.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:training/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mipnerf360_launcher.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_model_io_inference.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_reference_rasterizer.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_render_outputs.py",
+      "target": "file:render.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:train.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:training/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/cameras.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:scene/colmap_loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_camera_intrinsics.py",
+      "target": "file:scene/colmap_loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_camera_intrinsics.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_neighbor_index.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/surface_field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/pareto.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/scheduler.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:regularization/mesh_correspondence.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_correspondence.py",
+      "target": "file:regularization/mesh_correspondence.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback_v4.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback_v4.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_pareto.py",
+      "target": "file:regularization/pareto.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/__init__.py",
+      "target": "file:evaluation/image_metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "file:metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_cuda_build_setup.py",
+      "target": "file:install.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ],
+  "allEdges": [
+    {
+      "source": "file:densification/__init__.py",
+      "target": "file:densification/controller.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:densification/controller.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/losses.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/surface.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_checkpointing.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_controller.py",
+      "target": "file:densification/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_density_lifecycle.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_depth_normal_validity.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_loss_curriculum.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_region_routing.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_regularization.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_diagnostics.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_log_resume.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_training_profiling.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/__init__.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/__init__.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/checkpointing.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:densification/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:training/checkpointing.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:utils/graphics_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:training/engine.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:extract_mesh.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/bounds.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/pipeline.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/__init__.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/bounds.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/extractors.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/field.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/metrics.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/extractors.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/postprocess.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/sampling.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/pipeline.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/topology.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/postprocess.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/sampling.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:mesh/topology.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_contact_learning.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_bounds.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_cli.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_conformity.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_io.py",
+      "target": "file:mesh/types.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_metrics.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:extract_mesh.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_topology.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:model_io.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:render.py",
+      "target": "file:utils/io_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/gaga_adapter.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/__init__.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_config.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:training/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_end_to_end_smoke.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mipnerf360_launcher.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_model_io_inference.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_reference_rasterizer.py",
+      "target": "file:gaussian_renderer/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_render_outputs.py",
+      "target": "file:render.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:train.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_train_configuration_wiring.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:regularization/surface.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tools/benchmark_surface_query.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:model_io.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:semantic/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:training/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:train.py",
+      "target": "file:utils/config_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/cameras.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:scene/colmap_loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/__init__.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_attributes.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/colmap_loader.py",
+      "target": "file:tests/test_camera_intrinsics.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_camera_intrinsics.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/dataset_readers.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_attributes.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_attribute_registry.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_attribute_registry.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_neighbor_index.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_semantic_evidence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:scene/gaussian_model.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/geometry_policy.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/neighbor_index.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:semantic/surface_field.py",
+      "target": "file:tests/test_surface_field.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:tests/test_camera_intrinsics.py",
+      "target": "file:scene/colmap_loader.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_camera_intrinsics.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_neighbor_index.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_semantic_evidence.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:scene/gaussian_model.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/geometry_policy.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/neighbor_index.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_surface_field.py",
+      "target": "file:semantic/surface_field.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/losses.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/pareto.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:regularization/scheduler.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:regularization/mesh_correspondence.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:utils/general_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:regularization/mesh_correspondence.py",
+      "target": "file:tests/test_mesh_correspondence.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/__init__.py",
+      "target": "file:tests/test_mesh_feedback.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:tests/test_mesh_feedback.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/mesh_feedback.py",
+      "target": "file:tests/test_mesh_feedback_v4.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:regularization/pareto.py",
+      "target": "file:tests/test_pareto.py",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:tests/test_mesh_correspondence.py",
+      "target": "file:regularization/mesh_correspondence.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:regularization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback.py",
+      "target": "file:training/engine.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback_v4.py",
+      "target": "file:mesh/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_mesh_feedback_v4.py",
+      "target": "file:regularization/mesh_feedback.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_pareto.py",
+      "target": "file:regularization/pareto.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/__init__.py",
+      "target": "file:evaluation/image_metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:evaluation/image_metrics.py",
+      "target": "file:utils/loss_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:scene/dataset_readers.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_blender_alpha.py",
+      "target": "file:utils/image_utils.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_image_metrics.py",
+      "target": "file:evaluation/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_metrics_cli.py",
+      "target": "file:metrics.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/reference.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/tests/test_cuda_backward.py",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/diff_semantic_gaussian_rasterization/__init__.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:submodules/diff-semantic-gaussian-rasterization/ext.cpp",
+      "target": "file:submodules/diff-semantic-gaussian-rasterization/rasterize.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:tests/test_cuda_build_setup.py",
+      "target": "file:install.py",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}
