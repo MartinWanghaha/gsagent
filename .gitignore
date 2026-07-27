@@ -33,3 +33,5 @@ env/
 *.tmp
 *.bak
 data_processed/ 
+# Conda package cache
+.conda-pkgs/
