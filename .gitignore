@@ -8,7 +8,7 @@ checkpoints
 *.pth
 *.pt
 *.ckpt
-
+*.agent
 # 忽略 Python 缓存
 __pycache__/
 *.pyc
