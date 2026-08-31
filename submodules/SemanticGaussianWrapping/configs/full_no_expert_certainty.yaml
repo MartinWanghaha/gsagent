@@ -1,8 +1,0 @@
-_base_: full.yaml
-
-# Remove entropy/balance shaping of the geometry experts and use the softer
-# evidence temperature, while retaining the same five-expert capacity.
-semantic:
-  evidence_entropy_weight: 0.0
-  evidence_balance_weight: 0.0
-  geometry_evidence_temperature: 0.25

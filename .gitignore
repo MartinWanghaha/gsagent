@@ -2,6 +2,7 @@
 data
 output
 outputs
+ckpt
 # 忽略模型权重
 checkpoints
 *.pth

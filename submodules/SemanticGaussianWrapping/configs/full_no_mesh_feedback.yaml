@@ -1,6 +1,0 @@
-_base_: full.yaml
-
-# Retain semantic surface supervision and late topology, but remove the
-# extracted-mesh-to-Gaussian feedback loss.
-loss:
-  lambda_mesh: 0.0

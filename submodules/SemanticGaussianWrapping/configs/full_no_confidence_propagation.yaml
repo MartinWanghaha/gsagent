@@ -1,6 +1,0 @@
-_base_: full.yaml
-
-# Keep direct per-view semantic evidence, but do not diffuse confidence and
-# geometry evidence from observed Gaussians to compatible neighbours.
-semantic:
-  propagation_enabled: false
