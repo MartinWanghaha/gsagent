@@ -72,6 +72,8 @@ Important environment overrides:
   GPU=0
   END_STAGE=5
   DISTILL_ITERATION=2000
+  VIRTUAL_RENDERER=inpaint360gs  # or edgs-pgsr
+  NORMAL_ALPHA_MIN=0.01
   REMOVAL_THRESHOLD=0.7
   RENDER_VIDEO=false
   RENDER_OBJECT_VIDEOS=false
@@ -275,6 +277,12 @@ fi
     fail "RUN_NAME may contain only letters, digits, '.', '_' and '-'"
 
 DISTILL_ITERATION="${DISTILL_ITERATION:-2000}"
+VIRTUAL_RENDERER="${VIRTUAL_RENDERER:-inpaint360gs}"
+NORMAL_ALPHA_MIN="${NORMAL_ALPHA_MIN:-0.01}"
+case "${VIRTUAL_RENDERER}" in
+    inpaint360gs|edgs-pgsr) ;;
+    *) fail "VIRTUAL_RENDERER must be inpaint360gs or edgs-pgsr" ;;
+esac
 EDGS_IMAGES="${EDGS_IMAGES:-images}"
 REMOVAL_THRESHOLD="${REMOVAL_THRESHOLD:-0.7}"
 RENDER_VIDEO="${RENDER_VIDEO:-false}"
@@ -371,12 +379,26 @@ run_python() {
 run_inpaint() {
     run_python \
         "${INPAINT_ROOT}" \
-        "${INPAINT_ROOT}:${INPAINT_ROOT}/seg/detectron2" \
+        "${INPAINT_ROOT}:${INPAINT_ROOT}/seg/detectron2:${SCRIPT_DIR}" \
         "$@"
 }
 
 run_edgs() {
     run_python "${EDGS_ROOT}" "${EDGS_ROOT}" "$@"
+}
+
+virtual_render() {
+    run_inpaint "${SCRIPT_DIR}/render_virtual_views.py" \
+        --backend "${VIRTUAL_RENDERER}" \
+        --model-path "${WORK_MODEL_ROOT}" \
+        --edgs-model-path "${EDGS_MODEL_ROOT}" \
+        --source-path "${SCENE_ROOT}" \
+        --iteration "${DISTILL_ITERATION}" \
+        --resolution "${RESOLUTION}" \
+        --images "${EDGS_IMAGES}" \
+        --alpha-min "${NORMAL_ALPHA_MIN}" \
+        --camera-manifest "${VIRTUAL_CAMERA_MANIFEST}" \
+        --tracker-archive "${TRACKER_ARCHIVE}" "$@"
 }
 
 require_complete_manifest() {
@@ -632,7 +654,8 @@ begin_tracking_session() {
     run_inpaint - \
         "${TRACKING_SESSION_MANIFEST}" \
         "${TRACKER_ARCHIVE}" \
-        "${VIRTUAL_CAMERA_MANIFEST}" <<'PY'
+        "${VIRTUAL_CAMERA_MANIFEST}" \
+        "${WORK_MODEL_ROOT}/virtual/ours_object_removal/iteration_${DISTILL_ITERATION}/render_manifest.json" <<'PY'
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -677,6 +700,16 @@ payload = {
     },
     "expected_masks": [f"{index:05d}.png" for index in range(30)],
 }
+render_path = Path(sys.argv[4])
+if render_path.is_file():
+    from virtual_render_io import validate_render, sha256
+    render_payload = validate_render(render_path.parent)
+    payload["input_virtual_render"] = {
+        "path": str(render_path.resolve()),
+        "sha256": sha256(render_path),
+        "artifact_id": render_payload["artifact_id"],
+        "backend": render_payload["backend"],
+    }
 manifest_path.parent.mkdir(parents=True, exist_ok=True)
 descriptor, temporary_name = tempfile.mkstemp(
     dir=manifest_path.parent, prefix=".tracking-session-", suffix=".json"
@@ -718,6 +751,8 @@ archive_path = Path(sys.argv[2])
 camera_path = Path(sys.argv[3])
 session_path = Path(sys.argv[4])
 session = json.loads(session_path.read_text(encoding="utf-8"))
+from virtual_render_io import verify_tracking_render
+verify_tracking_render(session)
 if session.get("kind") != "paintmesh-tracking-session":
     raise SystemExit(f"unexpected tracking-session manifest: {session_path}")
 if session.get("complete") is not False or session.get("status") != "in_progress":
@@ -837,6 +872,8 @@ try:
     if expected_state not in {"in_progress", "complete"}:
         raise ValueError("unsupported tracking state")
     session = json.loads(session_path.read_text(encoding="utf-8"))
+    from virtual_render_io import verify_tracking_render
+    verify_tracking_render(session)
     archive_path = archive_path.resolve(strict=True)
     archive_stat = archive_path.stat()
     expected_archive = {
@@ -1479,7 +1516,6 @@ run_tracker() {
         "TRACKING_RESULTS_ROOT=${TRACKING_RESULTS_ROOT}"
         "GRADIO_SERVER_NAME=${GRADIO_SERVER_NAME:-127.0.0.1}"
         "GRADIO_SERVER_PORT=${GRADIO_SERVER_PORT:-7860}"
-        "GRADIO_SHARE=${GRADIO_SHARE:-false}"
         "PYTHONUNBUFFERED=1"
     )
     if [[ -n "${GPU}" ]]; then
@@ -1490,7 +1526,7 @@ run_tracker() {
         cd "${TRACKER_SOURCE_ROOT}"
         env "${environment[@]}" \
             "${CONDA_BIN}" run --no-capture-output \
-            -n "${PAINTMESH_ENV}" python -u app.py
+            -n "${PAINTMESH_ENV}" python -u "${SCRIPT_DIR}/tracker_web.py"
     )
 }
 
@@ -1548,6 +1584,7 @@ echo "Target IDs             : ${TARGET_IDS}"
 echo "Surrounding IDs        : ${SURROUNDING_IDS}"
 echo "Resolution             : ${RESOLUTION}"
 echo "Distill iteration      : ${DISTILL_ITERATION}"
+echo "Virtual renderer       : ${VIRTUAL_RENDERER}"
 echo "Stages                 : ${START_STAGE}..${END_STAGE}"
 
 run_inpaint -c \
@@ -1556,6 +1593,9 @@ run_edgs -c \
     'import diff_plane_rasterization, omegaconf, open3d, torch; print("paintmesh EDGS imports: OK")'
 validate_numeric_configuration
 validate_input_contract
+if (( END_STAGE >= 4 )); then
+    virtual_render --check-backend
+fi
 
 if should_run 1; then
     echo "[1/5] Initializing isolated removal configuration and work model"
@@ -1740,7 +1780,9 @@ if should_run 4; then
         --resolution "${RESOLUTION}" \
         --config_file "${REMOVAL_CONFIG}" \
         --tracker_archive "${TRACKER_ARCHIVE}" \
-        --camera_manifest "${VIRTUAL_CAMERA_MANIFEST}"
+        --camera_manifest "${VIRTUAL_CAMERA_MANIFEST}" \
+        --poses-only
+    virtual_render
     validate_tracker_archive
     begin_tracking_session
 else
@@ -1748,13 +1790,14 @@ else
 fi
 
 if should_run 5; then
+    virtual_render --validate-only
     if is_true "${LAUNCH_REFINER}"; then
         echo "[5/5] Launching isolated interactive mask refinement"
         validate_tracker_archive
         if tracking_session_is_complete >/dev/null 2>&1; then
             echo "      Reusing 30 archive-matched refined masks"
         elif validate_tracking_masks >/dev/null 2>&1; then
-            # A previous Gradio run may have produced all valid masks before
+            # A previous tracker run may have produced all valid masks before
             # `conda run` translated Ctrl+C into exit status 1.  Commit the
             # artifacts first so resuming Stage 5 never relaunches needlessly.
             echo "      Committed 30 session-matched refined masks"
@@ -1762,7 +1805,6 @@ if should_run 5; then
             require_dir "${CKPT_ROOT}"
             link_tracker_checkpoint "sam_vit_b_01ec64.pth"
             link_tracker_checkpoint "R50_DeAOTL_PRE_YTB_DAV.pth"
-            link_tracker_checkpoint "groundingdino_swint_ogc.pth"
             mkdir -p "${TRACKER_ASSETS_ROOT}" "${TRACKING_RESULTS_ROOT}"
 
             if ! tracking_session_is_active >/dev/null 2>&1; then
@@ -1771,7 +1813,7 @@ if should_run 5; then
                 echo "      Resuming the archive-matched tracking session"
             fi
             echo "      Local interface: http://${GRADIO_SERVER_NAME:-127.0.0.1}:${GRADIO_SERVER_PORT:-7860}"
-            echo "      Export the 30 masks, then stop the interface with Ctrl+C."
+            echo "      Mark the first frame, click Start Tracking, then Finish in the PaintMesh page."
             tracker_status=0
             run_tracker || tracker_status=$?
             case "${tracker_status}" in

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PaintMesh · 补全区域</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#11171c;color:#e5edf2}body{max-width:1100px;margin:32px auto;padding:0 22px}header{display:flex;align-items:center;justify-content:space-between}h1{font-size:25px;margin-bottom:6px}p{color:#a5b7c3;line-height:1.6}.card{background:#1a242c;border:1px solid #30404c;border-radius:14px;padding:20px;margin-top:20px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}button,select{border:1px solid #435660;border-radius:8px;padding:11px 16px;background:#25333c;color:#e5edf2;font:inherit;cursor:pointer}button:disabled{opacity:.4;cursor:not-allowed}button.primary{background:#43d9b1;color:#09271e;border:0;font-weight:650}#image{display:block;max-width:100%;max-height:65vh;margin:18px auto;cursor:crosshair;touch-action:manipulation;border-radius:6px}#status{white-space:pre-wrap;line-height:1.6}progress{width:100%;accent-color:#43d9b1}#frame{width:min(420px,65vw)}.hint{font-size:14px}#error{color:#ff9ba8;white-space:pre-wrap}#run{background:#25333c;padding:7px 12px;border-radius:6px}button:focus-visible,select:focus-visible{outline:2px solid #43d9b1}
+</style>
+<header><div><h1>PaintMesh · 标记补全区域</h1><p>自动载入当前序列 → 首帧点选 → 检查绿色区域 → Start Tracking</p></div><span id="run"></span></header>
+<section class="card">
+<div class="toolbar">
+<select id="mode" aria-label="点选类型"><option value="1">＋ 补全区域（正点）</option><option value="0">－ 排除区域（负点）</option></select>
+<button id="undo">撤销上一点</button><button id="clear">清空标记</button>
+<button id="track" class="primary" disabled>Start Tracking · 30 帧</button>
+</div>
+<p class="hint">直接点击图像，绿色覆盖表示需要补全的区域。分割过大时切换“排除区域”加点；所有操作仅作用于当前 run。</p>
+<img id="image" alt="首帧图像及补全区域预览" draggable="false">
+<div class="toolbar"><label for="frame">预览帧 <span id="number">00000</span></label><input id="frame" type="range" min="0" max="29" value="0" disabled></div>
+</section>
+<section class="card"><div id="status" role="status" aria-live="polite">正在加载当前图像序列…</div><p id="error" role="alert"></p><progress id="progress" max="30" value="0"></progress><p class="hint">跟踪时自动保存 30 张 masks。检查完成后返回流水线，无需上传 ZIP、手动解压或初始化模型。</p><button id="finish" disabled>完成并返回流水线</button></section>
+<script>
+const token='__TOKEN__', $=id=>document.getElementById(id);
+let state=null, busy=false, closed=false, version=-1, objectURL=null, requestID=0;
+async function api(path, body){const response=await fetch(path,{headers:{'X-PaintMesh-Token':token,'Content-Type':'application/json'},...(body?{method:'POST',body:JSON.stringify(body)}:{})});if(!response.ok){const error=await response.json();throw Error(error.error||response.statusText)}return response;}
+function render(s){state=s;$('run').textContent=s.run;$('status').textContent=s.message;$('progress').value=s.count;const editable=!busy&&['ready','error'].includes(s.phase);for(const id of ['mode','undo','clear'])$(id).disabled=!editable;$('track').disabled=!editable||!s.can_track;$('finish').disabled=busy||s.phase!=='done';$('frame').disabled=s.phase!=='done';}
+async function preview(){const id=++requestID,index=Number($('frame').value);$('number').textContent=String(index).padStart(5,'0');const response=await api('/preview?frame='+index);const blob=await response.blob();if(id!==requestID)return;const url=URL.createObjectURL(blob);$('image').src=url;if(objectURL)URL.revokeObjectURL(objectURL);objectURL=url;}
+async function action(action,point){if(busy||closed)return;busy=true;$('error').textContent='';if(state)render(state);$('status').textContent=action==='point'?'正在分割首帧（首次加载 SAM 可能稍慢）…':'正在处理…';try{const result=await(await api('/action',{action,point})).json();if(action==='finish'){closed=true;$('status').textContent=result.message;for(const el of document.querySelectorAll('button,select,input'))el.disabled=true;return;}render(result);await preview();}catch(error){$('error').textContent=error.message;}finally{busy=false;if(state&&!closed)render(state);}}
+$('image').onclick=event=>{if(!state||busy||!['ready','error'].includes(state.phase))return;const rect=$('image').getBoundingClientRect();const x=Math.min(state.width-1,Math.floor((event.clientX-rect.left)*state.width/rect.width));const y=Math.min(state.height-1,Math.floor((event.clientY-rect.top)*state.height/rect.height));action('point',[x,y,Number($('mode').value)]);};
+for(const id of ['undo','clear','track','finish'])$(id).onclick=()=>action(id);
+$('frame').oninput=()=>preview().catch(e=>$('error').textContent=e.message);
+async function poll(){if(closed)return;try{if(!busy){const s=await(await api('/state')).json();render(s);if(version!==s.version){version=s.version;await preview();}}}catch(e){$('error').textContent='连接失败：'+e.message;}setTimeout(poll,1000);}poll();
+</script>
+</html>

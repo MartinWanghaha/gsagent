@@ -18,7 +18,7 @@ run_remove
 
 run_inpaint
   removed 结果 + 30 个跟踪 mask
-       -> LaMa RGB/depth 补全
+       -> LaMa RGB/depth 补全（有 removed normal 时自动补全 normal）
        -> inpainted 3DGS + 重建后的 inpainted mesh
 ```
 
@@ -259,11 +259,13 @@ END_STAGE=6 \
 | `RENDER_REMOVAL_TRAIN` | `false` | Stage 2 train 诊断渲染 |
 | `RENDER_REMOVAL_TEST` | `false` | Stage 2 test 诊断渲染 |
 | `RENDER_EDGS_TEST` | `false` | Stage 3 是否渲染 EDGS test views |
+| `VIRTUAL_RENDERER` | `inpaint360gs` | Stage 4 虚拟渲染后端：`inpaint360gs` 或 `edgs-pgsr`；不改变训练或 mesh 后端 |
+| `NORMAL_ALPHA_MIN` | `0.01` | PGSR 虚拟法线有效性阈值；depth 与 alpha 原始数组仍独立保存 |
 | `WRITE_DEBUG_PLY` | `false` | Stage 2 上游大体积诊断 PLY |
-| `LAUNCH_REFINER` | `true` | Stage 5 是否启动 Gradio tracker |
+| `LAUNCH_REFINER` | `true` | Stage 5 是否启动 PaintMesh 简化标注页 |
 | `GRADIO_SERVER_NAME` | `127.0.0.1` | Stage 5 监听地址 |
 | `GRADIO_SERVER_PORT` | `7860` | Stage 5 监听端口 |
-| `GRADIO_SHARE` | `false` | 是否让 Gradio 创建公网分享链接 |
+| `GRADIO_SHARE` | — | 简化页面不使用此旧 Gradio 配置，不创建公网分享链接 |
 
 ### 4.4 `run_inpaint` 专用
 
@@ -751,6 +753,24 @@ removal_manifest.json
 
 ### Stage 4：生成 30 个虚拟视角和 tracker archive
 
+入口先生成精确相机，再由同级的两个后端之一渲染 full/removed 模型。原生后端保留现有语义和诊断输出，并增加 alpha 和 RGB 浮点数组；PGSR 后端同步输出 RGB、plane-depth、直接 Gaussian normal 和 alpha。
+
+推荐使用流水线入口自动完成相机、渲染和 tracking session 绑定：
+
+```bash
+# 已有原生 removal run 从 Stage 4 继续（默认后端）
+VIRTUAL_RENDERER=inpaint360gs END_STAGE=4 \
+  bash scripts/paintmesh/run_remove.sh mip-nerf/360_v2 kitchen 8 14 none 4
+
+# 新建 PGSR 虚拟渲染 run，复用已有 run_seg 产物
+VIRTUAL_RENDERER=edgs-pgsr RUN_NAME=target_14_pgsr END_STAGE=4 \
+  bash scripts/paintmesh/run_remove.sh mip-nerf/360_v2 kitchen 8 14 none 1
+```
+
+同一 removal run 不允许切换后端；请使用新的 `RUN_NAME`，或为尚未生成虚拟产物的 run 指定后端。新 run 需要完成对应的 tracker mask 会话。后续使用 `run_inpaint.sh` 时指定相同 `RUN_NAME`；其工作区自动读取上游后端，也可通过 `VIRTUAL_RENDERER` 指定期望值进行校验。
+
+手动运行等价的相机与渲染步骤：
+
 ```bash
 run_inpaint_py tools/virtual_pose.py \
   --source_path "$SCENE_ROOT" \
@@ -759,23 +779,53 @@ run_inpaint_py tools/virtual_pose.py \
   --resolution "$RESOLUTION" \
   --config_file "$REMOVAL_CONFIG" \
   --tracker_archive "$TRACKER_ROOT/images.zip" \
-  --camera_manifest "$TRACKER_ROOT/virtual_cameras.json"
+  --camera_manifest "$TRACKER_ROOT/virtual_cameras.json" \
+  --poses-only
+
+run_inpaint_py "$REPO_ROOT/scripts/paintmesh/render_virtual_views.py" \
+  --backend "${VIRTUAL_RENDERER:-inpaint360gs}" \
+  --model-path "$WORK_MODEL_ROOT" \
+  --edgs-model-path "$EDGS_MODEL_ROOT" \
+  --source-path "$SCENE_ROOT" \
+  --iteration "$DISTILL_ITERATION" \
+  --resolution "$RESOLUTION" \
+  --camera-manifest "$TRACKER_ROOT/virtual_cameras.json" \
+  --tracker-archive "$TRACKER_ROOT/images.zip"
 ```
+
+调度入口使用独立子进程隔离同名 Python 包，默认继承当前 Python，可用 `--inpaint-python` / `--edgs-python` 指定解释器。手动命令不建立 tracking session；应由 `run_remove.sh` Stage 4 完成正式提交。
 
 输入：removal workspace/config、原始相机、目标移除前后的模型。  
 输出：
 
 ```text
-work_model/virtual/ours_2000/{renders,depth}/
-work_model/virtual/ours_object_removal/iteration_2000/{renders,depth}/
+work_model/virtual/ours_2000/{renders,rgb_raw,depth,alpha}/
+work_model/virtual/ours_object_removal/iteration_2000/{renders,rgb_raw,depth,alpha}/
+work_model/virtual/render_backend.json
+work_model/virtual/virtual_render_manifest.json
 tracker/images.zip                        # 严格 00000.png..00029.png
 tracker/virtual_cameras.json              # 全精度相机姿态
 tracker/tracking_session.json             # 初始为 in_progress
 ```
 
-### Stage 5：交互式 Segment-and-Track-Anything
+每个 full/removed 输出目录都有 `render_manifest.json`。PGSR 另外保存 `normal/*.npy`、`normal_valid/*.png` 和 `normal_vis/*.png`。`rgb_raw` 为 float32 H×W×3，depth/alpha 为 float32 H×W；normal 为相机坐标系 float32 H×W×3，朝向相机，有效像素为单位向量，无效像素为零。PNG 仅用于查看/追踪，几何计算读取 NPY。
 
-入口脚本实际使用下列进程环境启动 Gradio：
+原生 `depth_3dgs` 和 PGSR `plane_depth` 的定义不同，manifest 记录 `depth_kind`；原生后端不产生直接 normal，也不会静默调用 PGSR。PGSR 要求 `EDGS_MODEL_ROOT/config.yaml` 中 `gs.renderer.backend=pgsr`。有临时遮挡对象时，两个后端均使用原流程的 target + surrounding removed 模型生成补全输入，不能与最终 target-only 模型混淆。
+
+新 inpaint 工作区同时绑定上游渲染 manifest，并链接 raw RGB、alpha 及可用的 normal 数据；本阶段尚不执行 normal completion 或增加 normal loss。
+
+### Stage 5：PaintMesh 简化标注与跟踪页面
+
+入口为 [`tracker_web.py`](tracker_web.py) 与 [`tracker_web.html`](tracker_web.html)，不依赖 Gradio，也不加载文本检测器。页面自动读取当前 run 的 `images.zip`，只需首帧点选和一次 Start Tracking。原始 `Segment-and-Track-Anything/app.py` 保留，但 PaintMesh Stage 5 默认不再调用它。
+
+从已有虚拟视角启动：
+
+```bash
+VIRTUAL_RENDERER=edgs-pgsr RUN_NAME=target_14_pgsr END_STAGE=5 \
+bash scripts/paintmesh/run_remove.sh mip-nerf/360_v2 kitchen 8 14 none 5
+```
+
+入口脚本实际使用下列进程环境启动页面：
 
 ```bash
 (
@@ -787,33 +837,32 @@ tracker/tracking_session.json             # 初始为 in_progress
     "TRACKING_RESULTS_ROOT=$TRACKER_ROOT/results" \
     GRADIO_SERVER_NAME=127.0.0.1 \
     GRADIO_SERVER_PORT=7860 \
-    GRADIO_SHARE=false \
     PYTHONUNBUFFERED=1 \
     "CUDA_VISIBLE_DEVICES=$GPU" \
     "$CONDA_BIN" run --no-capture-output \
-      -n "$PAINTMESH_ENV" python -u app.py
+      -n "$PAINTMESH_ENV" python -u "$REPO_ROOT/scripts/paintmesh/tracker_web.py"
 )
 ```
 
-输入：`tracker/images.zip` 和三个 tracker checkpoint。  
+输入：`tracker/images.zip`、活动 tracking session、相机 manifest，以及 SAM / DeAOT 两个 checkpoint；不需要 GroundingDINO。
 输出：
 
 ```text
 tracker/results/images/images_masks/00000.png ... 00029.png
-tracker/results/images/images_seg.mp4
-tracker/results/images/images_seg.gif
 tracker/tracking_session.json             # 校验后为 complete
 ```
 
 在浏览器中：
 
 1. 打开终端打印的 `http://127.0.0.1:7860`。
-2. 进入 **Image-Seq type input**，选择/点击当前 run 的 `images.zip`，然后执行 extract。
-3. 在首帧 `00000` 上标记目标并初始化 tracker。
-4. 点击 **Start Tracking**，等待终端显示处理到 frame `29`，并确认 30 个基础 mask 都已写出。
-5. 回到启动服务器的终端按 `Ctrl+C`。
+2. 首帧自动显示，不需要上传、extract 或初始化 tracker。
+3. 使用“＋ 补全区域”点击需要补全的位置；使用“－ 排除区域”修正过大的分割。绿色覆盖为当前 mask，可撤销上一点或清空。
+4. 检查首帧分割后点击 **Start Tracking · 30 帧**，等待进度完成。只传播人工指定的补全区域，不自动发现其他物体。
+5. 拖动帧滑块查看各帧 mask，点击 **完成并返回流水线**；服务退出，shell 自动校验并提交 tracking session。无需 Ctrl+C。简化页不生成 MP4/GIF，直接提供逐帧预览。
 
-`conda run` 有时会把正常的 `Ctrl+C` 翻译成退出状态 `1`。入口脚本只在精确的 `00000.png..00029.png`、尺寸和 archive 绑定关系全部通过后接受状态 `0/1/130`；若缺少任何 mask，仍会失败。`*_new.png` 是诊断文件，不计入最终 30 帧。
+新页面按固定相机尺寸生成二值 label masks（0=背景，1=补全区域），所有 30 帧成功后才一次性发布目录。中途失败可以调整首帧再试，不会把半成品当作完成结果；已有 masks 不会被覆盖。关闭页面不会停止服务，可以重新打开；如需中断服务仍可在终端 Ctrl+C，但未完成的序列不会通过校验。
+
+页面仅绑定 `127.0.0.1` / `localhost`，沿用 `GRADIO_SERVER_PORT`（默认 7860）指定端口；远程机器使用 SSH 端口转发，不提供公网分享。若当前 run 已有完成且匹配的 masks，Stage 5 会复用它们而不打开页面；想重新标注请使用新的 removal run，从 Stage 1..4 生成对应虚拟序列，不要删除或篡改旧 tracking session。
 
 若界面已经导出全部 mask、但上次在提交 session 前中断，可执行：
 
@@ -851,7 +900,7 @@ run_inpaint_py tools/prepare_inpaint_workspace.py \
 输入：完整 removal manifest、完整 tracking session、30 个 mask、同一 archive 的相机 manifest。  
 输出：`work_model/workspace_manifest.json`，以及指向 removal workspace/相机/mask 的受控相对链接。
 
-### Stage 2：准备 run-local LaMa RGB/depth/mask
+### Stage 2：准备 run-local LaMa RGB/depth/normal/mask
 
 ```bash
 run_inpaint_py tools/prepare_paintmesh_lama_data.py prepare \
@@ -859,6 +908,7 @@ run_inpaint_py tools/prepare_paintmesh_lama_data.py prepare \
   --removed-rgb "$INPAINT_WORK_MODEL/virtual/ours_object_removal/iteration_$DISTILL_ITERATION/renders" \
   --removed-depth "$INPAINT_WORK_MODEL/virtual/ours_object_removal/iteration_$DISTILL_ITERATION/depth" \
   --reference-depth "$INPAINT_WORK_MODEL/virtual/ours_$DISTILL_ITERATION/depth" \
+  --camera-manifest "$TRACKER_ROOT/virtual_cameras.json" \
   --color-input "$LAMA_INPUT_ROOT/color" \
   --depth-input "$LAMA_INPUT_ROOT/depth" \
   --manifest "$MANIFEST_ROOT/lama_input_manifest.json" \
@@ -867,18 +917,24 @@ run_inpaint_py tools/prepare_paintmesh_lama_data.py prepare \
   --dilation 10
 ```
 
-输入：30 个跟踪 label mask、removed RGB/depth、移除前 reference depth。  
+输入：30 个跟踪 label mask、removed RGB/depth、移除前 reference depth；上游提供 normal 时自动读取同一 render 的 raw normal、normal_valid、alpha 和相机 manifest。
 输出：
 
 ```text
 lama/input/color/                         # RGB + LaMa mask
 lama/input/depth/                         # depth + LaMa mask
+lama/input/normal/                        # 有 normal 时：raw NPY + 同一 hole mask
+lama/input/normal/valid/                  # removed normal 有效性
+lama/input/normal/inference_mask/         # hole ∪ 无效法线，仅用于模型推理
+lama/input/normal/cameras.json            # 精确相机快照
 manifests/lama_input_manifest.json
 ```
 
-准备器会把索引 label 转为目标二值 mask，清理小连通域并执行膨胀；不会写入原始数据集。
+准备器会把索引 label 转为目标二值 mask，清理小连通域并执行膨胀；三路共用相同 hole mask，不会写入原始数据集。上游没有 normal 就保持 RGB/depth-only；声明有 normal 却缺帧、损坏或缺 manifest 时拒绝运行，不能静默跳过。
 
-### Stage 3：LaMa 完成 RGB 和 depth，并验证 30 帧
+### Stage 3：LaMa 完成 RGB、depth 和可用的 normal，并验证 30 帧
+
+`run_inpaint.sh` 自动按输入 manifest 调度，不需要 normal 开关。下面是分步命令；normal 命令只适用于 Stage 2 已准备 normal 的工作区。
 
 ```bash
 run_lama_py bin/predict_color.py \
@@ -889,6 +945,13 @@ run_lama_py bin/predict_color.py \
 run_lama_py bin/predict_depth.py \
   --input-dir "$LAMA_INPUT_ROOT/depth" \
   --output-dir "$LAMA_OUTPUT_ROOT/depth" \
+  --model-path "$LAMA_MODEL_PATH"
+
+# 上游有 normal 时必须执行；run_inpaint.sh 自动判断并调用。
+run_lama_py bin/predict_normal.py \
+  --input-dir "$LAMA_INPUT_ROOT/normal" \
+  --output-dir "$LAMA_OUTPUT_ROOT/normal" \
+  --input-manifest "$MANIFEST_ROOT/lama_input_manifest.json" \
   --model-path "$LAMA_MODEL_PATH"
 
 run_inpaint_py tools/prepare_paintmesh_lama_data.py validate-output \
@@ -904,7 +967,19 @@ run_inpaint_py tools/prepare_paintmesh_lama_data.py validate-output \
 
 `RECURSIVE_GUIDE=true` 时，color 预测和验证命令都追加 `--recursive-guide`。  
 输入：Stage 2 的 LaMa 输入、`big-lama` checkpoint。  
-输出：`lama/output/{color,depth}/` 和 `manifests/lama_completion_manifest.json`。验证器会检查帧集合、shape、有限深度、输入外像素保持和哈希。
+输出：`lama/output/{color,depth}/`、可用时的 `lama/output/normal/`，以及统一的 `manifests/lama_completion_manifest.json`。normal 目录包含 float32 H×W×3 的 `<frame>.npy`、`valid/<frame>.png`、`vis/<frame>.png` 和推理来源记录 `prediction.json`。只有全部预期模态通过校验才提交总完成标记；有 normal 时不能复用旧 RGB/depth-only completion。
+
+normal 使用独立 float32 loader：`(N+1)/2 → LaMa → 2P-1 → 单位化/朝向校正`，首版复用 `LAMA_MODEL_PATH` 和 depth 相同的 refinement 设置。mask 外 raw normal/valid 完全不变，不从 completed depth 推导或回退。LaMa 权重原本用于 RGB，输出是法线补全基线，不保证多视角或 depth-normal 几何一致性；目前尚不将 completed normal 用于 Gaussian 初始化或 finetune loss。
+
+例如已有 `target_14_pgsr` 的完整 tracker masks 后，只运行到三路 LaMa completion：
+
+```bash
+REMOVAL_ROOT="$PWD/output/paintmesh/mip-nerf/360_v2/kitchen/removal/target_14_pgsr" \
+INPAINT_RUN_NAME=normal_lama END_STAGE=3 \
+bash scripts/paintmesh/run_inpaint.sh mip-nerf/360_v2 kitchen 8 14 none 1
+```
+
+复用同一输入可用同名 inpaint run；若之前已有不包含 normal 的旧输入/completion manifest，使用新的 `INPAINT_RUN_NAME`，不要手改 manifest。必须先完成 removal Stage 5 的跟踪 mask 输出；仅运行 removal Stage 4 还不能开始 LaMa completion。
 
 ### Stage 4：把已补全 RGB-D 反投影为 support PLY
 

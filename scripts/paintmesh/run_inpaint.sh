@@ -2,7 +2,7 @@
 
 set -Eeuo pipefail
 
-# PaintMesh object-aware RGB/depth and 3D Gaussian inpainting pipeline.
+# PaintMesh object-aware RGB/depth/normal and 3D Gaussian inpainting pipeline.
 #
 # Usage:
 #   scripts/paintmesh/run_inpaint \
@@ -39,8 +39,8 @@ Arguments:
 
 Stages:
   1 = validate removal/tracker inputs and create an isolated workspace
-  2 = prepare run-local LaMa RGB/depth/mask inputs
-  3 = complete RGB/depth with LaMa and validate every frame
+  2 = prepare run-local LaMa RGB/depth/mask and available normal inputs
+  3 = complete RGB/depth and available normal with LaMa; validate every frame
   4 = back-project the completed RGB-D views into support point clouds
   5 = optimize the inpainted object-aware 3D Gaussian scene
   6 = publish an EDGS-loadable inpainted 3DGS
@@ -290,8 +290,10 @@ LAMA_INPUT_ROOT="${INPAINT_RUN_ROOT}/lama/input"
 LAMA_OUTPUT_ROOT="${INPAINT_RUN_ROOT}/lama/output"
 LAMA_COLOR_INPUT="${LAMA_INPUT_ROOT}/color"
 LAMA_DEPTH_INPUT="${LAMA_INPUT_ROOT}/depth"
+LAMA_NORMAL_INPUT="${LAMA_INPUT_ROOT}/normal"
 LAMA_COLOR_OUTPUT="${LAMA_OUTPUT_ROOT}/color"
 LAMA_DEPTH_OUTPUT="${LAMA_OUTPUT_ROOT}/depth"
+LAMA_NORMAL_OUTPUT="${LAMA_OUTPUT_ROOT}/normal"
 LAMA_INPUT_MANIFEST="${MANIFEST_ROOT}/lama_input_manifest.json"
 LAMA_COMPLETION_MANIFEST="${MANIFEST_ROOT}/lama_completion_manifest.json"
 LAMA_MODEL_PATH="$(resolve_from_invocation "${LAMA_MODEL_PATH:-${CKPT_ROOT}/big-lama}")"
@@ -616,7 +618,7 @@ require_manifest_kind "${WORKSPACE_MANIFEST}" "paintmesh-inpaint-workspace"
 
 if (( END_STAGE >= 2 )); then
 if should_run 2; then
-    echo "[2/8] Preparing isolated LaMa RGB/depth inputs"
+    echo "[2/8] Preparing isolated LaMa RGB/depth inputs (normal automatically if available)"
 else
     echo "[2/8] Validating prepared LaMa inputs"
 fi
@@ -625,6 +627,7 @@ run_inpaint tools/prepare_paintmesh_lama_data.py prepare \
     --removed-rgb "${WORK_MODEL}/virtual/ours_object_removal/iteration_${DISTILL_ITERATION}/renders" \
     --removed-depth "${WORK_MODEL}/virtual/ours_object_removal/iteration_${DISTILL_ITERATION}/depth" \
     --reference-depth "${WORK_MODEL}/virtual/ours_${DISTILL_ITERATION}/depth" \
+    --camera-manifest "${VIRTUAL_CAMERA_MANIFEST}" \
     --color-input "${LAMA_COLOR_INPUT}" \
     --depth-input "${LAMA_DEPTH_INPUT}" \
     --manifest "${LAMA_INPUT_MANIFEST}" \
@@ -636,7 +639,7 @@ fi
 
 if (( END_STAGE >= 3 )); then
 if should_run 3; then
-    echo "[3/8] Completing and validating virtual RGB/depth with LaMa"
+    echo "[3/8] Completing and validating virtual RGB/depth and available normal with LaMa"
     if [[ -f "${LAMA_COMPLETION_MANIFEST}" ]]; then
         validate_lama_completion
         echo "      Reused manifest-matched LaMa outputs"
@@ -657,6 +660,24 @@ if should_run 3; then
             --input-dir "${LAMA_DEPTH_INPUT}" \
             --output-dir "${LAMA_DEPTH_OUTPUT}" \
             --model-path "${LAMA_MODEL_PATH}"
+        # This is an upstream capability, not a user-selectable completion mode.
+        NORMAL_REQUIRED="$(run_inpaint - "${LAMA_INPUT_MANIFEST}" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as stream:
+    payload = json.load(stream)
+print("yes" if "normal" in payload["parameters"].get("required_modalities", []) else "no")
+PY
+)"
+        if [[ "${NORMAL_REQUIRED}" == "yes" ]]; then
+            run_lama bin/predict_normal.py \
+                --input-dir "${LAMA_NORMAL_INPUT}" \
+                --output-dir "${LAMA_NORMAL_OUTPUT}" \
+                --input-manifest "${LAMA_INPUT_MANIFEST}" \
+                --model-path "${LAMA_MODEL_PATH}"
+        else
+            echo "      Upstream renderer provides no normal; RGB/depth completion only"
+        fi
         validate_lama_completion
     fi
 else

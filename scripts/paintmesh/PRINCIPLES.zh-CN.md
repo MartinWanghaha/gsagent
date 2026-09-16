@@ -6,7 +6,7 @@
 2. 二维实例 mask 如何变成语义 3DGS 和语义 mesh；
 3. 3DGS 与 mesh 如何完成目标移除和场景补全。
 
-本文以当前代码为准，而不是对上游论文流程的泛化描述。运行命令、断点续跑和目录参数请参阅 [README.zh-CN.md](README.zh-CN.md)。
+本文以当前代码为准，而不是对上游论文流程的泛化描述。运行命令、断点续跑和目录参数请参阅 [README.zh-CN.md](README.zh-CN.md)。明确标记“待实现”的段落描述后续约定，详细代码方案见 [plan.md](plan.md)，不代表当前运行能力。
 
 ## 0. 先建立三个正确认识
 
@@ -836,7 +836,7 @@ full / removed 3DGS 在相同的 30 个虚拟相机下渲染
 SAM-Track 得到 30 张目标 mask
    │
    ▼
-LaMa 补全 removed RGB 与 metric depth
+LaMa 补全 removed RGB 与 metric depth；有 normal 时自动平级补全 normal
    │
    ▼
 mask 内 RGB-D 反投影 -> 30 个 support PLY
@@ -911,10 +911,20 @@ removed_3dgs/point_cloud/iteration_<N>/point_cloud.ply
 
 同一组相机分别渲染：
 
-- full 3DGS 的 RGB、语义、depth；
-- removed 3DGS 的 RGB、语义、depth。
+- `VIRTUAL_RENDERER=inpaint360gs`（默认）：full/removed 的 RGB、语义、原生 `depth_3dgs` 和 alpha；
+- `VIRTUAL_RENDERER=edgs-pgsr`：full/removed 的 RGB、PGSR `plane_depth`、直接 Gaussian normal 和 alpha。
+
+调度位于 [`render_virtual_views.py`](render_virtual_views.py)，两个同级适配器位于 [`render_virtual_worker.py`](render_virtual_worker.py)。调度器在独立子进程中加载所选项目，避免同名 `scene` / `utils` 模块冲突。相机先由 `virtual_pose.py --poses-only` 写入 manifest，两个后端均读取同一份参数；full/removed 使用相同后端。在设置 `surrounding_ids` 时，补全输入延续原流程，来自 target + surrounding 均被移除的版本。
+
+每次渲染同步导出 `rgb_raw/*.npy`（float32 H×W×3）、`depth/*.npy` 和 `alpha/*.npy`（float32 H×W）。PGSR 还导出 `normal/*.npy`（相机坐标系、朝相机的单位向量）、`normal_valid/*.png` 和 `normal_vis/*.png`；低 alpha、非法深度或退化法线对应的 normal 置零。原生后端不提供直接 Gaussian normal，manifest 中声明该能力缺失。
+
+`render_manifest.json` 记录 backend、depth 定义、normal 来源、模型与相机 hash、逐帧输出 hash。原生 depth 保留原数值定义，PGSR depth 是场景尺度下的平面 z-depth，不能仅凭名称假定是已标定的米制深度。虚拟后端选择独立于基础训练、finetune 和最终 TSDF 配置。
 
 removed RGB 被按 `00000.png..00029.png` 打包为 tracker `images.zip`。每个相机的完整精度 `R`、`T`、FoV、宽高、near/far、scene translation/scale 写入 `virtual_cameras.json`。后续所有模块复用该 manifest，而不是用四舍五入后的半径重新生成轨迹，从而避免 mask、RGB、depth 和反投影之间的像素偏移。
+
+新 tracking session 还绑定 removed render artifact。切换后端必须使用新的 removal run，已有会话和下游工作区不能复用另一后端的几何产物。normal/alpha 会随 inpaint 工作区一起校验和链接；normal LaMa completion 已接入 Stage 2/3，normal loss 仍属于待实现阶段。
+
+normal completion 规则是：只要上游提供完整的 removed normal，就自动执行 `removed normal → LaMa → completed normal`，与 depth 分支平级；不新增启用开关，不以 completed depth 推导法线替代此分支。
 
 #### 输出
 
@@ -927,15 +937,21 @@ work_model/virtual/ours_object_removal/...       # removed
 
 ### 3.4 模块 C：交互式 SAM-Track 得到跨虚拟视角 mask
 
+PaintMesh 使用专用简化页面 [`tracker_web.py`](tracker_web.py) / [`tracker_web.html`](tracker_web.html)。页面自动载入当前 run 的序列，用户在首帧添加正/负点、预览分割后点击 Start Tracking；无需上传、解压或手动初始化。SAM 点选与 DeAOT 传播复用原 tracker 的模型接口，不加载 GroundingDINO，也不执行周期性 segment-everything / 新对象发现，以避免把无关物体加入补全 mask。
+
 #### 输入
 
 - removed-scene `images.zip`；
-- 用户在第一帧提供的点、框或涂画提示；
-- SAM、AOT/SegTracker checkpoint。
+- 用户在第一帧提供的正/负点提示（支持撤销、清空）；
+- SAM、DeAOT checkpoint。
 
 #### 计算过程
 
-SAM 在首帧产生目标 mask，AOT/SegTracker 把对象状态传播到其余虚拟帧；用户可以在界面中检查或修正结果。PaintMesh 对会话进行严格绑定：
+SAM 在首帧产生目标 mask，DeAOT 把对象状态传播到其余虚拟帧。
+
+简化页允许跟踪前修正首帧，跟踪完成后逐帧预览；暂不提供原复杂页面的逐帧回滚重标功能。跟踪失败不发布半成品，成功才原子发布完整 masks；已有 masks 拒绝覆盖。点击“完成并返回流水线”会退出网页服务，再由原 Stage 5 校验器提交会话。
+
+PaintMesh 对会话进行严格绑定：
 
 - 必须正好输出 `00000.png..00029.png`；
 - 每张 mask 必须与对应 tracker RGB 同尺寸；
@@ -986,7 +1002,13 @@ lama/input/depth/depth_original/<frame>.npy
 manifests/lama_input_manifest.json
 ```
 
-### 3.6 模块 E：LaMa RGB 与 depth completion
+#### D1. 自动 normal 输入扩展
+
+在上述输入准备阶段自动读取上游模态声明：有完整 removed normal 时，增加 `lama/input/normal/<frame>.npy` 和与 RGB/depth 完全相同的 `<frame>_mask.png`，并保存 `valid/<frame>.png`。normal 为 float32、H×W×3、相机坐标系的单位向量，无效值为零；不使用 `normal_vis` 作为数值输入，也不使用 full normal 填洞。
+
+normal predictor 内部使用 `M_infer = hole_mask | ~normal_valid` 排除无效上下文，但最终只允许改写共同 hole mask 内的像素。上游明确不提供 normal 时保持 RGB/depth-only；声明提供却缺帧或校验失败时必须报错，不能静默跳过。normal 输入与相关 hash 纳入现有 `lama_input_manifest.json`。
+
+### 3.6 模块 E：LaMa RGB、depth 与自动 normal completion
 
 实现位于 [`predict_color.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_color.py)、[`predict_depth.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_depth.py) 及 LaMa [`evaluation/data.py`](../../submodules/Inpaint360GS/LaMa/saicinpainting/evaluation/data.py)。
 
@@ -1037,6 +1059,32 @@ manifests/lama_completion_manifest.json
 ```
 
 验证器要求 mask 外 RGB 和 depth 与 removed 输入完全一致。
+
+#### E3. 同级 normal LaMa completion
+
+目标流程是三条平级分支，不要求三个推理进程同时运行：
+
+```text
+removed RGB    → LaMa → completed RGB
+removed depth  → LaMa → completed depth
+removed normal → LaMa → completed normal   # 上游有 normal 就自动执行
+```
+
+实现为与 `predict_depth.py` 同级的 [`LaMa/bin/predict_normal.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_normal.py)，复用现有 `LAMA_MODEL_PATH` 与 depth 的 refinement 设置。独立 normal loader 与 CPU 编解码/校验函数位于 [`tools/paintmesh_normal.py`](../../submodules/Inpaint360GS/tools/paintmesh_normal.py)，因为现有 `.npy` loader 按 depth 读取 `depth_original/` 并做逐图 min/max 归一化，不能直接用于向量法线。
+
+三个通道固定表示 nx、ny、nz；输入使用 `(N + 1) / 2` 编码，预测经 `2 * clip(P, 0, 1) - 1` 解码。对洞内有限、非退化向量单位化，再按同一相机的像素射线校正朝向。非有限或近零向量标记无效并置零；mask 外直接复制 removed raw normal 与 validity，保持数值完全不变。洞内全无有效预测或 mask 外无有效上下文时失败，不以 depth-derived normal 隐式回退。
+
+新增产物：
+
+```text
+lama/output/normal/00000.npy ... 00029.npy      # float32 HWC
+lama/output/normal/valid/00000.png ... 00029.png
+lama/output/normal/vis/00000.png ... 00029.png  # 仅预览
+```
+
+Stage 3 根据输入 manifest 自动运行 normal predictor，不增加 normal 开关或模式。现有 `lama_completion_manifest.json` 扩展为校验全部预期模态：只要输入含 normal，输出缺 normal 就不能提交成功或复用旧 RGB/depth-only 缓存。`normal/prediction.json` 记录推理的输入、模型/config 和逐帧输出 hash，不替代总 completion 标记。
+
+这是使用 RGB LaMa 权重对编码法线做补全的基线，不是专门训练的法线模型；单位化不能保证与 depth 或多视角几何一致。depth-derived normal 仅用于后续质量诊断，不覆盖 LaMa normal。将 completed normal 用于点云融合、Gaussian 初始化和训练仍是独立后续工作，详见 [plan.md](plan.md)。
 
 ### 3.7 模块 F：completed RGB-D 反投影成支持点云
 
@@ -1351,6 +1399,7 @@ manifest 是整条 remove -> virtual views -> tracker -> LaMa -> RGB-D -> 3DGS -
 | 虚拟相机 | [`virtual_pose.py`](../../submodules/Inpaint360GS/tools/virtual_pose.py) |
 | LaMa 输入与验证 | [`prepare_paintmesh_lama_data.py`](../../submodules/Inpaint360GS/tools/prepare_paintmesh_lama_data.py) |
 | RGB/depth completion | [`predict_color.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_color.py)、[`predict_depth.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_depth.py) |
+| 自动 normal completion | [`predict_normal.py`](../../submodules/Inpaint360GS/LaMa/bin/predict_normal.py)、[`paintmesh_normal.py`](../../submodules/Inpaint360GS/tools/paintmesh_normal.py) |
 | RGB-D 反投影 | [`edit_object_removal_plyfusion.py`](../../submodules/Inpaint360GS/edit_object_removal_plyfusion.py) |
 | 3DGS inpaint | [`edit_object_inpaint.py`](../../submodules/Inpaint360GS/edit_object_inpaint.py)、[`compose_utils.py`](../../submodules/Inpaint360GS/utils/compose_utils.py) |
 | EDGS 模型发布 | [`publish_inpainted_edgs_model.py`](../../submodules/Inpaint360GS/tools/publish_inpainted_edgs_model.py) |
