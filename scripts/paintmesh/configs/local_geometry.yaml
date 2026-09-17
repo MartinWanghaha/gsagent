@@ -1,0 +1,31 @@
+# Run-local Stage 5b only. Never merged into EDGS global training configuration.
+iterations: 1000
+geometry_from_iter: 100
+geometry_ramp_iters: 400
+seed: 0
+checkpoint_interval: 100
+diagnostic_interval: 100
+# Local visualization only; unrelated to run_seg's PGSR_DEBUG / pipe.debug.
+debug:
+  enabled: true
+  interval: 100
+  from_step: 0
+  view_index: 4
+  jpeg_quality: 95
+loss:
+  rgb_hole: 1.0
+  rgb_known_preserve: 1.0
+  alpha_preserve: 0.1
+  depth: 0.10
+  lama_normal: 0.05
+  depth_normal_consistency: 0.015
+validity:
+  render_alpha_min: 0.01
+  coverage_alpha_floor: 0.10
+  depth_jump_relative: 0.05
+  min_coverage_ratio: 0.8
+  max_empty_steps: 60
+optimizer:
+  position_lr: 0.000001
+  scaling_lr: 0.0001
+  rotation_lr: 0.0001

@@ -55,6 +55,11 @@ Important environment overrides:
   DISTILL_ITERATION=2000
   FINETUNE_ITERATION=5000
   FUSION_SEED_FRAME=4
+  LOCAL_GEOMETRY_REFINE=false
+  LOCAL_GEOMETRY_CONFIG=scripts/paintmesh/configs/local_geometry.yaml
+  LOCAL_GEOMETRY_ITERATIONS=1000
+  LOCAL_GEOMETRY_FROM_ITER=100
+  LOCAL_GEOMETRY_RAMP_ITERS=400
   MASK_MIN_AREA=50
   MASK_DILATION=10
   RECURSIVE_GUIDE=false
@@ -240,6 +245,8 @@ MASK_DILATION="${MASK_DILATION:-10}"
 [[ "${MASK_DILATION}" =~ ^[0-9]+$ ]] || fail "MASK_DILATION must be non-negative"
 
 RECURSIVE_GUIDE="${RECURSIVE_GUIDE:-false}"
+LOCAL_GEOMETRY_REFINE="${LOCAL_GEOMETRY_REFINE:-false}"
+require_boolean "${LOCAL_GEOMETRY_REFINE}"
 RENDER_INPAINT_VIDEO="${RENDER_INPAINT_VIDEO:-false}"
 RENDER_INPAINT_TRAIN="${RENDER_INPAINT_TRAIN:-false}"
 RENDER_INPAINT_TEST="${RENDER_INPAINT_TEST:-false}"
@@ -308,6 +315,10 @@ INPAINTED_GS_ROOT="${INPAINT_RUN_ROOT}/inpainted_3dgs"
 INPAINTED_MODEL_MANIFEST="${INPAINTED_GS_ROOT}/model_manifest.json"
 INPAINTED_MESH_ROOT="${INPAINT_RUN_ROOT}/inpainted_mesh"
 FINAL_MANIFEST="${INPAINT_RUN_ROOT}/inpaint_manifest.json"
+LOCAL_GEOMETRY_ROOT="${INPAINT_RUN_ROOT}/local_geometry"
+RGB_FINETUNE_MANIFEST="${MANIFEST_ROOT}/rgb_finetune_manifest.json"
+RGB_FINETUNE_CONTEXT="${LOCAL_GEOMETRY_ROOT}/rgb_context.json"
+LOCAL_GEOMETRY_MANIFEST="${MANIFEST_ROOT}/local_geometry_manifest.json"
 
 run_python() {
     local workdir="$1"
@@ -600,6 +611,25 @@ echo "Main conda environment: ${PAINTMESH_ENV}"
 echo "LaMa environment      : ${LAMA_ENV}"
 echo "Source/final iteration: ${DISTILL_ITERATION}/${FINETUNE_ITERATION}"
 echo "Stages                : ${START_STAGE}..${END_STAGE}"
+echo "Local PGSR refinement : ${LOCAL_GEOMETRY_REFINE}"
+
+# These settings are never exported to run_seg or merged into its EDGS config.
+local_geometry_overrides=()
+if is_true "${LOCAL_GEOMETRY_REFINE}" && (( END_STAGE >= 5 )); then
+    LOCAL_GEOMETRY_CONFIG="$(resolve_from_invocation "${LOCAL_GEOMETRY_CONFIG:-${SCRIPT_DIR}/configs/local_geometry.yaml}")"
+    for setting in LOCAL_GEOMETRY_ITERATIONS LOCAL_GEOMETRY_FROM_ITER LOCAL_GEOMETRY_RAMP_ITERS; do
+        if [[ -n "${!setting:-}" ]]; then
+            case "${setting}" in
+                LOCAL_GEOMETRY_ITERATIONS) option=--iterations ;;
+                LOCAL_GEOMETRY_FROM_ITER) option=--geometry-from-iter ;;
+                LOCAL_GEOMETRY_RAMP_ITERS) option=--geometry-ramp-iters ;;
+            esac
+            local_geometry_overrides+=("${option}" "${!setting}")
+        fi
+    done
+    LOCAL_GEOMETRY_STEPS="$(run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" config \
+        --config "${LOCAL_GEOMETRY_CONFIG}" "${local_geometry_overrides[@]}" | tail -n 1)"
+fi
 
 if should_run 1; then
     echo "[1/8] Validating removal/tracker artifacts and preparing workspace"
@@ -717,6 +747,19 @@ require_file "${SUPPORT_PLY}"
 fi
 
 if (( END_STAGE >= 5 )); then
+rgb_action=train
+if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+    rgb_action="$(run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" prepare-rgb \
+        --source-ply "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/point_cloud.ply" \
+        --classifier "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/classifier.pth" \
+        --inpaint-config "${INPAINT_CONFIG}" --camera "${VIRTUAL_CAMERA_MANIFEST}" \
+        --lama "${LAMA_COMPLETION_MANIFEST}" --fusion "${FUSION_MANIFEST}" \
+        --support "${SUPPORT_PLY}" --rgb-ply "${INPAINTED_WORK_PLY}" \
+        --context "${RGB_FINETUNE_CONTEXT}" --manifest "${RGB_FINETUNE_MANIFEST}" \
+        --rgb-iterations "${FINETUNE_ITERATION}" --seed-frame "${FUSION_SEED_FRAME}" | tail -n 1)"
+elif [[ -f "${RGB_FINETUNE_MANIFEST}" || -f "${LOCAL_GEOMETRY_MANIFEST}" ]]; then
+    fail "this inpaint run was created for local refinement; choose a new INPAINT_RUN_NAME to disable it"
+fi
 if should_run 5; then
     echo "[5/8] Optimizing the inpainted object-aware 3DGS"
     inpaint_arguments=(
@@ -741,16 +784,42 @@ if should_run 5; then
     if ! is_true "${RENDER_INPAINT_TRAIN}"; then inpaint_arguments+=(--skip_train); fi
     if ! is_true "${RENDER_INPAINT_TEST}"; then inpaint_arguments+=(--skip_test); fi
     if is_true "${RENDER_INPAINT_VIDEO}"; then inpaint_arguments+=(--render_video); fi
-    run_inpaint "${inpaint_arguments[@]}"
+    if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+        inpaint_arguments+=(--local_geometry_context "${RGB_FINETUNE_CONTEXT}")
+    fi
+    if [[ "${rgb_action}" == reuse ]]; then
+        echo "      Reused manifest-matched Stage 5a RGB finetune"
+    else
+        run_inpaint "${inpaint_arguments[@]}"
+    fi
 else
     echo "[5/8] Reusing optimized inpainted Gaussians"
 fi
 require_file "${INPAINTED_WORK_PLY}"
+if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+    echo "[5b/8] Independent local EDGS-PGSR geometry refinement"
+    geometry_arguments=(
+        tools/finetune_pgsr_geometry.py
+        --rgb-manifest "${RGB_FINETUNE_MANIFEST}"
+        --lama "${LAMA_COMPLETION_MANIFEST}" --camera "${VIRTUAL_CAMERA_MANIFEST}"
+        --edgs-config "${EDGS_CONFIG}" --config "${LOCAL_GEOMETRY_CONFIG}"
+        --output-root "${LOCAL_GEOMETRY_ROOT}" --manifest "${LOCAL_GEOMETRY_MANIFEST}"
+        "${local_geometry_overrides[@]}"
+    )
+    if ! should_run 5; then geometry_arguments+=(--validate-only); fi
+    run_edgs "${geometry_arguments[@]}"
+    INPAINTED_WORK_PLY="${LOCAL_GEOMETRY_ROOT}/point_cloud/iteration_${LOCAL_GEOMETRY_STEPS}/point_cloud.ply"
+    require_regular_file "${INPAINTED_WORK_PLY}"
+fi
 fi
 
 if (( END_STAGE >= 6 )); then
 if should_run 6; then
     echo "[6/8] Publishing an EDGS-loadable inpainted 3DGS"
+    publish_local_arguments=()
+    if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+        publish_local_arguments+=(--local-geometry-manifest "${LOCAL_GEOMETRY_MANIFEST}")
+    fi
     run_inpaint tools/publish_inpainted_edgs_model.py \
         --inpainted-ply "${INPAINTED_WORK_PLY}" \
         --classifier "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/classifier.pth" \
@@ -768,13 +837,20 @@ if should_run 6; then
         --fusion-manifest "${FUSION_MANIFEST}" \
         --fusion-seed-frame "${FUSION_SEED_FRAME}" \
         --inpaint-config "${INPAINT_CONFIG}" \
-        --output "${INPAINTED_GS_ROOT}"
+        --output "${INPAINTED_GS_ROOT}" "${publish_local_arguments[@]}"
 else
     echo "[6/8] Reusing published inpainted 3DGS"
 fi
 require_manifest_kind "${INPAINTED_MODEL_MANIFEST}" "paintmesh-inpainted-edgs-model"
 require_regular_file "${INPAINTED_PLY}"
 require_file "${INPAINTED_CLASSIFIER}"
+check_selection_arguments=()
+if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+    check_selection_arguments+=(--local-manifest "${LOCAL_GEOMETRY_MANIFEST}")
+fi
+run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" check-published \
+    --model-manifest "${INPAINTED_MODEL_MANIFEST}" --selected-ply "${INPAINTED_WORK_PLY}" \
+    "${check_selection_arguments[@]}"
 fi
 
 if (( END_STAGE >= 7 )); then

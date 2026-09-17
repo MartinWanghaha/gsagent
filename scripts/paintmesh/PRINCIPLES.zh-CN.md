@@ -8,6 +8,10 @@
 
 本文以当前代码为准，而不是对上游论文流程的泛化描述。运行命令、断点续跑和目录参数请参阅 [README.zh-CN.md](README.zh-CN.md)。明确标记“待实现”的段落描述后续约定，详细代码方案见 [plan.md](plan.md)，不代表当前运行能力。
 
+本轮实现边界：保留现有 depth completion、RGB-D 反投影、单 seed 初始化及 RGB finetune；在其后增加默认关闭的独立 EDGS-PGSR 局部几何优化，直接用 LaMa completed normal 做二维监督。新增开关和渐增调度只属于 `run_inpaint.sh`，不改变 `run_seg.sh` 的全局训练。详见第 3.9a 节；代码已接入并通过小型合成 CUDA 链路测试，真实场景完整训练质量仍待评估。
+
+下一轮密度改进方案已记录于第 3.7a 节和 [plan.md 的 D0 节](plan.md#d0-周边密度匹配的深度支持点重采样待实现)：在 Stage 4 与 Stage 5a 之间增加周边密度匹配的 RGB-D 支持点重采样。**仅完成设计，尚未实现**；下文“保留原反投影/初始化”的描述仍是当前代码行为，不表示否定该后续方案。它与 Stage 5b 开关独立，不改变自动 normal completion，也不要求 normal 反投影。
+
 ## 0. 先建立三个正确认识
 
 ### 0.1 “3DGS with mesh”不是联合训练
@@ -280,6 +284,8 @@ L={}&0.8L_1+0.2(1-\operatorname{SSIM})\\
 $$
 
 条件在代码中是严格的 `step > 7000`，所以后三个几何项从第 7001 步开始生效。
+
+这里描述的是 `run_seg.sh` 最初的全局重建，后续局部补全设计不会修改这一配置或公式。第 3.9a 节的 LaMa normal loss 使用独立入口、独立配置和从零开始的局部步数；不能为了让短程局部优化生效而把全局 `single_view_from_iter` 改小。
 
 #### D1. EDGS 光度损失
 
@@ -818,6 +824,8 @@ semantic_mesh/
 
 ### 3.1 总体数据流
 
+以下为默认关闭局部优化时的流程；normal completion 自动执行，completed normal 在可选 Stage 5b 中参与训练：
+
 ```text
 语义 3DGS
    │
@@ -854,6 +862,18 @@ mask 内 RGB-D 反投影 -> 30 个 support PLY
    │
    └──Gaussian semantics relift──> inpainted semantic mesh
 ```
+
+在 RGB finetune 的空间门控提交之后、模型发布之前，现已增加可选 Stage 5b：
+
+```text
+Stage 5a RGB finetune 已提交结果
+    ├── LOCAL_GEOMETRY_REFINE=false -> 原样发布
+    └── LOCAL_GEOMETRY_REFINE=true  -> 独立 PGSR 局部优化 -> 验证后发布
+                                         ↑
+                         completed depth / normal + RGB / cameras / masks
+```
+
+该分支不改变前面的反投影和初始化，也不改变后面的 RGB-D TSDF 算法。normal completion 仍然是“上游有 normal 就自动执行”，不受局部优化开关控制。
 
 ### 3.2 前置模块 A：从语义 3DGS 中删除目标
 
@@ -922,7 +942,7 @@ removed_3dgs/point_cloud/iteration_<N>/point_cloud.ply
 
 removed RGB 被按 `00000.png..00029.png` 打包为 tracker `images.zip`。每个相机的完整精度 `R`、`T`、FoV、宽高、near/far、scene translation/scale 写入 `virtual_cameras.json`。后续所有模块复用该 manifest，而不是用四舍五入后的半径重新生成轨迹，从而避免 mask、RGB、depth 和反投影之间的像素偏移。
 
-新 tracking session 还绑定 removed render artifact。切换后端必须使用新的 removal run，已有会话和下游工作区不能复用另一后端的几何产物。normal/alpha 会随 inpaint 工作区一起校验和链接；normal LaMa completion 已接入 Stage 2/3，normal loss 仍属于待实现阶段。
+新 tracking session 还绑定 removed render artifact。切换后端必须使用新的 removal run，已有会话和下游工作区不能复用另一后端的几何产物。normal/alpha 会随 inpaint 工作区一起校验和链接；normal LaMa completion 已接入 Stage 2/3，normal loss 位于可选的独立 Stage 5b。
 
 normal completion 规则是：只要上游提供完整的 removed normal，就自动执行 `removed normal → LaMa → completed normal`，与 depth 分支平级；不新增启用开关，不以 completed depth 推导法线替代此分支。
 
@@ -1084,7 +1104,7 @@ lama/output/normal/vis/00000.png ... 00029.png  # 仅预览
 
 Stage 3 根据输入 manifest 自动运行 normal predictor，不增加 normal 开关或模式。现有 `lama_completion_manifest.json` 扩展为校验全部预期模态：只要输入含 normal，输出缺 normal 就不能提交成功或复用旧 RGB/depth-only 缓存。`normal/prediction.json` 记录推理的输入、模型/config 和逐帧输出 hash，不替代总 completion 标记。
 
-这是使用 RGB LaMa 权重对编码法线做补全的基线，不是专门训练的法线模型；单位化不能保证与 depth 或多视角几何一致。depth-derived normal 仅用于后续质量诊断，不覆盖 LaMa normal。将 completed normal 用于点云融合、Gaussian 初始化和训练仍是独立后续工作，详见 [plan.md](plan.md)。
+这是使用 RGB LaMa 权重对编码法线做补全的基线，不是专门训练的法线模型；单位化不能保证与 depth 或多视角几何一致。completed depth 派生法线用于后续质量诊断，不覆盖 LaMa normal。completed normal 可作为第 3.9a 节的软监督；RGB-D-N 融合与 normal-aware 初始化延期，详见 [plan.md](plan.md)。
 
 ### 3.7 模块 F：completed RGB-D 反投影成支持点云
 
@@ -1132,6 +1152,50 @@ manifests/fusion_manifest.json
 
 一个重要的当前实现细节是：虽然生成 30 个支持 PLY，Stage 5 只选择 `FUSION_SEED_FRAME` 指定的一张，默认 `00004.ply`，用来初始化新 Gaussian；30 张 completed RGB 则全部用于后续多视角优化。
 
+本轮局部优化方案保留以上计算和输出不变：不反投影 normal，不新增 RGB-D-N 融合，不将 30 个 PLY 合并成新的初始化点云。completed depth 继续提供三维初值，同时在启用 Stage 5b 后新增二维深度监督；completed normal 直接作为同相机的二维方向监督。
+
+### 3.7a 下一轮：周边密度匹配的深度反投影支持点（待实现）
+
+#### 为什么当前支持点可能稀疏
+
+`point_utils.py::create_point_cloud()` 已逐像素反投影，没有 stride 或 voxel 下采样；`ply_color_fusion()` 只选择 mask 内像素。Stage 5a 仅使用一张 seed，而不是合并 30 帧。因此初始点间距受 seed 分辨率、距离和表面倾角限制，不受周边原有 Gaussian 密度控制。随后还经过 statistical outlier removal、RGB 驱动的 densify/prune 和最终空间 gate；Stage 5b 则固定点数。
+
+这是代码层面的可能原因，不是对 kitchen 稀疏位置的实测归因。需要分别统计原始 seed、离群过滤后、Gaussian 初始化后、5a gate 前后、5b 后的点数及局部间距，区分“输入就稀疏”和“训练/提交时点被删掉”。Gaussian 中心密度和渲染覆盖也不等价，必须同时观察 scale、opacity、alpha。
+
+#### 目标：匹配同一表面的密度，而不是堆叠更多视角
+
+推荐首版流程：
+
+```text
+30 帧 completed RGB-D + 原始 seed support（不覆盖）
+        + 实际保留的背景 Gaussians / removed depth、alpha / 精确相机、mask
+        -> 筛选 hole 外同表面背景，估计局部目标间距
+        -> seed depth 构建不跨深度断层的局部三角面片
+        -> 按目标间距自适应细分/表面采样、多视角检查、去重
+        -> density-matched 初始化 support
+        -> 原 Stage 5a RGB finetune -> 可选 Stage 5b 几何优化
+```
+
+参考集合来自与 Stage 5a 相同删除规则下真正保留的 Gaussian 中心，不使用 full 模型中已删除物体的密度。先用 hole 外环带、可见性、深度一致性筛选，再按连续表面分组，避免把台面、墙、椅子或背后不可见点混为一组。参考集合只用于统计，不修改背景。removed alpha 仅帮助筛选已知区域，不能用洞内低 alpha 否决补全点。
+
+在同一表面的切平面上，用第 k 近邻距离估计二维表面密度 `rho ≈ k/(π r_k²)`，初始 `k=8`；排除自身、重复点和跨层邻居，并对边界截断做校正或剔除。对可靠小片区取稳健统计，再沿该连通表面向洞内传播目标密度，不用全场景均值或三维包围盒体密度。目标间距与 `1/sqrt(rho)` 成正比，实际采样系数要用合成平面标定；不能把 k 近邻半径直接当最近邻间隔。
+
+#### 在深度表面增加点，不凭空添加几何
+
+只在 seed mask 内、正且有限的 completed z-depth 上生成候选；构建三角面片时切断深度跳变、无效像素和不同表面。按面片面积和目标密度分配点预算，在世界坐标面片内采样，回投 seed 获取 RGB；不能通过重复 XYZ、三维随机噪声或仅放大 Gaussian scale 冒充密度提升。细分只是提高已有深度曲面的采样密度，不会恢复 LaMa 未预测出的真实细节。
+
+其他虚拟视角用于重投影一致性与遮挡检查，不直接拼接成多层点云。已知区域以可信 removed depth 检查，洞内以 completed depth 做软一致性检查；被遮挡和出视野不是冲突，多个 LaMa 预测相互一致也不等于真实几何。首版不把 LaMa normal 当作硬过滤条件，法线仍直接交给 Stage 5b loss。
+
+按局部间距进行表面内去重，同时考虑洞内仍存的同表面背景点，避免叠加一层新点。采样前后都需要深度边界和 coverage 检查；没有可信参考或预算不足时报告缺口，不放松几何阈值来凑点数。单 seed 不可见的部分仍不可补采样，扩大覆盖的多视角融合留到后续独立方案。
+
+#### 初始化、空间 gate 与验收
+
+新增初始化 support 与原始 gate support 必须分离：初始化读取密度匹配后的点，Stage 5a/5b 的空间许可范围仍绑定原始 seed、mask、相机和原 gate 阈值，不能因采样分布改变而扩大 gate。需同步扩展 receipt、hash 和恢复校验，不能只替换 `--supp_ply`。离群过滤后重新统计有效点密度；首版保留原 quaternion、opacity、SH/语义初始化规则，等向 scale 从最终有效点间距计算，并检查现有数值下限是否限制目标尺度。
+
+验收在同表面小片区比较“补全/参考”的密度比、间距分布、边界接缝、渲染 alpha、深度误差和 mask 外 RGB。建议初始密度比目标为 `0.75～1.33`，仅作待实验校准的工程门槛；同时报告未覆盖面积，不能只统计成功补点处。Stage 5a 可能再次增密/剪枝，故必须分别验收初始化、5a 和 5b，不能宣称初始化达标等于最终点云达标。Stage 5b normal loss 不负责补点。
+
+首版独立模式拟为 `SUPPORT_DENSITY_MODE=legacy|boundary_adaptive`，默认 `legacy` 兼容旧 run；与 `LOCAL_GEOMETRY_REFINE` 分开验证四种组合。以上配置尚不可运行，实施顺序与文件职责见 plan D0。
+
 ### 3.8 模块 G：从 seed 支持点初始化新的 Gaussians
 
 实现位于 [`GaussianModel.inpaint_setup`](../../submodules/Inpaint360GS/scene/gaussian_model.py) 和 [`compose_utils.py`](../../submodules/Inpaint360GS/utils/compose_utils.py)。
@@ -1169,9 +1233,11 @@ manifests/fusion_manifest.json
 
 一个可优化的临时 GaussianModel，既含保留场景，也含补全区域的新 splats。
 
+本轮保持这些初始化规则不变。使用 normal 调整初始 quaternion/各轴 scale 是延期方案，不是接入 Stage 5b 的前置条件。
+
 ### 3.9 模块 H：30 视角 3DGS finetune
 
-实现位于 [`edit_object_inpaint.py`](../../submodules/Inpaint360GS/edit_object_inpaint.py)。这个阶段使用 Inpaint360GS 的 Gaussian renderer；PGSR renderer 在后续重建 mesh 时才再次使用。
+实现位于 [`edit_object_inpaint.py`](../../submodules/Inpaint360GS/edit_object_inpaint.py)。这个阶段使用 Inpaint360GS 的 Gaussian renderer，称为 Stage 5a，算法保持不变；PGSR renderer 用于可选的 Stage 5b 及后续 mesh 重建。Stage 5b 单独见第 3.9a 节。
 
 #### 输入
 
@@ -1238,6 +1304,117 @@ work_model/point_cloud_object_inpaint_virtual/
 
 该工作 PLY 含 RGB/几何和 `obj_dc_0..15`。
 
+### 3.9a 模块 H 扩展：独立 EDGS-PGSR 局部几何优化
+
+#### H3. 为什么直接使用二维 normal loss
+
+depth 表示表面位置，normal 表示表面朝向。法线没有距离信息，不能单独反投影出三维点；两个位置不同的平行平面也可以具有相同法线。本轮不修改第 3.7 节的反投影，只在 PGSR 渲染的同一虚拟相机下比较预测和 LaMa completed normal。
+
+两者都使用相机坐标系 `+x 右、+y 下、+z 前`，有效法线单位长度且朝向相机。目标来自 `lama/output/normal/<frame>.npy` 和 `valid/<frame>.png`，不是 `vis/*.png`，也不是 full-scene normal。无需将 normal 变换到世界坐标。
+
+#### H4. 独立入口、开关与不变部分
+
+入口为 [`finetune_pgsr_geometry.py`](../../submodules/EDGS/tools/finetune_pgsr_geometry.py)，由 `run_inpaint.sh` 在独立子进程调用，直接加载 Stage 5a 的最终 PLY；不重新运行 RoMa、全局重建或 seed 初始化。复用 PGSR 可微 renderer，不调用全局 `PGSRLossComposer`。局部损失位于独立 [`paintmesh_local_losses.py`](../../submodules/EDGS/source/paintmesh_local_losses.py)，配置位于 [local_geometry.yaml](configs/local_geometry.yaml)，跨项目 CPU 产物契约位于 [local_geometry_io.py](local_geometry_io.py)。
+
+| 参数 | 默认值 | 含义 |
+|---|---:|---|
+| `LOCAL_GEOMETRY_REFINE` | `false` | 唯一的局部优化启用开关 |
+| `LOCAL_GEOMETRY_CONFIG` | `scripts/paintmesh/configs/local_geometry.yaml` | 局部训练配置，不覆盖全局 PGSR 配置 |
+| `LOCAL_GEOMETRY_ITERATIONS` | `1000` | 局部总步数 `T` |
+| `LOCAL_GEOMETRY_FROM_ITER` | `100` | 几何权重开始渐增的位置 `s` |
+| `LOCAL_GEOMETRY_RAMP_ITERS` | `400` | 几何权重渐增长度 `r` |
+
+这些数值是首轮实验起点，不是已验证的最佳超参数。显式环境变量覆盖局部 YAML，解析后的配置保存到当前 run。关闭开关时不要求局部配置、normal 目标或新 sidecar；自动 normal LaMa 仍照常执行。开启并进入 Stage 5b 时必须有经过验证、与当前相机/模型一致的 completed normal 和 plane z-depth，否则报错。
+
+`run_seg.sh`、全局 `configs/gs/pgsr.yaml`、`source/pgsr_losses.py` 的公式和 7000 步门槛不变；基础 `edgs/`、语义 3DGS、removed 模型和它们的配置均只读。`FINETUNE_ITERATION=5000` 仍只控制原 RGB 阶段，与局部步数独立。
+
+#### H5. 新增 LaMa normal 监督与局部总损失
+
+PGSR 返回的 normal 为 alpha 加权向量，训练时在 Tensor 内解码并保留梯度：
+
+$$
+\hat N=\operatorname{normalize}
+\left(\frac{N_{render}}{\max(A_{render},\epsilon)}\right).
+$$
+
+目标从 HWC 转为 CHW 后，与同像素预测比较：
+
+$$
+L_{LaMa\ normal}
+=\frac{\sum_p w_p[1-\operatorname{clamp}(\hat N_p^T N^*_{LaMa,p},-1,1)]}
+{\sum_p w_p+\epsilon}.
+$$
+
+`w` 限制在 hole 内的合法目标和有效渲染区域，首版有效目标统一权重，不把 `normal_valid` 叫作置信度。统一朝相机后使用有符号点积；使用绝对点积可能掩盖反向或相机轴错误。
+
+另有两项几何约束：
+
+```text
+L_depth       = SmoothL1(log(D_pred), log(D_completed)) 的有效域均值
+L_consistency = 1 - dot(N_pred, N_depth(D_pred)) 的有效域均值
+```
+
+前者限制表面位置，后者限制模型内部深度与法线协调；`N_depth(D_pred)` 保留对预测深度的梯度。LaMa normal 是外部伪目标监督，与第 1.5 节原有的内部 normal 一致性不同，必须分别记录。
+
+局部阶段开始时，用同一 PGSR renderer 缓存输入模型的 RGB/alpha 基线 `I0/A0`，停止其梯度。总目标为：
+
+$$
+L(t)=L_{RGB}+\lambda_A L_{alpha}
++a(t)\left(\lambda_D L_{depth}
++\lambda_N L_{LaMa\ normal}
++\lambda_C L_{consistency}\right).
+$$
+
+RGB 在洞内对齐 completed RGB、洞外对齐固定的 `I0`；洞外不能用含被删除对象的真实 RGB 作目标。alpha 保持项在有效 completed depth 目标域内惩罚 `A_pred` 低于 `max(A0, 0.1)`，防止通过降低覆盖率逃避几何监督。初始建议 `λD=0.10、λN=0.05、λC=0.015、λA=0.1`，均是需要实验验证的局部参数，不继承全局损失权重。
+
+深度要求同尺度的正值 plane z-depth；法线要求 finite/valid；预测 alpha 过低时不算角度项，但必须统计覆盖率。不能用洞内近零的 removed alpha 屏蔽新预测。差分法线须排除无效邻域、洞边缘和深度跳变，先选择有效值再计算 log 等运算。空有效域返回可反传的零并计数，持续无监督或覆盖崩溃时不发布成功。
+
+LaMa RGB 权重产生的 normal 只是伪目标，有限且单位长度不代表几何正确。首版用较小权重、渐增与一致性诊断控制其影响，不用 depth-derived normal 覆盖 LaMa 输出。
+
+#### H6. 局部启用时间与逐步增加权重
+
+局部循环使用 `t=0..T-1`，不是基础重建或 RGB finetune 的累计步数：
+
+$$
+a(t)=\operatorname{clip}\left(\frac{t-s}{r},0,1\right),\qquad r>0.
+$$
+
+例如 `s=100,r=400`：`t<=100` 仅做 RGB/alpha 保持；`t=300` 几何项为一半权重；`t>=500` 达到完整目标权重。要求 `T>0、0<=s<T-1、r>0、s+r<=T-1`，在训练前校验。恢复时同时恢复 local step、optimizer 和随机状态，不重新开始渐增。
+
+是否请求 plane/normal 输出由局部实际损失决定，不能沿用全局 `required_outputs(step)` 的 7000 步门槛。将局部总步数改为 5000 不会更改任何全局训练设置。
+
+#### H7. 如何真正保证“局部”
+
+仅用二维 mask 计算 loss 不等于冻结三维背景。启用局部优化时，Stage 5a 最终输出处额外保存 `editable_mask.npy` 与 `rgb_finetune_manifest.json`，记录既有 seed 空间 gate 允许编辑的最终 PLY 行，包括 gate 内新增点和允许提交的原有点；绑定点数、行序、PLY、seed、相机和 mask hash。只记录范围，不更改原 gate、训练或初始化算法；恢复的 surrounding 对象追加行标记为冻结。
+
+Stage 5b 仅为编辑行的 XYZ、rotation、scale 创建 optimizer 参数；其他行以及 SH、opacity、16D embedding、classifier 全部冻结。局部张量与常量背景一起做完整场景渲染以保留遮挡。首版不 densify/prune、不 reset opacity、不改变点数/行序，不使用全局 scale、多视角几何或 LNCC 项。
+
+保存时保留输入 PLY 所有字段，只更新许可行/字段；检查越过原空间 gate 的更新并回退到 Stage 5a 值，再计算最终诊断。冻结背景参数之外，还要检查 mask 外渲染变化，因为局部 Gaussian 的投影覆盖仍可能影响已知像素。
+
+normal loss 不会自动增加点数，Stage 5b 本身不承诺解决稀疏覆盖；下一轮将按第 3.7a 节在初始化前单独改善支持点密度。多视角联合融合与 normal-aware 初始化仍为延期方案。
+
+#### H8. 独立产物与发布选择
+
+局部 debug 默认开启：独立配置 `debug.enabled=true`，每 100 次更新固定渲染视角 `00004`，输出至 `local_geometry/debug/`。拼图展示 completed/当前 RGB、depth、normal，以及洞内法线角度误差和 alpha/hole 边界；配套 JSON 记录固定视角 loss、实际权重和覆盖率。还保存优化前与最终 gate 后图像。额外渲染不参与反向传播或随机视角采样，使用固定目标深度色阶；不修改 `run_seg` 全局 debug 和 CUDA `pipeline.debug`。详见 README Stage 5b 的配置说明。
+
+```text
+<INPAINT_RUN_ROOT>/local_geometry/
+├── config.resolved.yaml
+├── editable_mask.npy
+├── checkpoints/
+├── point_cloud/iteration_1000/point_cloud.ply
+└── diagnostics/
+<INPAINT_RUN_ROOT>/manifests/local_geometry_manifest.json
+```
+
+局部输出不覆盖 Stage 5a PLY。manifest 绑定输入模型、编辑范围、LaMa completion、相机/mask、配置/实现版本、随机种子、调度、输出 hash 和完成状态。失败不得静默退回 Stage 5a 并宣称局部优化成功。
+
+保留原 Stage 1..8 编号：5a/5b 同属 Stage 5，`END_STAGE=5` 包含开启后的局部优化；从 Stage 6 续跑必须验证所选来源已完成。重入 Stage 5 先验证/复用 5a，再运行或恢复 5b；旧 PLY 没有可信编辑 sidecar 时要求重建 5a，不能猜测行对应关系。
+
+Stage 6 按开关选择 5a/5b；关闭时保持旧发布契约，开启时要求局部完成记录。发布目录仍用 `iteration_<FINETUNE_ITERATION>` 作为兼容标签，manifest 分别记录 RGB 步数与局部步数，例如 `5000 + 1000`，不能把 `iteration_5000` 当作全部优化步数。新的 model artifact 会使旧 render/mesh/semantic 缓存失效。
+
+验收重点是关闭开关回归、局部/全局调度隔离、法线坐标与梯度正确、冻结字段不变、覆盖率及 mask 外变化、断点/过期产物拒绝。完整文件落点和测试清单见 [plan.md](plan.md) 阶段 F。
+
 ### 3.10 模块 I：发布 EDGS 可加载的 inpainted 3DGS
 
 实现位于 [`publish_inpainted_edgs_model.py`](../../submodules/Inpaint360GS/tools/publish_inpainted_edgs_model.py)。
@@ -1248,6 +1425,8 @@ work_model/point_cloud_object_inpaint_virtual/
 - classifier；
 - EDGS `config.yaml` 和 `cfg_args`；
 - removal、tracker、camera、LaMa、fusion 等 manifests。
+
+输入 PLY 按第 3.9a 节的局部优化开关选择，开启时另验 `local_geometry_manifest.json`；关闭时保留现有身份，不要求新字段。发布器不能忽略已请求但未完成的局部优化。
 
 #### 计算过程
 
@@ -1360,6 +1539,8 @@ inpaint/default/inpaint_manifest.json
 
 manifest 是整条 remove -> virtual views -> tracker -> LaMa -> RGB-D -> 3DGS -> PGSR/TSDF -> semantic relift 的提交标记。
 
+后续若开启局部几何优化，最终提交还必须追溯 `5a -> local_geometry -> published model` 的身份链，并确认 mesh 来源于相同的已发布 PLY；不能把几何优化前的 mesh 与优化后的模型组合为一个成功结果。
+
 ---
 
 ## 4. 三个问题的最短答案
@@ -1379,9 +1560,11 @@ manifest 是整条 remove -> virtual views -> tracker -> LaMa -> RGB-D -> 3DGS -
 3. 蒸馏函数计算了 KL，但当前训练调用只使用 cosine 正则。
 4. LaMa depth 是把深度当图像做补全，几何一致性主要依赖多虚拟视角、RGB-D 初值和后续 3DGS 优化，而不是显式多视图 depth loss。
 5. 当前只用一个 `FUSION_SEED_FRAME` PLY 初始化 splats，未把 30 个支持 PLY 联合配准或融合成一个初始化点云。
-6. 3DGS finetune 没有 depth loss，也没有 semantic loss。
+6. Stage 5a RGB finetune 没有 depth/normal loss，也没有 semantic loss；只有显式开启的 Stage 5b 使用局部 depth、LaMa normal 与内部一致性监督。
 7. 补全 mesh 的细节上限受 PGSR plane depth、真实训练相机覆盖、TSDF voxel size 和连通分量过滤共同限制。
 8. `semantic_mesh.ply` 是便于查看的 vertex 着色副本；需要精确 face 语义时应读取 `.npy` sidecar 和 manifest。
+9. 自动 normal completion 与局部优化是两种独立行为：前者由上游模态触发，后者由默认关闭的 `LOCAL_GEOMETRY_REFINE` 显式启用。LaMa normal 不是几何真值，normal loss 也不等于增密。
+10. 所有局部几何参数只属于当前 inpaint run，禁止写回最初的全局训练配置或模型；第 1 节全局 `step > 7000` 调度保持不变。
 
 ## 6. 主要源码索引
 

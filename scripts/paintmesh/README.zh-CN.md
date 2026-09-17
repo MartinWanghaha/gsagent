@@ -969,7 +969,7 @@ run_inpaint_py tools/prepare_paintmesh_lama_data.py validate-output \
 输入：Stage 2 的 LaMa 输入、`big-lama` checkpoint。  
 输出：`lama/output/{color,depth}/`、可用时的 `lama/output/normal/`，以及统一的 `manifests/lama_completion_manifest.json`。normal 目录包含 float32 H×W×3 的 `<frame>.npy`、`valid/<frame>.png`、`vis/<frame>.png` 和推理来源记录 `prediction.json`。只有全部预期模态通过校验才提交总完成标记；有 normal 时不能复用旧 RGB/depth-only completion。
 
-normal 使用独立 float32 loader：`(N+1)/2 → LaMa → 2P-1 → 单位化/朝向校正`，首版复用 `LAMA_MODEL_PATH` 和 depth 相同的 refinement 设置。mask 外 raw normal/valid 完全不变，不从 completed depth 推导或回退。LaMa 权重原本用于 RGB，输出是法线补全基线，不保证多视角或 depth-normal 几何一致性；目前尚不将 completed normal 用于 Gaussian 初始化或 finetune loss。
+normal 使用独立 float32 loader：`(N+1)/2 → LaMa → 2P-1 → 单位化/朝向校正`，首版复用 `LAMA_MODEL_PATH` 和 depth 相同的 refinement 设置。mask 外 raw normal/valid 完全不变，不从 completed depth 推导或回退。LaMa 权重原本用于 RGB，输出是法线补全基线，不保证多视角或 depth-normal 几何一致性；不改变 Gaussian 初始化，启用下面的 Stage 5b 后才参与局部几何 loss。
 
 例如已有 `target_14_pgsr` 的完整 tracker masks 后，只运行到三路 LaMa completion：
 
@@ -1034,6 +1034,64 @@ run_inpaint_py edit_object_inpaint.py \
 设置 `RENDER_INPAINT_VIDEO=true` 时追加 `--render_video`；启用 train/test 诊断时分别去掉 `--skip_train`/`--skip_test`。  
 输入：inpaint workspace、30 个 support PLY、seed PLY、LaMa color/mask、相机和 inpaint config。  
 输出：`work_model/point_cloud_object_inpaint_virtual/iteration_5000/point_cloud.ply` 及可选诊断渲染。
+
+### Stage 5b：可选的独立 EDGS-PGSR 局部几何优化
+
+默认 `LOCAL_GEOMETRY_REFINE=false`，保持原 RGB finetune 与发布行为。有 removed normal 时，Stage 2/3 仍自动完成 normal LaMa，和这个训练开关无关。
+
+开启时，Stage 5a 原算法不变，只额外记录最终 PLY 的编辑范围和来源。Stage 5b 用独立进程直接加载它，以 completed depth、LaMa normal 及 depth-normal 一致性监督局部 XYZ/rotation/scale；背景、SH、opacity 和语义字段冻结。不重建 RoMa、不改反投影/seed、不增密，也不修改 `run_seg.sh` 或全局 PGSR loss。
+
+建议首次使用新的 inpaint run：
+
+```bash
+REMOVAL_ROOT="$PWD/output/paintmesh/mip-nerf/360_v2/kitchen/removal/target_14_pgsr" \
+INPAINT_RUN_NAME=normal_local_geometry \
+LOCAL_GEOMETRY_REFINE=true \
+LOCAL_GEOMETRY_ITERATIONS=1000 \
+LOCAL_GEOMETRY_FROM_ITER=100 \
+LOCAL_GEOMETRY_RAMP_ITERS=400 \
+END_STAGE=8 \
+bash scripts/paintmesh/run_inpaint.sh mip-nerf/360_v2 kitchen 8 14 none 1
+```
+
+局部步数 `t` 从零开始，几何权重乘 `clip((t-100)/400, 0, 1)`，即 `t<=100` 为零，`t=300` 为一半，`t>=500` 达到目标权重。RGB 和覆盖率保护始终启用。配置见 [configs/local_geometry.yaml](configs/local_geometry.yaml)，可用 `LOCAL_GEOMETRY_CONFIG=/absolute/custom.yaml` 选择局部配置；显式环境变量覆盖配置文件。启用时间与 ramp 必须能在总步数内达到完整权重。
+
+局部 debug 默认开启，无需设置 `PGSR_DEBUG=true`。它使用独立配置，默认固定观察虚拟视角 `00004`，在优化前、每完成 100 次更新及最终 gate 回退后保存 2×4 JPEG 拼图：上排 completed RGB / 当前 RGB / completed depth / 当前 depth，下排 LaMa normal / 当前 normal / 洞内法线角度误差 / alpha 与 hole 边界。深度使用固定的目标深度色阶，误差色阶为 0–180°，便于跨迭代比较。
+
+```yaml
+debug:
+  enabled: true
+  interval: 100
+  from_step: 0
+  view_index: 4
+  jpeg_quality: 95
+```
+
+图像位于 `local_geometry/debug/step_000100_view_00004.jpg` 等；`step_000000` 为初始状态，步数表示已完成的参数更新次数，`final_view_00004.jpg` 是最终 gate 处理后的状态。配套 JSON 记录该固定视角的 loss、实际几何权重和覆盖率。`from_step` 为周期截图起点，与 loss 启用时间独立；最终图始终保存（除非关闭 debug）。关闭时在局部 YAML 设置 `debug.enabled: false`。该功能不更改全局 debug 或 CUDA `pipeline.debug`；配置纳入产物身份，已有旧配置 checkpoint 不能直接混用，变更后应使用新 run。
+
+输入必须包含同相机、同场景尺度的 PGSR plane z-depth 和 LaMa raw normal。缺少 normal、sidecar 或来源不匹配时会报错，不静默降级。
+
+输出均位于当前 inpaint run，不覆盖原 RGB PLY：
+
+```text
+local_geometry/rgb_context.json
+local_geometry/editable_mask.npy
+local_geometry/gate.npz
+local_geometry/config.resolved.yaml
+local_geometry/checkpoints/latest.pth
+local_geometry/point_cloud/iteration_1000/point_cloud.ply
+local_geometry/diagnostics/{step_*.json,00000.npz..00029.npz,final.json}
+manifests/rgb_finetune_manifest.json
+manifests/local_geometry_manifest.json
+```
+
+`END_STAGE=5` 包含 5a 和已启用的 5b。中断后使用相同开关、参数和 `INPAINT_RUN_NAME`，把最后的起始阶段参数改为 `5`，即可复用已验证的 5a 并恢复 5b 的 optimizer、局部步数和随机状态；从 `6` 开始只能复用完整的 5b，不能启动缺失的几何训练。
+
+旧 RGB PLY 没有编辑范围记录时，不能安全地推断哪些行允许更新，应使用新 inpaint run 重建 Stage 5a。切换开关或修改局部配置/输入也应使用新 run。若此前同名 run 只完成 Stage 1..4，输入未变，则可开启开关从 Stage 5 开始。
+
+Stage 6 自动选择 5b 输出并绑定几何 manifest，Stage 7/8 使用新发布模型重建 mesh 和语义。发布路径继续使用 `iteration_5000` 作为 RGB 阶段的兼容标签，manifest 分别记录 RGB 与局部步数，不能把它理解为总步数。以下 Stage 6 手动示例为默认关闭分支；手动发布 5b 时必须将 `--inpainted-ply` 指向局部输出，并追加 `--local-geometry-manifest "$MANIFEST_ROOT/local_geometry_manifest.json"`。
+
+已做真实 PGSR CUDA 的小型合成 30 帧链路测试（含恢复/复用），但没有据此宣称 kitchen 完整训练的几何质量已改善。LaMa normal 是软目标，需观察 `diagnostics` 中的覆盖率、法线/深度一致性和 mask 外 RGB 变化。
 
 ### Stage 6：发布 EDGS 可加载的 inpainted 3DGS
 
