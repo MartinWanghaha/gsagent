@@ -162,12 +162,37 @@ def verify_targets(lama_path, camera_path):
     return lama, inputs
 
 
+def prepare_rgb_policy(path, rgb_ply, enabled=True, validate_only=False):
+    """Run-local switch guard, including native RGB-D runs without normals."""
+    if not isinstance(enabled, bool):
+        raise ValueError('rgb_densify must be boolean')
+    path, rgb_ply = Path(path), Path(rgb_ply)
+    policy = seal('paintmesh-rgb-density-policy',
+                  parameters=dict(rgb_densify=enabled), rgb_ply=str(rgb_ply.resolve()))
+    if path.exists():
+        if read_json(path) != policy:
+            raise ValueError('RGB_FINETUNE_DENSIFY changed; choose a new INPAINT_RUN_NAME')
+    elif validate_only or rgb_ply.exists():
+        raise ValueError('Stage 5a density policy missing; rebuild in a new INPAINT_RUN_NAME')
+    else:
+        write_json(path, policy)
+    return policy
+
+
 def prepare_rgb(args):
     verify_targets(args.lama, args.camera)
     inputs = {name: record(getattr(args, name)) for name in (
         "source_ply", "classifier", "inpaint_config", "camera", "lama", "fusion", "support")}
+    if getattr(args, "density", None):
+        from support_density_io import validate_density
+        density = validate_density(args.density)
+        for key,value in inputs.items():
+            if density['inputs'].get(key)!=value:
+                raise ValueError(f'density/RGB input mismatch: {key}')
+        inputs.update(density=record(args.density),init_support=density['outputs']['support'])
     context = seal("paintmesh-rgb-finetune-context", inputs=inputs,
-        parameters=dict(iterations=args.rgb_iterations, seed_frame=args.seed_frame),
+        parameters=dict(iterations=args.rgb_iterations, seed_frame=args.seed_frame,
+                        rgb_densify=getattr(args, 'rgb_densify', True)),
         rgb_ply=str(args.rgb_ply.resolve()), manifest=str(args.manifest.resolve()),
         implementation=sha256(REPO / "submodules/Inpaint360GS/edit_object_inpaint.py"))
     if args.context.exists() and read_json(args.context) != context:
@@ -208,6 +233,11 @@ def validate_rgb(path):
     from plyfile import PlyData
     receipt = read_receipt(path, RGB_KIND)
     context = read_receipt(receipt["inputs"]["context"]["path"], "paintmesh-rgb-finetune-context")
+    if 'density' in context['inputs']:
+        from support_density_io import validate_density
+        density=validate_density(context['inputs']['density']['path'])
+        if context['inputs']['init_support']!=density['outputs']['support']:
+            raise ValueError('RGB init support differs from density receipt')
     if (receipt["context_artifact_id"] != context["artifact_id"] or
             receipt["parameters"] != context["parameters"] or
             any(receipt["inputs"].get(key) != value for key, value in context["inputs"].items()) or
@@ -296,6 +326,13 @@ def main():
         prepare.add_argument("--" + name, type=Path, required=True)
     prepare.add_argument("--rgb-iterations", type=int, required=True)
     prepare.add_argument("--seed-frame", type=int, required=True)
+    prepare.add_argument('--density',type=Path)
+    prepare.add_argument('--disable-rgb-densify',dest='rgb_densify',action='store_false',default=True)
+    policy = subs.add_parser('prepare-rgb-policy')
+    policy.add_argument('--path',type=Path,required=True)
+    policy.add_argument('--rgb-ply',type=Path,required=True)
+    policy.add_argument('--disable-rgb-densify',dest='rgb_densify',action='store_false',default=True)
+    policy.add_argument('--validate-only',action='store_true')
     config = subs.add_parser("config")
     config.add_argument("--config", type=Path, required=True)
     for name in ("iterations", "geometry-from-iter", "geometry-ramp-iters"):
@@ -304,10 +341,14 @@ def main():
     published.add_argument("--model-manifest", type=Path, required=True)
     published.add_argument("--selected-ply", type=Path, required=True)
     published.add_argument("--local-manifest", type=Path)
+    published.add_argument('--density',type=Path)
+    published.add_argument('--rgb-manifest',type=Path)
     args = parser.parse_args()
     try:
         if args.command == "prepare-rgb":
             prepare_rgb(args)
+        elif args.command == 'prepare-rgb-policy':
+            prepare_rgb_policy(args.path,args.rgb_ply,args.rgb_densify,args.validate_only)
         elif args.command == "config":
             cfg = load_config(args.config, iterations=args.iterations,
                 geometry_from_iter=args.geometry_from_iter, geometry_ramp_iters=args.geometry_ramp_iters)
@@ -319,6 +360,14 @@ def main():
                 raise ValueError("published local geometry selection differs from this run; choose a new run")
             if record(args.selected_ply)["sha256"] != model["inputs"]["inpainted_gaussian_ply"]["sha256"]:
                 raise ValueError("published model differs from selected Stage 5a/5b result")
+            if bool(model.get('parameters',{}).get('support_density_mode')) != bool(args.density):
+                raise ValueError('published density selection differs from this run')
+            if args.density:
+                from support_density_io import validate_density_rgb
+                density=validate_density_rgb(args.density,args.rgb_manifest,
+                    selected_ply=args.selected_ply,local_manifest=args.local_manifest)
+                if model['upstream_artifact_ids'].get('support_density')!=density['artifact_id']:
+                    raise ValueError('published density identity mismatch')
             if args.local_manifest:
                 local = validate_local(args.local_manifest, selected_ply=args.selected_ply)
                 if model["upstream_artifact_ids"].get("local_geometry") != local["artifact_id"]:

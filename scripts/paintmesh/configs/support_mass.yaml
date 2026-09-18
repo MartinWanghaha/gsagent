@@ -1,0 +1,6 @@
+# No geometric acceptance thresholds or density multipliers.
+algorithm: mass_adaptive
+seed: 0
+batch_size: 2048
+memory_budget_mb: 4096
+debug: true

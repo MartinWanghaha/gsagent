@@ -4,7 +4,7 @@
 
 阶段 F 已接入：保持已有 RGB-D 反投影、单 seed Gaussian 初始化和 RGB finetune，在其后运行**独立、默认关闭的 EDGS-PGSR 局部几何优化**，新增 LaMa normal 监督及局部权重渐增调度。阶段 D/E 的 RGB-D-N 融合和 normal-aware 初始化延期，不作为阶段 F 的依赖。局部入口、开关、配置、编辑范围、checkpoint 与发布链已实现；通过小型合成 30 帧 CUDA 链路测试，不代表真实 kitchen 完整训练的质量已验证。
 
-新增下一轮设计：**D0 周边密度匹配的深度支持点重采样（待实现）**，在 Stage 4 后、Stage 5a 初始化前执行，不改变 Stage 5b 的固定点数契约。优先解决 seed 采样密度与周边背景不匹配，不提前启用 D/E 的全视角 RGB-D-N 融合或 normal-aware 初始化。本次仅更新文档；下文原流程图和“反投影不变”指已实现基线，D0 小节单独定义后续改动。
+正式实现：**D0 无手调密度阈值的自适应配额采样**。`SUPPORT_DENSITY_MODE=mass_adaptive` 在 Stage 4 后、Stage 5a 初始化前，根据周边表面密度和洞内表面积自动计算点数。密度匹配只有这一种实现；`legacy` 仅表示不启用密度匹配，保持原生流程。默认开关行为不变，不改变 Stage 5b 的固定点数契约和输入/资源安全检查。真实 kitchen 预处理和小型 CUDA 链路已验证，完整训练视觉质量仍待评估。
 
 根据 [PRINCIPLES.zh-CN.md](PRINCIPLES.zh-CN.md) 当前的 RGB/depth 流程，虚拟视角渲染增加两个同级、可配置的后端：`inpaint360gs` 和 `edgs-pgsr`。默认使用 `inpaint360gs`，显式选择 `edgs-pgsr` 时同步输出：
 
@@ -317,7 +317,7 @@ full normal 只能用于诊断和坐标检查，不能直接作为实际洞区�
 | 明确不提供 normal，且不存在残留 normal 文件 | 保持原有 RGB/depth 路径与 manifest 身份，不生成 normal 产物 |
 | 声明有 normal 但缺帧、缺 sidecar、hash 不匹配；或目录与声明矛盾 | 提前报错，不静默跳过，不复用旧 RGB/depth-only completion |
 
-旧 run 没有模态声明却存在 normal 时，要求先通过虚拟渲染入口生成有效 manifest；不能仅凭目录存在就信任来源。不新增 normal 开关，也不要求单独指定 normal checkpoint，首版复用现有 `LAMA_MODEL_PATH`。
+旧 run 没有模态声明却存在 normal 时，要求先通过虚拟渲染入口生成有效 manifest；不能仅凭目录存在就信任来源。不新增 normal 开关，也不要求单独指定 normal checkpoint，当前实现复用现有 `LAMA_MODEL_PATH`。
 
 ### C2. 输入与 mask
 
@@ -378,7 +378,7 @@ valid_completed = normal_valid_removed.copy()
 valid_completed[M] = valid_pred[M]
 ```
 
-首版复用 RGB Big-LaMa 权重，是“编码法线作为三通道图像补全”的基线，不把它标成专门训练的法线模型。单位化与朝向校正并不保证 depth-normal 一致性或多视角一致性。completed depth 派生法线只能用于角度误差诊断，不能覆盖此分支输出；后续融合/训练使用的置信度另行评估，不把 valid 或 removed alpha 当作洞内预测置信度。
+当前实现复用 RGB Big-LaMa 权重，是“编码法线作为三通道图像补全”的基线，不把它标成专门训练的法线模型。单位化与朝向校正并不保证 depth-normal 一致性或多视角一致性。completed depth 派生法线只能用于角度误差诊断，不能覆盖此分支输出；后续融合/训练使用的置信度另行评估，不把 valid 或 removed alpha 当作洞内预测置信度。
 
 ### C4. 自动调度、缓存与完成校验
 
@@ -405,104 +405,170 @@ CPU 测试覆盖：三路 hole mask 相同、mask 外 normal 数值与 valid 完
 
 ## 七、阶段 D：支持点密度与后续 RGB-D-N 融合
 
-### D0. 周边密度匹配的深度支持点重采样（待实现）
+### D0. 无手调密度阈值的自适应配额采样（已实现）
 
-#### D0.1 范围与代码依据
+本节描述正式的自适应密度匹配：算法位于 `support_mass.py`，相机/反投影工具位于 `support_geometry.py`，配置为 `configs/support_mass.yaml`。
 
-目标是在 EDGS-PGSR 局部优化**之前**，使补全初始化点与相邻正常背景具有相近的局部表面密度。保持 completed depth 的 z-depth 定义、精确相机、normal 自动 completion 和 Stage 5b normal loss；不反投影 LaMa normal，不修改全局 `run_seg`，不把几何损失当作增密机制。
+#### D0.1 问题与“无阈值”的准确边界
 
-当前可确认的行为：
+原 RGB-D 反投影已经是每像素一个点，但只用 `FUSION_SEED_FRAME` 的单张 seed 初始化，没有把点数与周边 Gaussian 密度关联。Stage 5a 还会 densify/prune 和 gate 提交，Stage 5b 则固定点数；因此初始化密度改善不能保证最终密度不再变化。
 
-- `point_utils.py::create_point_cloud()` 为每个像素生成一个点，`ply_color_fusion()` 以 mask 筛选，没有 stride/voxel 下采样；
-- `run_inpaint.sh` 从 30 个 PLY 选 `FUSION_SEED_FRAME=4`，不是 30 帧联合初始化；
-- `GaussianModel.inpaint_setup()` 用 `nb_neighbors=5, std_ratio=4.0` 做统计离群过滤；
-- `compose_utils.py::create_from_pcd_our()` 用 `sqrt(distCUDA2)` 初始化等向 scale，平方距离下限 `1e-7`；
-- 5a 的 densify/prune 是 RGB 梯度驱动，最后还有 seed 空间 gate；5b 不增加点。
+这里承诺的是**不依赖用户手调角度、深度残差、覆盖率、密度比或采样倍率阈值来决定哪里补点/补多少点**，不宣称算法没有模型假设、离散选择、数值容差和资源限制：
 
-所以稀疏可能产生于像素采样上限、单 seed 覆盖、离群过滤、5a 剪枝或 gate；目前没有实测定位 kitchen 的主因。先报告每阶段点数、密度与拒绝原因，不能预设只需增加采样倍率。
+| 计算环节 | 正式实现 |
+|---|---|
+| 表面建模 | 独立像素面元，局部与多视角连续模型证据 |
+| 周边参考 | 有限多尺度邻域模型平均，连续观测可靠度 |
+| 点数计算 | 表面积 × 目标密度 − 已有中心贡献 |
+| 点位布局 | 面元内分层采样，整数配额守恒 |
+| 质量诊断 | 连续误差、配额残差和不确定性，不以质量门槛筛点 |
 
-#### D0.2 新的局部流程与边界
+保留的硬约束只有输入可解释性和任务边界：有限正 z-depth、相机/坐标一致、mask、原空间 gate、产物身份、可分配内存和数值有效性。原 gate 中的距离界限属于用户已有的编辑许可范围，**不作为新密度控制器，也不在此次扩大或移除**。自动 normal completion、Stage 5b 和全局 run_seg 的既有阈值不属于本次改动。
+
+#### D0.2 管线与数据域
 
 ```text
-Stage 4a：保留原 RGB-D 反投影 -> fused/mask/00000..00029.ply
-Stage 4b（新增可选）：边界密度估计 -> seed 表面采样 -> init_support.ply
-Stage 5a：用 init_support 初始化；用原 seed support 做 gate；RGB 训练不变
-Stage 5b：可选独立 PGSR 几何优化，仍固定点数/行序
+30 帧 completed RGB-D、相机、mask + 实际保留背景 Gaussians
+       -> 多尺度表面密度参考 + 观测不确定性
+seed 每个有效像素 -> 独立连续表面元 / 面积
+       -> 传播目标密度 -> 扣除现存背景贡献 -> 每个表面元的缺点配额
+       -> 等质量分层采样 -> init_support.ply
+       -> Stage 5a RGB finetune（原 seed gate）
+       -> 可选 Stage 5b PGSR depth / LaMa normal loss
 ```
 
-Stage 4a/4b 同属 shell Stage 4，不增加顶层 stage 编号。首版采用 **seed 表面自适应重采样 + 30 视角一致性检查**，不直接合并 30 帧。这样保留既有 seed gate 的空间范围，避免直接拼接不同 LaMa 深度造成多层表面；缺少 seed 可见性的区域明确标为未覆盖，后续扩大覆盖需要另行设计多视角 gate。
+仍是 Stage 4b，不合并 30 张补全深度成 30 层初始化点云；其他视角提供参考和软证据。LaMa normal 不反投影，不覆盖 completed depth，也不决定点数；法线分支继续 `removed normal → LaMa → completed normal → Stage 5b loss`。
 
-拟新增 `SUPPORT_DENSITY_MODE=legacy|boundary_adaptive`（默认 `legacy` 保持旧 run），以及 `SUPPORT_DENSITY_CONFIG`。这是待实现接口，不是当前可用命令。其开关与 `LOCAL_GEOMETRY_REFINE`、normal completion 独立；首版 adaptive 要求 manifest 明确为 PGSR plane z-depth，不静默把原生 renderer 的 depth 当成同一物理量。legacy 不新增 PGSR 依赖。
+最终采样域 Ω 是 seed 有效像素表面与 hole mask、原 gate 的交集。全 hole、有效 Ω、因非法深度/原 gate 限制不可处理的域分别记账，不能把分母缩成“成功放点的面积”来报告覆盖率。单 seed 不可见区域仍不在此版的可恢复范围。
 
-#### D0.3 周边参考密度：同表面、可见、实际保留
+#### D0.3 自动估计周边密度，不把全场景混在一起
 
-1. 从与 Stage 5a **完全相同的删除选择**得到保留行集合。不能只按目标 ID 的反集近似 classifier/凸包规则，不能使用已删除对象的中心作为参考。建议抽取只读 retained-row 选择函数，两个阶段共用并绑定选择结果 hash；禁止重构时改变旧分支行为。
-2. 各帧构造 `dilate(M, outer) - dilate(M, inner)` 的已知环带，按图像尺寸缩放环带宽度；建议初值 outer 为短边 3%、inner 为短边 0.5%。不足时仅在有上限的同表面范围内扩张，不扩到全场景。
-3. 投影实际保留的 Gaussian 中心，以深度正值、视锥、removed alpha、与 removed depth 的残差和局部面法向距离筛选可见背景。Gaussian 中心不是精确表面点，深度容差需兼顾局部 spacing/scale 并设上限。过滤低 opacity、孤立异常点；不按纹理丰富度挑参考。
-4. 以深度连通性/局部平面划分背景 patch，分开墙、地面、台面以及深度断层两侧；跨视角按原 Gaussian 行号去重。切平面只从可靠深度/邻域 PCA 得到；LaMa normal 不作为参考真值。
-5. 在同 patch 切平面估计 `rho_ref = median(k / (π*r_k²))`，初值 `k=8`，排除自身/重复点/跨层点；查询邻域不能被细环带裁断，可从更宽同表面集合查询并仅保留中心落入环带的样本，或使用有效面积校正。记录样本量、分位数、有效面积和稳定性。拒绝非表面型或边界偏差严重的估计。
-6. 沿 seed 深度的连通表面向洞内传播目标密度，不跨断层传播、不对所有区域使用同一个均值。`rho_target = density_ratio * rho_ref`，初值 ratio=1。间距 `h_target = c / sqrt(rho_target)`，常数 c 与采样规则有关，用合成平面标定，不直接把 `r_k` 当最近邻间隔。
+1. 复用 Stage 5a 的实际保留行选择，跨视角按原 Gaussian 行号去重；不能拿 full 模型中删除物体的中心作参考。每个背景中心的观测只融合一次，30 帧不能把密度放大 30 倍。
+2. 对所有不同 XYZ 的保留中心建立空间索引，使用可用的 `k=2,4,8,16,32` 邻域；数据极少时使用 k=1 的可辨识内外环。以外环留出计数的 Poisson 预测分数对不同尺度的 log-density 做模型平均，不依赖固定环带宽度或残差停止阈值。这是版本化有限模型族，不是无限范围的自动搜索。
+3. 当前强度估计为 `k/(πr_k²)`，以局部欧氏半径近似切面面积。使用完整保留中心而非薄环可减少参考截断，但**尚未严格校正相邻双层、尖锐折叠和体积 Gaussian 分布**；这些情况下会有密度偏差。估计尺度间的 log-density 方差降低该锚点精度，不把全场景密度平均成一个目标。
+4. 已知区 alpha、opacity、深度残差的 Cauchy 权重及可见性决定观测可靠度，跨相机取每个中心的最大可靠度；seed 已知区域中的投影作为密度锚点。噪声尺度由 MAD 估计，退化时仅使用数据尺度相关的机器精度正则，不新增米制/角度阈值。当前不读取 normal 参与密度估计；可靠度影响锚点可信程度，不把一个中心数成多个 splat。
+5. 多表面存在时保留条件于 seed 中心深度的表面假设，不能把前后两层 XYZ 或深度直接加权平均成中间假面。可采用稳健局部逆深度回归与多假设的预测似然比较；若模型选择不能区分，则记录后验歧义，而不是断言自动恢复了正确表面。
+6. 将已知区域的 `log(rho)` 在 seed 有效深度的四邻接图上延拓到 hole；边权为 `1/(1+(Δ逆深度/σ)²)`，使用带锚点精度的稀疏线性系统。没有阈值切边或用户可调传播权重，但这不是严格的跨层隔离，复杂遮挡仍需检查。
 
-可信参考不足或表面归属不明时，输出未解决区域与原因。adaptive 模式默认拒绝提交“密度匹配完成”，可由用户显式选 legacy 新 run，不能静默伪装成功。removed alpha 仅用于已知区筛选，洞内接近零不能拒绝新补全几何。
+少于三个不同背景中心（内外环计数不可辨识）、没有已知区域参考观测、或某个有效深度连通域完全没有观测锚点时，返回 `no_reference`，不静默使用全场景均值。这个算法有效域不是可调的 `min_reference` 门槛；本版未实现任意跨遮挡的参考搜索。
 
-#### D0.4 受控深度表面采样与去重
+#### D0.4 不依赖三角化覆盖率的表面元
 
-1. 对 seed 正且有限的 completed depth 按原相机公式反投影。以像素网格构建局部三角片，只连接 mask 内的同表面有效邻点；深度跳变、退化片、跨断层三角形剔除。mask 边缘按有效区域裁剪，不能为凑点跨 hole 外界；记下因此损失的窄边覆盖。
-2. 按世界坐标三角形面积积分目标密度确定预算：`N_target ≈ ∫ rho_target dA`，并减去该片内可信的现存同表面背景点贡献。保留点只参与统计/排斥，不复制进新点 PLY，也不删除背景。
-3. 稀疏 patch 内进行三角片细分/面积加权候选采样，再用变半径表面距离抑制（Poisson-disk 类规则）调整间距；过密处下采样。局部间距缓变、分 patch 执行，不能让隔墙/薄表面另一侧的点互相排斥。固定随机种子和排序确保可重现。
-4. 新点严格留在深度三角面上；回投 seed 在同一有效像素单元内插值 completed RGB。禁止复制 XYZ、随机三维 jitter、跨深度边缘双线性插值或仅增大 scale。细分增加的是采样点，不是恢复额外的真实几何细节。
-5. 重投影到其他相机，在已知区对比有效 removed depth，在 hole 内对比 completed depth；以相对深度误差和局部间距对应的绝对误差联合设阈值。先分类为可检验一致、可检验冲突、被遮挡、出视野/无效；后两者不当作冲突。要求支持视角有足够视差，连续近重复帧不当成独立强证据。记录有效视角数、支持数与冲突率，不用固定“30 帧都支持”的规则。
-6. 首版区分 multi-view confirmed 与 seed-only uncertain：无第二个可靠观测的点不获得高置信标记；可保留为不确定候选单独统计，不计入高置信覆盖验收。其他视角的 LaMa 完成值只能提供一致性证据，不是真值。明显冲突候选剔除，不在不同表面之间平均 XYZ。
-7. 对现存背景与新增候选做同表面、局部半径去重并重新测量密度，有限次补足缺点 patch；所有补采样仍经过相同质量过滤。建议总点数上限 500k、原 seed 有效点数倍率上限 8、最多 3 次补足，均为待基准测试的初值。预算不足记录 density deficit，停止并报告，而非无限加点或放松几何阈值。
+每个有限正 completed depth 像素自带一个中心三维点和一个图像像素单元。以该点为锚，在局部/单侧邻域中拟合逆深度表面 `X_u(s,t)`；邻域、表面假设及拟合尺度按 D0.3 的预测模型自动决定。拟合只用于子像素采样和面积计算，不改写 completed depth 文件，中心深度保持原值。
 
-不使用全局固定 voxel size 作为密度目标；空间哈希仅用于加速邻域查询。LaMa normal 首版仍只用于既有 5b loss 和可选角度诊断，不新增 normal 硬过滤、normal-aware 初始化或 normal 推导 depth。
+具体实现比较半径 1/2/4 像素下的全邻域、左/右/上/下单侧模型及前平行模型。局部 PRESS 预测误差和无量纲方差惩罚，再结合多视角软残差选取一个模型；不混合跨层深度。`model_choice` 与候选歧义写入 field。面积使用每像素 4×4 子单元的世界坐标雅可比求积，该有限求积精度属于算法版本，不是质量拒绝阈值。
 
-#### D0.5 初始化过滤与 gate 必须解耦
+无法从邻域辨认倾斜方向时，退回该像素中心深度的前平行表面元，并记录 `geometry_uncertainty`，而不是删除像素。这是明确的局部几何先验，不代表新恢复的真实几何。在能选择单侧假设时使用同侧颜色/深度支持；不同像素单元之间不构造跨层连接三角形，也不让新点落在前后表面的均值深度上。离散模型选择仍可能选错，必须保留诊断。
 
-- `init_support.ply` 只负责新 Gaussian 初始化；原 `fused/mask/<seed>.ply` 继续作为 `gate_support`。建议新增明确的 `--init_support_ply` / `--gate_support_ply`，legacy 两者指向原 support；不能让现有 `args.supp_ply` 同时承担两种不同身份。
-- 原 gate 的 seed camera、mask 膨胀规则、距离阈值与 support hash 不因重采样改变。候选须在原 gate 内；gate 限制导致的密度缺口必须报告，不扩大 gate。重采样后的点分布不能重新计算一个更大的 gate 距离阈值。
-- adaptive 在密度验收前执行并记录原 statistical outlier removal；初始化消费已验证点，避免重复过滤造成第二次不透明损失。legacy 继续原过滤路径。若需补足，补足后重新过滤与验收，并保证交付给 initializer 的点与 manifest 完全一致。
-- 首版保留单位 quaternion、opacity=0.1、SH/语义 KNN 初始化，scale 仍由最终点集的 `distCUDA2` 计算。记录线性 scale/h_target 分布与 `1e-7` 平方距离 floor 命中率；floor 限制目标时显式报告，不贸然更改全局数值下限。normal-aware 各向异性初始化继续延期。
-- 5a 仍可 densify/prune；需要输出新点数量及局部密度在初始化、训练结束、gate 提交后的变化，避免“seed 已达标但最后仍稀疏”。首版不承诺强制最终点数；若稀疏主因在 5a，后续另立密度保持增密策略，不能靠不断增加 seed 掩盖。
-- `rgb_context`、5a receipt、5b request/checkpoint、发布和最终提交同时绑定 init support、原 gate support、density artifact。现有只绑定单 support 的接口必须升级；5b 实际可编辑行仍在 5a 最终行顺序确定后生成，不能使用初始化索引。
+表面元只拥有本像素单元裁剪后的 mask/gate 域，不与邻居重复计面积。面元内用面积雅可比做数值积分：
 
-#### D0.6 文件落点、数据与恢复契约
+```text
+dA = || ∂X_u/∂s × ∂X_u/∂t || ds dt
+A_u = ∫_(pixel cell ∩ mask ∩ gate) dA
+```
 
-以下均为拟新增/拟修改，尚未编码：
+前平行情况下 `A_u ≈ z_u²/(fx*fy)`（刚性相机）；有倾斜或相机均匀尺度时必须用世界坐标雅可比计算。不要用跨深度跳变三角形的巨大面积制造异常点预算。非有限面积/发散模型属于数值失败，不能把无限面积解释为无限补点。
+
+#### D0.5 用缺点配额自动决定数量
+
+设 `rho*(x)` 为延拓来的目标表面中心密度，不额外乘手调 `density_ratio`；设 `b_u` 为现存保留背景在表面元 u 的有效中心贡献：
+
+```text
+t_u = ∫_(cell u) rho*(x) dA        # 此表面元应有的中心数，可为小数
+m_u = max(t_u - b_u, 0)           # 还需新增的中心质量
+M = Σ_u m_u
+N_new = round(M)                  # 自动总点数，记录不超过半个点的取整误差
+```
+
+`b_u` 由现存背景向同一表面假设的软归属分配得到；同一 Gaussian 的分配质量总和不超过 1，不能跨相机/像素重复抵扣。已存点过密只记 `surplus`，不删除或移动背景。没有依据的低置信点不能硬算作 1 个完整背景中心抵扣。
+
+**不将 `m_u` 再乘 alpha、normal valid 或几何置信度。** 否则越不确定的位置越少点，会重现 hole 稀疏。置信度决定位置估计的可靠程度和报告，不替代密度目标。新点也不能通过缩小 opacity 来假装具有相同的有效覆盖；密度与渲染质量分别评估。
+
+邻域估计与拟合按 `batch_size` 分块；代码在参考/表面计算前及配额计算后估算工作集，超出 `memory_budget_mb` 时返回 `resource_limited`，后者同时报告所需点数。不因资源预算缩减配额。当前实现尚非全流程磁盘流式算法，预算是估计值，不是 OS 级内存上限。`N_new=0` 时允许无新增点，initializer 跳过追加，不用强制造点通过非空检查。
+
+#### D0.6 等质量采样与连续几何证据
+
+1. 按空间局部顺序遍历像素表面元，将 `m_u` 归一化到 `N_new`，用固定随机种子的系统分层重采样分配整数 `n_u`。总数严格为 `N_new`，每个表面元得到其归一化配额的向下或向上取整；这是整数计数要求，不是“低于阈值不采样”。
+2. 在获得 `n_u` 个点的面元内进行分层/低差异面积采样，按雅可比修正倾斜表面的采样分布；多个点占据不同子像素位置。位置由 `X_u(s,t)` 给出，不在三维空间随机抖动，不复制相同 XYZ，也不通过放大 scale 代替补点。
+3. 新点与现存点的间距可通过保持每个面元配额的受限位置优化改善，现存点固定；只能在同一表面元/表面假设内移动。默认配额采样不需要 Poisson 最小间距阈值；精确重复或不可表示的重合属于数值问题，在同面元重新布局，不能阈值删点破坏数量。
+4. 30 视角的深度重投影残差以数据估计的噪声尺度归一化，联合评估 seed 候选。已知区用 removed depth，hole 内用 completed depth；比观测表面更远的样本通过单侧 Cauchy 权重降低可见性贡献，这是遮挡近似，不是严格的后验边缘化。相机相关性核给近重复视角连续降权，同位置重复相机不提供独立证据，不用 2° 二值计票。
+5. 这些证据参与面元的表面模型拟合/位置选择，**不事后按置信阈值删除已分配的点**；若位置模型改变了面积，应重新计算配额，而不是维持旧面积上的点数。低置信但有限的结果可以输出并标注不确定性，不保证“多帧一致即真实”。
+6. 自适应采样不执行统计离群点或半径过滤；`legacy` 不变。初始子像素布局若越出原 gate，在同像素内向可行求积节点收缩，不减少配额；有限精度内仍无法布局或产生 float32 重复点时返回 `geometry_unresolved`，不发布完成 manifest。全 hole 与 gate 内面积分别记录；完全没有 gate 内面元也报错，不能以空域宣称完成。
+
+#### D0.7 初始化、阶段审计与无门槛质量报告
+
+- 继续分离 `init_support` 和原始 `gate_support`，重采样不改变原 gate 范围；两者、实际保留行、参考估计和配额均绑定 hash。Stage 5a 最终行顺序确定后重新生成 editable sidecar，Stage 5b 固定点数/行序，禁止用初始化索引猜最终行。
+- 暂保留 SH/语义、单位 rotation 与 opacity 初始化；scale 从最终支持点间距计算，沿用 squared distance `1e-7` 的数值 floor。1～3 个新点时 scale 邻域加入保留背景，避免三近邻内核因邻居不足产生无限 scale；零点跳过追加。该数值 floor 仍会限制极密点的最小 scale，不作为数量调节器。normal-aware 各向异性初始化仍延期。
+- 记录初始化、5a gate 前后及 5b 后的相同局部密度/间距分布；5a 再次剪枝造成的密度下降属于训练期问题，不以重复增加 seed 掩盖，后续密度保持训练需单独设计。
+- 当前报告全 hole/有效像素数、完整/原 gate 内面积、gate 外目标质量、参考密度分布、目标/背景/新增/surplus 质量、配额残差和几何不确定性。`density_ratio` 仅为配额兑现比，**不是独立测量的几何或训练后密度精度**。训练阶段另保存支持邻域占用/最近间距审计；其距离带仅用于诊断，不筛点、不控制配额。RGB/alpha/depth/normal 的图像比较继续使用既有 PGSR/debug 输出，不在 Stage 4b 自动宣称视觉验收通过。
+- `complete=true` 只表示契约、配额求解及写出完成，不表示几何质量已被证实。高不确定性以警告/数值记录，不以质量阈值拦截；缺输入、无参考、无可行几何、数值失败、资源不足分别有明确状态，不能静默回退 legacy。
+
+#### D0.8 代码落点与迁移（已接通）
+
+`SUPPORT_DENSITY_MODE=mass_adaptive` 启用正式密度匹配，`legacy` 表示不启用该步骤（默认）。算法标识固定为 `mass_adaptive`，不带展示版本后缀。源码、配置和所有输入/输出仍绑定内容 hash；与当前标识或源码不匹配的缓存不自动迁移，请使用新 `INPAINT_RUN_NAME`，不覆盖已有结果。
 
 | 文件 | 责任 |
 |---|---|
-| `scripts/paintmesh/prepare_density_support.py` | CPU 调度入口：验证来源、加载参考、生成/检查支持点、提交 manifest |
-| `scripts/paintmesh/support_density.py` | 表面分组、密度估计、目标场传播、采样、去重、重投影检查；避免依赖全局 trainer |
-| `scripts/paintmesh/configs/support_density.yaml` | 独立采样参数、环带、有效性阈值、预算、随机种子与 debug 配置 |
-| `run_inpaint.sh` | Stage 4b 调度、legacy/adaptive 路由、Stage 5a 两种 support 参数 |
-| `scene/gaussian_model.py` / `edit_object_inpaint.py` | 共用保留行选择、消费已过滤初始化点、原 gate support 独立传递、阶段计数 |
-| `local_geometry_io.py` / 发布与最终校验工具 | 两种 support 与新 artifact 绑定，5b gate 保持原空间契约 |
-| `scripts/paintmesh/tests/test_support_density.py` | CPU 几何/密度/身份测试；小型 GPU 初始化及 Stage 5a/5b 集成测试另行标记 |
+| `support_mass.py` / `support_geometry.py` | 表面元、参考场、质量配额、分层采样 / 共用相机几何工具 |
+| `prepare_density_support.py` | 参考/相机/数据验证、无三角化前置的 Stage 4b 调度、明确失败状态 |
+| `configs/support_mass.yaml` / 配置 loader | 仅允许算法标识、seed、debug、内存预算/批量；不支持的质量阈值参数显式报错 |
+| `support_density_io.py` | 容器 schema 保持 1，以 `parameters.mode` 和 `config.algorithm=mass_adaptive` 区分；验证输入 hash、配额守恒、field/样本/PLY 一致性 |
+| `export_density_reference.py` / `edit_object_inpaint.py` | 保持相同的保留行选择与原 gate；消费配额输出、不二次过滤；支持零追加点 |
+| `run_inpaint.sh` / `local_geometry_io.py` / 发布与最终校验 | 新模式身份、init/gate、5a/5b 恢复、产物版本隔离；全局训练不改 |
+| `tests/test_support_mass.py` | 配额守恒、尺度/批量一致性、深度跳变、窄 mask、密度变化、零配额、无参考/资源失败、身份篡改测试 |
+| `tools/tests/test_density_initialization.py` / `tests/test_local_geometry.py` | CUDA 初始化、背景保持与 30 帧局部优化/中断恢复/缓存复用集成测试 |
 
-```text
-fused/mask/<frame>.ply                      # 原 RGB-D 输出，保留不覆盖
-fused/density/init_support.ply              # RGB 点云，新增 Gaussian 初始化输入
-fused/density/support.npz                   # XYZ/RGB、seed UV、patch、目标间距、来源与支持视角统计
-fused/density/reference.npz                 # 参考 Gaussian 行号、patch 与密度统计
-fused/density/debug/                        # 密度热图、间距分布、覆盖/拒绝原因图
-manifests/support_density_manifest.json     # 与原 fusion manifest 并列
+实际新增 `density_field.npz`（pixel_id、uv、中心深度、逆深度 slope、rho、完整/gate 内面积、模型选择/歧义、gate_fraction）、`quota.npz`（target、existing、mass、count、surplus、pixel_id）。`support.npz` 保存 XYZ/RGB、子像素坐标、间距、配额 ID 与多视角残差不确定性。field 的候选歧义在 [0,1]，sample 的软残差不确定性可大于 1，均不是校准的正确率。
+
+manifest 绑定源码/输入/输出与运行配置；在发布完成标记前检查质量配额与 PLY 一致性。debug 保存目标密度、配额、候选不确定性、seed 支持预览与原始数组。相同文件名不能跨算法复用，输入文件修改也会拒绝恢复。
+
+#### D0.9 验证范围与后续质量评估
+
+1. 已通过 CPU 合成平面/斜面、深度跳变、窄 mask、左右不同密度、尺度/批量一致性、配额守恒、原 gate 限制、零配额及失败状态测试。
+2. 已通过真实 CUDA 初始化（0、1、2、144 个支持点，背景逐点保留），以及带/不带密度匹配 receipt 的小型 30 帧、3 步局部 PGSR 优化、中断恢复、复用及 stale target 拒绝测试。
+3. 已用真实 kitchen seed 4 的现有输入运行完整 Stage 4b 入口和 `--validate-only`，结果见 D0.10；只写临时目录，没有覆盖已有训练。
+4. 待评估：密度估计的分辨率收敛、紧邻双层、噪声梯度与大遮挡偏差；当前多视角权重是近似模型，不能把测试通过解释为真实表面恢复保证。
+5. 待评估：真实 kitchen 开关 Stage 5b 的完整训练与视觉对照，区分初始化收益和 normal loss 收益；训练后剪枝减少点数应通过阶段审计观察。
+
+程序性验收采用可证明/可测试的约束：整数配额之和等于 `N_new`，背景身份与数据不变，所有点在原 mask/gate 和可行表面元内、有限且无重复写入，固定输入可重现，源数据变更拒绝恢复。整体世界尺度变化 s 后，面积按 s²、密度按 1/s² 变换，推导点数应不变；同一连续表面改变像素分辨率时点数仅有离散积分/取整误差。图像分辨率不应再直接决定 3D 密度。
+
+几何/视觉验收报告连续误差、分布及与基线的变化，不恢复固定密度比/覆盖率门槛。包含正面/斜面、同表面不同密度、相邻前后双层、噪声梯度、窄 mask、背景已足够密、全部缺参考、退化面元和资源不足。数值断言的容差只对应浮点/积分误差；这不等于声称算法“零参数”或实际场景已达到真实几何。
+
+#### D0.10 运行命令与验证记录
+
+2026-09-18 正式入口复测：`algorithm=mass_adaptive`，kitchen 的 13,031 个 seed 像素生成 76,701 个补点，配额取整误差 −0.168；`--validate-only` 缓存复用通过。测试仅写 `/tmp/paintmesh-mass-release-36jhinfe`，未修改已有训练结果。算法标识与源码身份已更新，已有缓存不得手工改 manifest 后续跑，应使用新运行目录。
+
+从仓库根目录启用自适应密度匹配和已有独立局部优化，使用新的 run：
+
+```bash
+REMOVAL_ROOT="$PWD/output/paintmesh/mip-nerf/360_v2/kitchen/removal/target_14_pgsr" \
+INPAINT_RUN_NAME=normal_mass_local_geometry \
+SUPPORT_DENSITY_MODE=mass_adaptive \
+LOCAL_GEOMETRY_REFINE=true \
+LOCAL_GEOMETRY_ITERATIONS=5000 \
+LOCAL_GEOMETRY_FROM_ITER=100 \
+LOCAL_GEOMETRY_RAMP_ITERS=2000 \
+END_STAGE=8 \
+bash scripts/paintmesh/run_inpaint.sh mip-nerf/360_v2 kitchen 8 14 none 1
 ```
 
-新 manifest 绑定实际保留集合、源 PLY、fusion/LaMa/render artifact、30 帧相机与 mask、seed、两种 support、配置、算法版本、随机种子和输出 hash。不要向旧 fusion manifest 填入含义不同的输出后仍保留原 identity。结果逐个校验后原子提交 complete；统计文件和失败诊断可留存但不代表完成。变更模式/参数/数据须新 run 或拒绝旧产物；Stage 5/6 续跑时验证密度依赖，legacy 不要求该文件。启用 adaptive 后缺数据/身份不匹配不得静默退回旧 seed。
+不必设置角度、覆盖率、密度倍率或最大点数。仅想先检查补点时，把上面 `END_STAGE=8` 改成 `4`；确认 `fused/density/debug/` 与 `diagnostics.json` 后，保持所有环境变量一致，将最后的起始阶段 `1` 改成 `5`、`END_STAGE` 改回 `8`。Stage 5 续跑会先校验密度匹配完成 manifest，不接受身份不匹配或未完成的预处理。
 
-debug 建议 adaptive 默认开启，属于 Stage 4b 诊断，独立于 Stage 5b 的训练 debug。每个 patch 输出 `rho_ref/rho_init`、间距分位数、目标/预算/实际点数、过滤损失、未覆盖面积、支持视角和不确定比例；同时保存固定 seed 的前后投影，避免仅凭查看器蓝点数量判断。
+2026-09-17 算法数值验证：上游产物只读，Stage 4b 输出到独立临时目录。922,137 个不同保留中心，13,031 个洞内有效像素；目标质量 77,240.802、现存贡献 539.633、新增质量 76,701.168，写出 **76,701** 个不同 float32 XYZ（约为 seed 点数的 5.89 倍），取整误差 −0.168。所有 seed 像素有 gate 内求积面积，入口及缓存复用通过；这不代表训练后最终点数或法线质量已验证。
 
-#### D0.7 实施顺序与验收
+可复现回归测试（当前 paintmesh 环境）：
 
-1. **先做只读审计**：同一 kitchen run 测量 raw seed、过滤后 seed、5a gate 前后和 5b 的密度、scale、alpha；缺少中间产物的项标 unavailable，不根据最终 PLY 猜行来源。确认稀疏主要在哪一步产生，再决定采样预算。
-2. 实现合成平面上的参考估计、seed 自适应采样与预算控制；CPU 单测通过后，输出候选 PLY/debug，暂不接训练。
-3. 分离 init/gate support，接 Stage 4b 与身份链；验证关闭时 legacy 输出/参数行为不变，再接初始化和 GPU smoke test。
-4. 真实场景固定 mask、LaMa、相机和随机种子，比较 legacy/adaptive × 关闭/开启 Stage 5b 四组；区别采样收益与 normal loss 收益，不宣称仅凭训练 loss 证明几何改进。
+```bash
+PAINTMESH_LOCAL_GPU_TEST=1 conda run --no-capture-output -n paintmesh \
+  python -m pytest -q scripts/paintmesh/tests
 
-建议验收目标（工程初值，非现有实测保证）：可靠同表面 patch 的初始化密度比 `rho_init/rho_ref` 在 `0.75～1.33`，同时报告每 patch 和面积加权分布、kNN 间距分位数。定义分母为全部待补表面面积，分别报告总覆盖、高置信覆盖和未覆盖比例，不能只挑有点的 patch 计算通过率。5a/5b 后重测相同指标；未达标明确区分初始化失败或训练后密度退化。
+PAINTMESH_LOCAL_GPU_TEST=1 \
+PYTHONPATH="$PWD/submodules/Inpaint360GS:$PWD/submodules/Inpaint360GS/seg/detectron2" \
+conda run --no-capture-output -n paintmesh \
+  python -m pytest -q submodules/Inpaint360GS/tools/tests/test_density_initialization.py
+```
 
-测试覆盖正面/倾斜平面、两相邻密度、前后双层与遮挡、深度跳变、窄 mask/边界、无参考、NaN/零深度、重复/极密点、尺度整体缩放、分辨率改变、点预算耗尽、确定性和 manifest 失配。检查新点不越原 gate、背景未改、采样不生成跨层桥面，低纹理区域不依赖 RGB 梯度也可获得采样。密度达标还须检查渲染 alpha、洞内 depth 残差、边界接缝、洞外 RGB 和显存/耗时；completed depth 是伪监督，真实几何改善仍需独立视角/参考或人工检查。
+两组分别运行以避免两个项目的同名 `render` 模块互相污染。2026-09-18 清理后回归：脚本测试 50 passed、2 skipped，Inpaint360GS 工具测试 90 passed、1 skipped、16 subtests passed；共 140 passed。覆盖几何守恒、CUDA 初始化、局部优化和身份拒绝；跳过项是未启用的重型虚拟渲染/LaMa 测试。完整 kitchen 5000 步训练未运行。
 
 ### D1. 扩展 RGB-D-N 点云融合（仍延期，不是 D0 前置条件）
 
@@ -683,9 +749,21 @@ optimizer:
   rotation_lr: 0.0001
 ```
 
-首版不启用局部 densify/prune、opacity reset、SH degree 递增、全局 scale loss 或多视角 LNCC/reprojection loss。这些均不是新增 LaMa normal loss 的前置条件；未来若加入，另行定义局部调度和验收。
+当前实现不启用局部 densify/prune、opacity reset、SH degree 递增、全局 scale loss 或多视角 LNCC/reprojection loss。这些均不是新增 LaMa normal loss 的前置条件；未来若加入，另行定义局部调度和验收。
 
 ### F3. 输入与局部编辑范围
+
+#### Stage 5a 独立增删点开关（已实现）
+
+- `RGB_FINETUNE_DENSIFY=true` 为默认值，维持 Stage 5a 原有 clone/split/prune 调度；设为 `false` 时停止三种操作和所有对应统计。
+- 只控制 Stage 5a 训练循环，不改变 Stage 4b 的自适应密度初始化、RGB loss/optimizer、最终 gate、Stage 5b 固定点数优化或全局 `run_seg`。
+- Python 入口关闭参数为 `--disable_rgb_densify`。不通过抬高梯度阈值模拟关闭，也不使用全局 `NO_DENSIFY`。
+- 每个 run 的 Stage 5a PLY 同目录保存 `point_cloud.density_policy.json`；不依赖 normal 模态。RGB context/receipt 同时绑定 `parameters.rgb_densify`，局部优化沿既有身份链继承此设置。切换开关拒绝原目录续跑；从 Stage 6 等后续阶段恢复也必须通过 policy 校验。已有无 policy 的产物需使用新运行目录重建，不猜测其训练设置。
+- 关闭不等于最终点数完全固定：初始化筛选、gate 和对象恢复仍生效；点位、scale、opacity 也仍会更新，需分别检查 gate 前后密度。
+
+例如，在现有完整运行命令前增加 `RGB_FINETUNE_DENSIFY=false`，并更换 `INPAINT_RUN_NAME`。其余 depth/normal completion 与局部优化参数保持不变。
+
+回归验证：关闭时不访问任何增密统计或增删点操作；开启时保留原 500/100/5000 调度边界；policy/context 拒绝设置切换和无身份产物复用。2026-09-18 两组测试分别 54 passed、2 skipped 和 101 passed、1 skipped（另 16 subtests passed），包含局部 CUDA 恢复测试；未执行完整 Stage 5a 5000 步视觉对照训练。
 
 输入严格绑定当前 inpaint run：
 
@@ -698,7 +776,7 @@ Stage 5a 的训练、反投影和 gate 算法不变，仅在输出处记录既�
 
 局部 optimizer 只持有可编辑行的 XYZ、rotation、scale。SH、opacity、语义 embedding、classifier 及其他所有行均冻结。将可训练局部张量与常量背景按原行顺序组合后做**完整场景渲染**，保留正确遮挡；不能只渲染局部子模型。使用新的 optimizer，不继承全局 Adam 动量；仅置零背景梯度不作为冻结保证。
 
-首版保持点数、行序和语义字段不变；写出时在输入 PLY 的副本上只更新许可字段，避免 EDGS 普通 PLY writer 丢掉 `obj_dc_*` 或额外字段。最终检查编辑行仍处于已记录的 seed 空间 gate；越界行回退到 Stage 5a 参数并重新计算验收指标。参数级冻结不能阻止局部 splat 对 mask 外像素产生影响，因此仍需已知区域外观约束与渲染检查。
+当前实现保持点数、行序和语义字段不变；写出时在输入 PLY 的副本上只更新许可字段，避免 EDGS 普通 PLY writer 丢掉 `obj_dc_*` 或额外字段。最终检查编辑行仍处于已记录的 seed 空间 gate；越界行回退到 Stage 5a 参数并重新计算验收指标。参数级冻结不能阻止局部 splat 对 mask 外像素产生影响，因此仍需已知区域外观约束与渲染检查。
 
 ### F4. 四类监督与新增 LaMa normal loss
 
@@ -724,7 +802,7 @@ L_consistency = masked_mean(1 - clamp(dot(N_pred, N_depth(D_pred)), -1, 1))
 
 固定目标域为 hole mask 内 finite、positive 的 completed depth；法线项再要求 completed normal valid、有限且非退化。各项分别判定预测深度、法线与 alpha 的有效性，一致性还须排除无效差分邻域、洞边缘及深度跳变。先选取有效元素再取 log/归一化，不能用 `0 * NaN` 处理非法值。
 
-首版在有效目标内使用统一权重，并以较小的 `lama_normal` 权重表达伪监督的不确定性；`normal_valid` 不是置信度，不要求不存在的 confidence 文件。记录 completed depth 派生法线与 LaMa normal 的角度差供诊断，不能覆盖 LaMa 输出；后续引入置信度时再显式版本化其计算方法。
+当前实现在有效目标内使用统一权重，并以较小的 `lama_normal` 权重表达伪监督的不确定性；`normal_valid` 不是置信度，不要求不存在的 confidence 文件。记录 completed depth 派生法线与 LaMa normal 的角度差供诊断，不能覆盖 LaMa 输出；后续引入置信度时再显式版本化其计算方法。
 
 **覆盖率防退化**：不得用洞内接近零的 removed alpha 否决 normal 目标。预测低 alpha 像素暂不计角度/深度损失，但必须记录有效覆盖率，不能靠失去覆盖降低 loss。局部优化开始时缓存同一 PGSR renderer 的 RGB/alpha 基线 `I0/A0`，定义：
 
@@ -747,7 +825,7 @@ L_total(t) = L_rgb + λ_alpha L_alpha
 a(t) = clip((t - s) / r, 0, 1)    # r > 0
 ```
 
-当 `t <= s` 时几何项权重为零；在 `s < t < s+r` 线性增加；`t >= s+r` 为完整目标权重。示例 `s=100,r=400`：`t=100/300/500` 对应 `0/0.5/1`。RGB 与 alpha 保持项从 `t=0` 生效。首版要求 `T>0, 0<=s<T-1, r>0, s+r<=T-1`，各权重/学习率有限非负；错误配置在 GPU 优化前拒绝。希望 5000 步局部优化可独立设置 `T=5000`，不会改变原 RGB 的 5000 步或全局调度。
+当 `t <= s` 时几何项权重为零；在 `s < t < s+r` 线性增加；`t >= s+r` 为完整目标权重。示例 `s=100,r=400`：`t=100/300/500` 对应 `0/0.5/1`。RGB 与 alpha 保持项从 `t=0` 生效。当前实现要求 `T>0, 0<=s<T-1, r>0, s+r<=T-1`，各权重/学习率有限非负；错误配置在 GPU 优化前拒绝。希望 5000 步局部优化可独立设置 `T=5000`，不会改变原 RGB 的 5000 步或全局调度。
 
 局部 renderer 的 plane 输出请求由当前实际损失需要决定，不能复用全局 `required_outputs(step)` 的 7000 步门槛。仅在一致性生效或诊断时计算 `depth_normal`；不得用设置全局 `virtual_camera=true` 来代替读取虚拟相机 manifest。
 
@@ -801,7 +879,7 @@ a(t) = clip((t - s) / r, 0, 1)    # r > 0
 6. 缺 normal、错误 depth 定义、相机/PLY/sidecar/hash 不匹配、未完成几何与过期 mesh 均阻止发布；失败保留 5a 和原模型。
 7. 小规模 GPU smoke test 后再运行 30 视角；对比“5a 基线 / 局部 depth+一致性 / 再加 LaMa normal”，报告角度、depth-normal 一致性、覆盖率和 mask 外 RGB 变化，不以训练 loss 单独证明几何改善。
 
-阶段 F 本身不承诺修复点云稀疏：normal loss 不会凭空增加点。下一轮按 D0 单独改进初始化支持点密度，不自动启用延期的 D1/E，也不改变 F 的固定点数契约。
+阶段 F 本身不承诺修复点云稀疏：normal loss 不会凭空增加点。已实现的 D0 可独立改进初始化支持点密度，不自动启用延期的 D1/E，也不改变 F 的固定点数契约。
 
 已执行局部 loss/config/gate/冻结字段测试，并用真实 PGSR CUDA 执行小型合成 30 帧的基线和最终渲染、3 步优化、中途 checkpoint 中断恢复、完成后复用与最后 checkpoint 恢复；验证输入变化会拒绝复用。PaintMesh/Inpaint360GS 回归 109 项通过、3 项跳过，另有全局 PGSR 相关 28 项通过。真实场景完整训练、质量消融与恢复的长期数值表现仍需进一步评估，不能把上述链路测试当作几何质量验收。
 
@@ -1043,9 +1121,9 @@ Stage 5a PLY + editable_mask -> rgb_finetune_manifest.json
 
 数据/编辑范围契约、调度与可微训练已接入 Stage 5b/6/8 发布链。接下来优先评价真实场景法线与几何稳定性，不将密度提升当作本轮验收目标；全局 run seg 的行为保持不变。
 
-### P2：周边密度匹配的支持点重采样（下一轮，设计完成、待实现）
+### P2：无手调密度阈值的自适应配额采样（已实现，完整训练质量待评估）
 
-按 D0 先审计 raw seed、初始化和 5a gate 前后的密度；再做周边同表面密度估计、seed 深度表面自适应采样、多视角检查和 init/gate support 分离。该模块位于 Stage 4/5a 交界，与已实现的 P1 独立，不更改深度定义或 normal completion。D1 全视角 RGB-D-N 融合、E normal-aware 初始化以及训练期密度保持仍为后续候选，不作为 D0 的隐式依赖。
+已接入像素表面元、自动参考密度、缺点配额、分层采样、多视角软几何证据及身份链，使用 `SUPPORT_DENSITY_MODE=mass_adaptive`。已通过真实 kitchen 预处理和小型 CUDA 集成，详见 D0.10。取消角度/覆盖率/密度比门槛及事后删点，保留数据有效性、原 gate 和资源保护。位于 Stage 4/5a 交界，与 P1 独立，不更改 depth 定义或 normal completion。完整训练质量、跨层估计改进、D1 全视角 RGB-D-N 融合、E normal-aware 初始化和训练期密度保持仍为后续工作。
 
 ### P3：提升 LaMa normal 预测质量
 
@@ -1054,6 +1132,6 @@ Stage 5a PLY + editable_mask -> rgb_finetune_manifest.json
 或 RGB-D-N joint completion 网络
 ```
 
-首版直接复用当前 Big-LaMa 权重；后续若质量诊断不达标，再评估专用 normal 训练或 joint 网络，不把训练专用权重作为自动 normal 分支落地的前置条件。是否采用新网络属于后续方案评审，不增加本批模式选择。
+当前实现直接复用当前 Big-LaMa 权重；后续若质量诊断不达标，再评估专用 normal 训练或 joint 网络，不把训练专用权重作为自动 normal 分支落地的前置条件。是否采用新网络属于后续方案评审，不增加本批模式选择。
 
 本文记录设计要求与实现顺序；所列新增入口、配置和 worker 在落地并通过对应验收前，均不代表已有运行能力。

@@ -275,6 +275,7 @@ END_STAGE=6 \
 | `LAMA_MODEL_PATH` | `CKPT_ROOT/big-lama` | LaMa 模型目录 |
 | `END_STAGE` | `8` | 最后执行阶段 |
 | `FINETUNE_ITERATION` | 空 | 可选一致性断言；真正值读取 run-local inpaint config，默认通常为 `5000` |
+| `RGB_FINETUNE_DENSIFY` | `true` | Stage 5a 克隆/分裂/删除及其统计开关；不影响 optimizer、最终 gate 或 Stage 5b |
 | `FUSION_SEED_FRAME` | `4` | 训练 support PLY 帧，范围 `0..29` |
 | `MASK_MIN_AREA` | `50` | 清理小 mask 的面积阈值 |
 | `MASK_DILATION` | `10` | mask 膨胀像素 |
@@ -1006,6 +1007,10 @@ run_inpaint_py edit_object_removal_plyfusion.py \
 输出：`fused/mask/00000.ply..00029.ply` 和 `manifests/fusion_manifest.json`。默认 `WRITE_HOLE_PLY=false`，所以追加 `--skip_hole_ply`；训练所需 support PLY 始终生成。
 
 ### Stage 5：优化补全后的对象感知 3DGS
+
+使用 `run_inpaint.sh` 时，设置 `RGB_FINETUNE_DENSIFY=false` 可关闭本阶段的 clone/split/prune；默认 `true` 保持原行为。直接调用下方 Python 命令时，追加 `--disable_rgb_densify` 达到相同效果。开关不控制初始化筛选和最终 gate，关闭后仍优化 Gaussian 属性，所以最终提交点数和空间密度未必不变。
+
+开关写入 Stage 5a 输出旁的 `point_cloud.density_policy.json`，以及存在时的 RGB context/receipt。切换设置或恢复没有 policy 的历史结果时，请更换 `INPAINT_RUN_NAME`，不要修改记录冒充另一种设置。该开关独立于 normal completion、`SUPPORT_DENSITY_MODE` 和 `LOCAL_GEOMETRY_REFINE`。
 
 ```bash
 INPAINTED_WORK_PLY="$INPAINT_WORK_MODEL/point_cloud_object_inpaint_virtual/iteration_$FINETUNE_ITERATION/point_cloud.ply"

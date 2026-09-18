@@ -54,7 +54,10 @@ Important environment overrides:
   END_STAGE=8
   DISTILL_ITERATION=2000
   FINETUNE_ITERATION=5000
+  RGB_FINETUNE_DENSIFY=true           # Stage 5a clone/split/prune only
   FUSION_SEED_FRAME=4
+  SUPPORT_DENSITY_MODE=legacy          # legacy | mass_adaptive
+  SUPPORT_DENSITY_CONFIG=...           # mode-specific defaults
   LOCAL_GEOMETRY_REFINE=false
   LOCAL_GEOMETRY_CONFIG=scripts/paintmesh/configs/local_geometry.yaml
   LOCAL_GEOMETRY_ITERATIONS=1000
@@ -235,9 +238,21 @@ if [[ -n "${FINETUNE_ITERATION_REQUESTED}" ]]; then
         fail "FINETUNE_ITERATION must be a canonical positive integer"
 fi
 FUSION_SEED_FRAME="${FUSION_SEED_FRAME:-4}"
+RGB_FINETUNE_DENSIFY="${RGB_FINETUNE_DENSIFY:-true}"
+require_boolean "${RGB_FINETUNE_DENSIFY}"
+rgb_densify_arguments=()
+if ! is_true "${RGB_FINETUNE_DENSIFY}"; then rgb_densify_arguments+=(--disable-rgb-densify); fi
 [[ "${FUSION_SEED_FRAME}" =~ ^([0-9]|[12][0-9])$ ]] || \
     fail "FUSION_SEED_FRAME must be an integer in [0, 29]"
 printf -v FUSION_SEED_NAME '%05d' "${FUSION_SEED_FRAME}"
+SUPPORT_DENSITY_MODE="${SUPPORT_DENSITY_MODE:-legacy}"
+case "${SUPPORT_DENSITY_MODE}" in
+    legacy|mass_adaptive) density_config_default="${SCRIPT_DIR}/configs/support_mass.yaml" ;;
+    *) fail "SUPPORT_DENSITY_MODE must be legacy or mass_adaptive" ;;
+esac
+SUPPORT_DENSITY_CONFIG="${SUPPORT_DENSITY_CONFIG:-${density_config_default}}"
+SUPPORT_DENSITY_CONFIG="$(resolve_from_invocation "${SUPPORT_DENSITY_CONFIG}")"
+if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then require_file "${SUPPORT_DENSITY_CONFIG}"; fi
 
 MASK_MIN_AREA="${MASK_MIN_AREA:-50}"
 MASK_DILATION="${MASK_DILATION:-10}"
@@ -610,6 +625,7 @@ echo "Inpaint run           : ${INPAINT_RUN_ROOT}"
 echo "Main conda environment: ${PAINTMESH_ENV}"
 echo "LaMa environment      : ${LAMA_ENV}"
 echo "Source/final iteration: ${DISTILL_ITERATION}/${FINETUNE_ITERATION}"
+echo "RGB clone/split/prune  : ${RGB_FINETUNE_DENSIFY}"
 echo "Stages                : ${START_STAGE}..${END_STAGE}"
 echo "Local PGSR refinement : ${LOCAL_GEOMETRY_REFINE}"
 
@@ -744,11 +760,34 @@ else
 fi
 require_manifest_kind "${FUSION_MANIFEST}" "paintmesh-rgbd-fusion"
 require_file "${SUPPORT_PLY}"
+if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
+    echo "[4b/8] Preparing ${SUPPORT_DENSITY_MODE} support (original seed gate preserved)"
+    density_arguments=("${SCRIPT_DIR}/prepare_density_support.py" --mode "${SUPPORT_DENSITY_MODE}"
+        --source-ply "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/point_cloud.ply"
+        --classifier "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/classifier.pth"
+        --inpaint-config "${INPAINT_CONFIG}" --camera "${VIRTUAL_CAMERA_MANIFEST}"
+        --lama "${LAMA_COMPLETION_MANIFEST}" --fusion "${FUSION_MANIFEST}"
+        --support "${SUPPORT_PLY}" --seed-frame "${FUSION_SEED_FRAME}"
+        --config "${SUPPORT_DENSITY_CONFIG}" --output-root "${INPAINT_RUN_ROOT}/fused/density"
+        --manifest "${MANIFEST_ROOT}/support_density_manifest.json")
+    if ! should_run 4; then density_arguments+=(--validate-only); fi
+    run_inpaint "${density_arguments[@]}"
+elif [[ -e "${INPAINT_RUN_ROOT}/fused/density/request.json" || -e "${MANIFEST_ROOT}/support_density_manifest.json" ]]; then
+    fail "this run contains density inputs; choose a new INPAINT_RUN_NAME for legacy"
+fi
 fi
 
 if (( END_STAGE >= 5 )); then
+rgb_policy_arguments=(--path "${INPAINTED_WORK_PLY%.ply}.density_policy.json"
+    --rgb-ply "${INPAINTED_WORK_PLY}" "${rgb_densify_arguments[@]}")
+if ! should_run 5; then rgb_policy_arguments+=(--validate-only); fi
+run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" prepare-rgb-policy "${rgb_policy_arguments[@]}"
 rgb_action=train
-if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+rgb_density_arguments=()
+if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
+    rgb_density_arguments+=(--density "${MANIFEST_ROOT}/support_density_manifest.json")
+fi
+if is_true "${LOCAL_GEOMETRY_REFINE}" || [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
     rgb_action="$(run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" prepare-rgb \
         --source-ply "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/point_cloud.ply" \
         --classifier "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/classifier.pth" \
@@ -756,7 +795,9 @@ if is_true "${LOCAL_GEOMETRY_REFINE}"; then
         --lama "${LAMA_COMPLETION_MANIFEST}" --fusion "${FUSION_MANIFEST}" \
         --support "${SUPPORT_PLY}" --rgb-ply "${INPAINTED_WORK_PLY}" \
         --context "${RGB_FINETUNE_CONTEXT}" --manifest "${RGB_FINETUNE_MANIFEST}" \
-        --rgb-iterations "${FINETUNE_ITERATION}" --seed-frame "${FUSION_SEED_FRAME}" | tail -n 1)"
+        --rgb-iterations "${FINETUNE_ITERATION}" --seed-frame "${FUSION_SEED_FRAME}" \
+        "${rgb_densify_arguments[@]}" \
+        "${rgb_density_arguments[@]}" | tail -n 1)"
 elif [[ -f "${RGB_FINETUNE_MANIFEST}" || -f "${LOCAL_GEOMETRY_MANIFEST}" ]]; then
     fail "this inpaint run was created for local refinement; choose a new INPAINT_RUN_NAME to disable it"
 fi
@@ -784,7 +825,12 @@ if should_run 5; then
     if ! is_true "${RENDER_INPAINT_TRAIN}"; then inpaint_arguments+=(--skip_train); fi
     if ! is_true "${RENDER_INPAINT_TEST}"; then inpaint_arguments+=(--skip_test); fi
     if is_true "${RENDER_INPAINT_VIDEO}"; then inpaint_arguments+=(--render_video); fi
-    if is_true "${LOCAL_GEOMETRY_REFINE}"; then
+    if ! is_true "${RGB_FINETUNE_DENSIFY}"; then inpaint_arguments+=(--disable_rgb_densify); fi
+    if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
+        inpaint_arguments+=(--init_support_ply "${INPAINT_RUN_ROOT}/fused/density/init_support.ply"
+            --gate_support_ply "${SUPPORT_PLY}" --density_manifest "${MANIFEST_ROOT}/support_density_manifest.json")
+    fi
+    if is_true "${LOCAL_GEOMETRY_REFINE}" || [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
         inpaint_arguments+=(--local_geometry_context "${RGB_FINETUNE_CONTEXT}")
     fi
     if [[ "${rgb_action}" == reuse ]]; then
@@ -820,6 +866,10 @@ if should_run 6; then
     if is_true "${LOCAL_GEOMETRY_REFINE}"; then
         publish_local_arguments+=(--local-geometry-manifest "${LOCAL_GEOMETRY_MANIFEST}")
     fi
+    if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
+        publish_local_arguments+=(--density-manifest "${MANIFEST_ROOT}/support_density_manifest.json"
+            --rgb-manifest "${RGB_FINETUNE_MANIFEST}")
+    fi
     run_inpaint tools/publish_inpainted_edgs_model.py \
         --inpainted-ply "${INPAINTED_WORK_PLY}" \
         --classifier "${WORK_MODEL}/point_cloud/iteration_${DISTILL_ITERATION}/classifier.pth" \
@@ -847,6 +897,10 @@ require_file "${INPAINTED_CLASSIFIER}"
 check_selection_arguments=()
 if is_true "${LOCAL_GEOMETRY_REFINE}"; then
     check_selection_arguments+=(--local-manifest "${LOCAL_GEOMETRY_MANIFEST}")
+fi
+if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
+    check_selection_arguments+=(--density "${MANIFEST_ROOT}/support_density_manifest.json"
+        --rgb-manifest "${RGB_FINETUNE_MANIFEST}")
 fi
 run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" check-published \
     --model-manifest "${INPAINTED_MODEL_MANIFEST}" --selected-ply "${INPAINTED_WORK_PLY}" \

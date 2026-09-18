@@ -239,7 +239,8 @@ def test_invalid_debug_settings_rejected(tmp_path, setting):
 
 
 @pytest.mark.skipif(os.environ.get("PAINTMESH_LOCAL_GPU_TEST") != "1", reason="opt-in CUDA integration")
-def test_gpu_worker_30_frames_resume_and_reuse(tmp_path):
+@pytest.mark.parametrize('density_enabled',[False,True])
+def test_gpu_worker_30_frames_resume_and_reuse(tmp_path,density_enabled):
     # Uses the real existing LaMa artifact fixture, NOT the LaMa network.
     sys.path.insert(0, str(REPO / "submodules/Inpaint360GS"))
     from tools.tests.test_paintmesh_normal import NormalFixture
@@ -262,7 +263,13 @@ def test_gpu_worker_30_frames_resume_and_reuse(tmp_path):
     write_json(inpaint_config, {"finetune_iteration": 5})
     args = SimpleNamespace(source_ply=source, classifier=classifier, inpaint_config=inpaint_config,
         camera=fixture.camera_path, lama=fixture.completion_manifest, fusion=fusion, support=source,
-        rgb_ply=rgb_ply, context=context, manifest=rgb_manifest, rgb_iterations=5, seed_frame=4)
+        rgb_ply=rgb_ply, context=context, manifest=rgb_manifest, rgb_iterations=5, seed_frame=4,
+        rgb_densify=not density_enabled)
+    if density_enabled:
+        from test_support_mass import write_mass_fixture
+        args.density=write_mass_fixture(tmp_path/'density',
+            {k:record(getattr(args,k)) for k in ('source_ply','classifier','inpaint_config','camera','lama','fusion','support')},
+            np.column_stack([points[k] for k in 'xyz']))
     prepare_rgb(args)
     gaussian_ply(rgb_ply, size=5, tilt=.07)
     editable = np.zeros(len(points), bool)
@@ -303,6 +310,8 @@ runpy.run_path(str(worker), run_name='__main__')
     result = subprocess.run(command, capture_output=True, text=True, timeout=120)
     assert result.returncode == 0 and "Resuming local geometry at step 1" in result.stdout, result.stdout + result.stderr
     receipt = validate_local(local_manifest)
+    if density_enabled:
+        assert (root/'diagnostics/density_after_geometry.json').is_file()
     assert receipt["parameters"]["local_geometry_iterations"] == 3
     assert receipt["outputs"]["ply"]["sha256"] != record(rgb_ply)["sha256"]
     for stem in ("step_000000", "step_000001", "step_000002", "step_000003", "final"):
