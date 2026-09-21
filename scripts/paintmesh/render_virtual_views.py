@@ -15,6 +15,7 @@ from virtual_render_io import (
     atomic_write,
     check_backend,
     read_json,
+    read_camera_manifest,
     sha256,
     validate_render,
     write_json,
@@ -72,10 +73,10 @@ def validate_pair(args):
     pair = read_json(pair_path)
     if pair.get("complete") is not True or pair.get("backend") != args.backend:
         raise ValueError("virtual render pair is incomplete or has another backend")
-    cameras = read_json(args.camera_manifest)
+    cameras = read_camera_manifest(args.camera_manifest)
     names = [camera["image_name"] for camera in cameras["cameras"]]
-    if names != [f"{index:05d}" for index in range(30)]:
-        raise ValueError("virtual cameras must contain exactly 00000..00029")
+    if names != [f"{index:05d}" for index in range(cameras["frame_count"])]:
+        raise ValueError("virtual cameras must match their ordered frame_count")
     for label, directory in (("full", full), ("removed", removed)):
         value = validate_render(directory, args.backend)
         if sorted(value["frames"]) != names:
@@ -187,7 +188,7 @@ def main(argv=None):
         },
     )
     validate_pair(args)
-    print(f"Virtual renderer {args.backend}: 30 full + 30 removed views -> {root}")
+    print(f"Virtual renderer {args.backend}: {len(full_record['frames'])} full + {len(removed_record['frames'])} removed views -> {root}")
     return 0
 
 

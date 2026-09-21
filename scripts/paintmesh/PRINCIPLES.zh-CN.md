@@ -8,7 +8,9 @@
 
 本文以当前代码为准，而不是对上游论文流程的泛化描述。运行命令、断点续跑和目录参数请参阅 [README.zh-CN.md](README.zh-CN.md)。明确标记“待实现”的段落描述后续约定，详细代码方案见 [plan.md](plan.md)，不代表当前运行能力。
 
-本轮实现边界：保留现有 depth completion、RGB-D 反投影、单 seed 初始化及 RGB finetune；在其后增加默认关闭的独立 EDGS-PGSR 局部几何优化，直接用 LaMa completed normal 做二维监督。新增开关和渐增调度只属于 `run_inpaint.sh`，不改变 `run_seg.sh` 的全局训练。详见第 3.9a 节；代码已接入并通过小型合成 CUDA 链路测试，真实场景完整训练质量仍待评估。
+现有路径的实现边界：保留 depth completion、RGB-D 反投影、单 seed 初始化及 Inpaint360GS RGB finetune；在其后可运行默认关闭的独立 EDGS-PGSR 局部几何优化，直接用 LaMa completed normal 做二维监督。新增开关和渐增调度只属于 `run_inpaint.sh`，不改变 `run_seg.sh` 的全局训练。详见第 3.9a 节；代码已接入并通过小型合成 CUDA 链路测试，真实场景完整训练质量仍待评估。
+
+新增同级技术路径见 [第 3.9b 节](#edgs-pgsr-direct)（**已接通，完整场景质量待评估**）：在公共 RGB/depth/normal completion 后，使用 EDGS RGB 匹配初始化，可选 depth 辅助及 normal 定向，然后直接 PGSR 联合训练，不经过 Inpaint360GS finetune 或 Stage 5b。它不替换现有路径，不修改自动 normal completion；以下涉及 seed、5a/5b 的实现描述仍专指现有路径。
 
 自适应密度匹配是正式实现，详见第 3.7a 节和 [plan.md 的 D0 节](plan.md#d0-无手调密度阈值的自适应配额采样已实现)。设置 `SUPPORT_DENSITY_MODE=mass_adaptive`，使用 `support_mass.py` / `configs/support_mass.yaml`；`legacy` 仅表示不启用密度匹配、保持原生反投影流程，不是另一种密度匹配算法。Stage 4b 位于 Stage 4 与 Stage 5a 之间，与 Stage 5b 开关独立，不改变自动 normal completion，也不要求 normal 反投影。
 
@@ -824,7 +826,7 @@ semantic_mesh/
 
 ### 3.1 总体数据流
 
-以下为默认关闭局部优化时的流程；normal completion 自动执行，completed normal 在可选 Stage 5b 中参与训练：
+公共前端仍是 remove → 同相机渲染 → tracking → RGB/depth/normal LaMa completion。同级选择为 `INPAINT_PIPELINE=inpaint360gs|edgs-pgsr`，默认保留 `inpaint360gs`；此接口已接入，不能与选择虚拟渲染后端的 `VIRTUAL_RENDERER` 混为一谈。下面展示原路径默认关闭局部优化时的流程；另一条路径在第 3.9b 节定义。
 
 ```text
 语义 3DGS
@@ -914,9 +916,11 @@ removed_3dgs/point_cloud/iteration_<N>/point_cloud.ply
 
 该 PLY 仍含 RGB、几何和 16D embedding。随后从 removed 3DGS 重新做 PGSR + TSDF，得到 removed mesh；旧 mesh 不参与删除运算。
 
-### 3.3 模块 B：生成 30 个严格一致的虚拟相机
+### 3.3 模块 B：生成严格一致的虚拟相机（默认 30 个）
 
 实现位于 [`virtual_pose.py`](../../submodules/Inpaint360GS/tools/virtual_pose.py)、[`pose_utils.py`](../../submodules/Inpaint360GS/utils/pose_utils.py) 和 [`virtual_camera_manifest.py`](../../submodules/Inpaint360GS/utils/virtual_camera_manifest.py)。
+
+已实现同级圆环/半球生成器与可配置总帧数。B1 保留原圆环算法，B2 说明半球螺旋；新方式不改变 normal completion。所有下游统一读取 camera manifest 的帧表，30 为默认值；后续章节出现的 30 帧及 `00029` 均按默认配置理解。
 
 #### 输入
 
@@ -927,7 +931,95 @@ removed_3dgs/point_cloud/iteration_<N>/point_cloud.ply
 
 #### 计算过程
 
-系统用相机位姿 PCA 估计场景主轴和归一化尺度，计算观察焦点，并依据目标半径与相机 FoV 估算能覆盖目标的相机距离。随后在目标周围生成 30 个匀速圆形/椭圆轨迹相机。
+##### B1. 现有圆环：circle
+
+系统用全部真实训练相机位姿做 PCA，估计场景主轴和归一化尺度，再通过相机光轴计算观察焦点 $F=(f_x,f_y,f_z)$。目标半径和第一台训练相机的 FoV 用来估算轨迹半径 $R$；配置中的 `circle_radius` 是相对场景尺度的比例，不是直接的世界坐标半径。
+
+虽然底层函数名为 `generate_ellipse_path`，圆环入口使用 `is_circle=True`、`n_frames=N`（默认 30），高度变化默认为零。因此，实际相机中心位于 PCA 坐标系的 $z=0$ 平面：
+
+$$
+C=(f_x,f_y,0),\qquad
+P_{circle}(\theta)=C+R(\cos\theta,\sin\theta,0).
+$$
+
+30 帧沿一圈近似等弧长分布，全部看向 $F$。需要区分**圆环几何圆心 $C$** 与**注视点 $F$**：两者只在 $f_z=0$ 时重合。当前没有启用对象中心模式，不能把这个焦点直接理解为被删除对象的中心。
+
+##### B2. 新增半球：hemisphere（已实现）
+
+新增独立轨迹选择 `VIRTUAL_CAMERA_PATH=circle|hemisphere`，默认 `circle` 保持现有行为；`VIRTUAL_CAMERA_COUNT=N` 配置两种模式的相机总数，默认 30，不是每圈数量。它们与 `VIRTUAL_RENDERER=inpaint360gs|edgs-pgsr` 正交：轨迹决定相机序列，renderer 决定渲染后端。以下接口已接入 `run_remove.sh`：
+
+```bash
+VIRTUAL_CAMERA_PATH=hemisphere
+VIRTUAL_CAMERA_COUNT=90                       # 示例；默认 30
+VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG=85        # 默认 85，接近但不取极点
+```
+
+半球严格继承同次输入下 B1 的几何圆心 $C$ 和半径 $R$，**球心不改成 $F$ 或目标对象中心，球直径等于原圆环直径 $2R$**。以原圆环平面作为赤道，沿 PCA 的正 z 方向上升；PCA 已依据训练相机平均 up 方向校正符号。这里的“上”是相机估计的场景方向，不承诺等于物理重力方向。
+
+**球面均匀性不能用曲线等弧长替代。** 仰角从赤道量起，球面面积元为：
+
+$$
+dA=R^2\cos\phi\,d\phi\,d\theta=R^2\,dh\,d\theta,
+\qquad h=\sin\phi.
+$$
+
+因此应在归一化高度 $h$ 上均匀分配样本，而不是在仰角上等间隔，或让各高度环拥有相同点数。这个面积关系也用于 [PBRT 的均匀半球采样](https://www.pbr-book.org/4ed/Sampling_Algorithms/Sampling_Multidimensional_Functions#UniformlySamplingHemispheresandSpheres)；下述连续螺旋与自动螺距是本项目据此设计的确定性近似均匀布局，不是直接使用随机采样器。
+
+设上限仰角 $\phi_{max}=85^\circ$，$h_{max}=\sin\phi_{max}$，$i=0,\ldots,N-1$，采用：
+
+$$
+h_i=h_{max}\frac{i}{N-1},\qquad \phi_i=\arcsin(h_i).
+$$
+
+相邻高度对应的完整球带面积恒为 $2\pi R^2h_{max}/(N-1)$。起点在赤道，终点达到配置仰角；除端点效应外，各等面积球带具有相近的样本预算。这里只约束高度分布，还需合理安排方位角才能覆盖整个球面。
+
+为兼顾相邻帧的空间连续性与二维覆盖，令 $A=2\pi R^2h_{max}$，用典型表面间距 $d=\sqrt{A/(N-1)}$ 决定每一整圈的仰角增量（螺距）$\delta=d/R$：
+
+$$
+\theta_i=\theta_0+\frac{2\pi}{\delta}\phi_i,\qquad
+K=\frac{\phi_{max}}{\delta},\qquad
+\delta=\sqrt{\frac{2\pi h_{max}}{N-1}}.
+$$
+
+这里 $K$ 是从首帧到末帧累计的绕行圈数，允许非整数，由 $N$ 自动得到，不再额外暴露固定圈数。原因是：沿子午线相邻螺旋圈约相距 $R\delta=d$，远离极点处相邻样本的横向间距约为 $R\cos\phi\,\Delta\theta\approx2\pi R\Delta h/\delta=d$，两方向尺度相近。若保持固定 3 圈却不断增加相机数，只会加密曲线本身，不会同步填补圈间空隙。
+
+相机位置为：
+
+$$
+P_i=C+R\begin{pmatrix}
+\sqrt{1-h_i^2}\cos\theta_i\\
+\sqrt{1-h_i^2}\sin\theta_i\\
+h_i
+\end{pmatrix}.
+$$
+
+由此始终有 $\|P_i-C\|_2=R$，高度和展开方位角单调递增，水平截面半径随高度收缩。这是真正同心同径的球面轨迹，不是圆柱螺旋。按 $i$ 直接生成 `00000..{N-1:05d}`，一圈结束后沿同一螺旋继续上升，不在接缝重置方位、反向或回到赤道；不额外叠加一圈底层相机，不做会破坏高度面积分配的二次等弧长重采样。
+
+在 85° 上限下，30/60/90 个相机约对应 3.19/4.56/5.59 圈。顶部完整圈的面积较小，因此自然分配更少的相机，不要求每圈数量相同。85° 以上的小顶帽不采样，故“均匀”指赤道至该仰角的球面带；有限点集是近似等面积、近似等间距，而非任意两点等距或每个球面 Voronoi 单元严格等面积。低帧数的端点效应更明显，必须用球面覆盖诊断验收，不能只检查点落在球面上。
+
+起始方位沿用原圆环首帧，首尾都保留；不能套用闭合圆环“删除重复尾点”的处理而丢失半球终点。末端仰角满足 $0<\phi_{max}<90^\circ$，不生成重复极点；默认 85° 不是质量保证。$N$ 必须为至少 2 的整数，小 $N$ 仅表示数值上可生成，不能保证绕满多圈或获得可用 tracking，亦须满足后续 seed/debug 索引约束。
+
+**姿态固定锚定场景 up，不累计滚转。** 所有相机仍看向原注视点 $F$，而不是自动改看球心或重新定位对象；内参、尺寸和坐标变换与圆环模式一致。场景参考上方向 $U$ 与原圆环完全相同：取 PCA 中训练相机平均 up 的最大绝对分量轴及其符号。这里的 $U$ 是构图基准，区别于半球位置沿 `+z_pca` 上升的方向。
+
+对每个位置独立构建 look-at 基，不读取上一帧的 right/up：
+
+$$
+b_i=\frac{P_i-F}{\|P_i-F\|},\qquad
+r_i=\frac{U\times b_i}{\|U\times b_i\|},\qquad
+u_i=b_i\times r_i.
+$$
+
+$(r_i,u_i,b_i)$ 是右手系的 right/up/backward；按现有轴翻转、PCA 逆变换写成 renderer 的 right/down/forward 相机。这样相机 up 始终对齐 $U$ 在像平面的投影，相对于场景参考的 roll 为零，不随绕行圈数累积。首帧直接复用圆环首帧的精确矩阵；其余帧独立计算。底层已有 PCA 尺度和 depth 尺度保持不变，不新增姿态模式开关。
+
+默认最高仰角为 85°，不经过极点。若视线长度退化或 $\|U\times b_i\|\le10^{-12}$，构图的 up/roll 无法可靠定义，生成器明确报错，需降低末端仰角或检查输入相机；不通过继承上一帧姿态掩盖退化。无累计滚转不表示顶部每帧的整体旋转角都很小：方位仍在变化，需查看轨迹诊断及实际图像。
+
+本模式**只有首帧在赤道**，不是先生成一整圈赤道再上升；例如 N=90、85° 时第 23 帧（索引 23）已升至约 14.92°。与原圆环比较时只有首帧保证位置和姿态相同，同名后续帧不对应同一观察位置。这一取舍优先保证球面近似均匀覆盖。
+
+同样的 30 帧要覆盖更多高度，每圈会比原单圈稀疏；可以显式增大 $N$，但渲染、LaMa 与 tracker 工作量也随之增加。空间连续不等于画面一定重叠，必须检查 tracker 传播、目标遮挡及高处空洞；相机中心均匀也不代表表面观测、图像分辨率或补全质量均匀。默认 `FUSION_SEED_FRAME=4` 仍表示第 5 帧，要求 `0 <= seed < N`，越界报错、不静默换帧；切换轨迹或帧数后应重新检查 seed 覆盖，不复用旧 masks、LaMa 或 fusion 产物。
+
+##### B3. 精确相机复用与渲染
+
+以下为现有的共同下游契约，新增半球模式也必须遵守。新生成器只运行在 `run_remove.sh` Stage 4；不影响 `run_seg.sh` 全局训练，不让各个 depth/normal 模块独立生成相机。
 
 同一组相机分别渲染：
 
@@ -940,9 +1032,11 @@ removed_3dgs/point_cloud/iteration_<N>/point_cloud.ply
 
 `render_manifest.json` 记录 backend、depth 定义、normal 来源、模型与相机 hash、逐帧输出 hash。原生 depth 保留原数值定义，PGSR depth 是场景尺度下的平面 z-depth，不能仅凭名称假定是已标定的米制深度。虚拟后端选择独立于基础训练、finetune 和最终 TSDF 配置。
 
-removed RGB 被按 `00000.png..00029.png` 打包为 tracker `images.zip`。每个相机的完整精度 `R`、`T`、FoV、宽高、near/far、scene translation/scale 写入 `virtual_cameras.json`。后续所有模块复用该 manifest，而不是用四舍五入后的半径重新生成轨迹，从而避免 mask、RGB、depth 和反投影之间的像素偏移。
+removed RGB 按 manifest 中有序的 N 个帧名打包为 tracker `images.zip`（默认 `00000.png..00029.png`）；tracker、LaMa、fusion、密度匹配、Stage 5a/5b 和发布校验全部读取同一个 N。每个相机的完整精度 `R`、`T`、FoV、宽高、near/far、scene translation/scale 写入 `virtual_cameras.json`。后续所有模块复用该 manifest，而不是用四舍五入后的半径重新生成轨迹，从而避免 mask、RGB、depth 和反投影之间的像素偏移。
 
 新 tracking session 还绑定 removed render artifact。切换后端必须使用新的 removal run，已有会话和下游工作区不能复用另一后端的几何产物。normal/alpha 会随 inpaint 工作区一起校验和链接；normal LaMa completion 已接入 Stage 2/3，normal loss 位于可选的独立 Stage 5b。
+
+半球模式已经把轨迹类型、N、实际球心/半径、注视点、坐标基、自动螺距/圈数、末端仰角、面积采样规则及 `orientation=scene_up` / `scene_up_pca` 纳入 schema 2 相机 manifest 的身份校验；默认圆环 30 帧保持 schema 1。圆环 30 帧 manifest 按原身份读取，不能补字段后冒充旧缓存；切换轨迹、帧数、姿态策略或其他有效参数必须使用新的 removal run，重新渲染并完成 tracking。生成算法身份不匹配会提前拒绝复用，不保留其他半球姿态实现。详细接口、动态帧数改造、兼容性和验收计划见 [plan.md 的 A0 节](plan.md#a0-同级圆环半球虚拟相机生成方式已实现)。
 
 normal completion 规则是：只要上游提供完整的 removed normal，就自动执行 `removed normal → LaMa → completed normal`，与 depth 分支平级；不新增启用开关，不以 completed depth 推导法线替代此分支。
 
@@ -951,6 +1045,8 @@ normal completion 规则是：只要上游提供完整的 removed normal，就�
 ```text
 tracker/images.zip
 tracker/virtual_cameras.json
+tracker/camera_trajectory.json                # 位置、仰角、相邻姿态/视轴角、scene_up_roll、球面覆盖
+tracker/camera_trajectory.svg                 # 带编号的俯视/侧视轨迹
 work_model/virtual/ours_<N>/...                  # full
 work_model/virtual/ours_object_removal/...       # removed
 ```
@@ -973,7 +1069,7 @@ SAM 在首帧产生目标 mask，DeAOT 把对象状态传播到其余虚拟帧�
 
 PaintMesh 对会话进行严格绑定：
 
-- 必须正好输出 `00000.png..00029.png`；
+- 必须输出 camera manifest 声明的全部有序 N 帧（默认 `00000.png..00029.png`）；
 - 每张 mask 必须与对应 tracker RGB 同尺寸；
 - mask 必须属于当前 tracking session；
 - archive、camera manifest 与 mask 的 hash 会写入会话记录。
@@ -1104,7 +1200,7 @@ lama/output/normal/vis/00000.png ... 00029.png  # 仅预览
 
 Stage 3 根据输入 manifest 自动运行 normal predictor，不增加 normal 开关或模式。现有 `lama_completion_manifest.json` 扩展为校验全部预期模态：只要输入含 normal，输出缺 normal 就不能提交成功或复用旧 RGB/depth-only 缓存。`normal/prediction.json` 记录推理的输入、模型/config 和逐帧输出 hash，不替代总 completion 标记。
 
-这是使用 RGB LaMa 权重对编码法线做补全的基线，不是专门训练的法线模型；单位化不能保证与 depth 或多视角几何一致。completed depth 派生法线用于后续质量诊断，不覆盖 LaMa normal。completed normal 可作为第 3.9a 节的软监督；RGB-D-N 融合与 normal-aware 初始化延期，详见 [plan.md](plan.md)。
+这是使用 RGB LaMa 权重对编码法线做补全的基线，不是专门训练的法线模型；单位化不能保证与 depth 或多视角几何一致。completed depth 派生法线用于后续质量诊断，不覆盖 LaMa normal。completed normal 已可作为第 3.9a 节的软监督；第 3.9b 节已接通同级路径的可选 normal 初始化与训练监督，不要求先改造原 RGB-D 融合器。
 
 ### 3.7 模块 F：completed RGB-D 反投影成支持点云
 
@@ -1150,9 +1246,9 @@ manifests/fusion_manifest.json
 
 可选的 `fused/hole/` PLY 是 removed RGB-D 的诊断输出，不是最终 mesh。
 
-一个重要的当前实现细节是：虽然生成 30 个支持 PLY，Stage 5 只选择 `FUSION_SEED_FRAME` 指定的一张，默认 `00004.ply`，用来初始化新 Gaussian；30 张 completed RGB 则全部用于后续多视角优化。
+一个重要的当前实现细节是：虽然生成 30 个支持 PLY，Stage 5 只选择 `FUSION_SEED_FRAME` 指定的一张，默认 `00004.ply`，用来初始化新 Gaussian；30 张 completed RGB 则全部用于后续多视角优化。此依赖仅属于现有路径；第 3.9b 节的新路径不要求 seed PLY 或此 fusion manifest。
 
-本轮局部优化方案保留以上计算和输出不变：不反投影 normal，不新增 RGB-D-N 融合，不将 30 个 PLY 合并成新的初始化点云。completed depth 继续提供三维初值，同时在启用 Stage 5b 后新增二维深度监督；completed normal 直接作为同相机的二维方向监督。
+现有路径的 Stage 5b 局部优化方案保留以上计算和输出不变：不反投影 normal，不新增 RGB-D-N 融合，不将 N 个 PLY 合并成新的初始化点云。completed depth 继续提供三维初值，同时在启用 Stage 5b 后新增二维深度监督；completed normal 直接作为同相机的二维方向监督。第 3.9b 节的新路径在 completion 后分流，不需要此处的支持 PLY。
 
 ### 3.7a 无手调密度阈值的自适应配额采样（已实现）
 
@@ -1251,7 +1347,7 @@ normal 不反投影，也不作为硬采样门槛。`init_support` 与原 `gate_
 
 一个可优化的临时 GaussianModel，既含保留场景，也含补全区域的新 splats。
 
-本轮保持这些初始化规则不变。使用 normal 调整初始 quaternion/各轴 scale 是延期方案，不是接入 Stage 5b 的前置条件。
+现有路径保持这些初始化规则不变。使用 normal 调整初始 quaternion/各轴 scale 不是接入 Stage 5b 的前置条件；其可选实现归入第 3.9b 节独立路径，不修改这里的初始化器。
 
 ### 3.9 模块 H：30 视角 3DGS finetune
 
@@ -1415,7 +1511,7 @@ Stage 5b 仅为编辑行的 XYZ、rotation、scale 创建 optimizer 参数；其
 
 保存时保留输入 PLY 所有字段，只更新许可行/字段；检查越过原空间 gate 的更新并回退到 Stage 5a 值，再计算最终诊断。冻结背景参数之外，还要检查 mask 外渲染变化，因为局部 Gaussian 的投影覆盖仍可能影响已知像素。
 
-normal loss 不会自动增加点数，Stage 5b 本身不承诺解决稀疏覆盖；下一轮将按第 3.7a 节在初始化前单独改善支持点密度。多视角联合融合与 normal-aware 初始化仍为延期方案。
+normal loss 不会自动增加点数，Stage 5b 本身不承诺解决稀疏覆盖；第 3.7a 节已在初始化前单独改善支持点密度。多视角混合初始化与可选 normal-aware 初始化属于第 3.9b 节的新路径，不纳入 Stage 5b。
 
 #### H8. 独立产物与发布选择
 
@@ -1439,6 +1535,96 @@ Stage 6 按开关选择 5a/5b；关闭时保持旧发布契约，开启时要求
 
 验收重点是关闭开关回归、局部/全局调度隔离、法线坐标与梯度正确、冻结字段不变、覆盖率及 mask 外变化、断点/过期产物拒绝。完整文件落点和测试清单见 [plan.md](plan.md) 阶段 F。
 
+<a id="edgs-pgsr-direct"></a>
+
+### 3.9b 同级技术路径：EDGS 可选 RGB-D-N 初始化 + PGSR 联合训练（已接通）
+
+#### 路径定位与公共前端
+
+这是与现有 `Inpaint360GS RGB finetune → 可选 PGSR 局部几何优化` 平级的路径，不是其后追加的 Stage 5c。两者复用同一 removal、tracking、精确相机与 LaMa completion 契约，之后分流；不重估相机，不重新训练全局场景。
+
+```text
+completed RGB / depth / normal + masks + N 个精确相机
+    ├── inpaint360gs（现有、默认）
+    │     RGB-D 支持点 → 单 seed 初始化 → RGB finetune → 可选局部几何优化
+    └── edgs-pgsr（独立实现）
+          EDGS RGB 匹配 / 三角化
+            + 可选 depth 位置辅助及补点
+            + 可选 normal 表面定向
+          → removed 场景 + 新 Gaussians → PGSR 外观/几何联合训练
+                         ↓
+             验证并发布 → PGSR RGB-D TSDF → 语义提升
+```
+
+EDGS 的基础能力是从稠密 RGB 对应三角化得到 Gaussian 初值；PGSR 提供平面感知渲染与几何优化能力。这里的局部混合初始化、开关和损失组合是本项目的设计，不是上游现成的 inpaint 功能。参见 [EDGS 官方实现](https://github.com/CompVis/EDGS)、[PGSR 论文](https://arxiv.org/abs/2406.06521)。
+
+#### 三种初始化配置
+
+以下参数已由 `run_inpaint.sh` 解析，独立默认配置为 `configs/edgs_inpaint.yaml`：
+
+| `EDGS_INIT_USE_DEPTH` | `EDGS_INIT_USE_NORMAL` | 初始化内容 |
+|---|---|---|
+| `false`（默认） | `false`（默认） | 仅 EDGS completed RGB 匹配与三角化 |
+| `true` | `false` | EDGS RGB 匹配 + completed depth 辅助初始化 |
+| `true` | `true` | EDGS RGB 匹配 + completed depth + completed normal 混合初始化 |
+| `false` | `true` | 本设计不支持，预检报错，不自动打开 depth |
+
+本批按上述三种需求定义初始化：RGB 匹配始终执行，depth/normal 不是必需前置条件；normal 辅助作为 RGB-D 初始化的扩展。初始化开关只控制消费哪些信息，不控制公共 LaMa 阶段：只要上游提供 removed normal，仍默认完成 normal completion。
+
+训练监督另设 `EDGS_TRAIN_USE_DEPTH` / `EDGS_TRAIN_USE_NORMAL`：未指定时分别继承解析后的初始化开关，显式指定时独立生效。例如 RGB-only 初始化可以后续开启 depth/normal loss；要做全程 RGB-only 消融，则初始化和外部监督的两个开关都关闭。PGSR 自身渲染的 depth/normal 及模型内部一致性不是 LaMa 外部监督，不由初始化开关关闭。
+
+#### RGB 匹配始终是初始化基础
+
+在有重叠且基线适当的视图对上对 completed RGB 做 RoMa 稠密匹配；保留洞外上下文，但新增候选只提交到补全区域。匹配器使用冻结权重，只服务初始化，不参与后续 Gaussian 参数的联合训练。候选经过双向/多视角对应检查、正深度、三角化条件和鲁棒重投影校验，保留参考帧、像素、支持视图及置信度。N 从相机 manifest 读取，不固定 30，不只按编号相邻选对；半球序列也考虑跨圈重叠。
+
+RGB-only 时不得用 completed depth/normal 做点位筛选、可见性门控、置信度、尺度估计或隐式补点。匹配可靠性来自 RGB 对应、相机和三角化几何；弱纹理时覆盖可能不足，无有效候选必须失败，不能暗中回退 depth 或现有 seed 路径。初始化颜色来自 completed RGB，旋转与尺度沿用 EDGS 的单位四元数/各向同性初值；不能把 normal PNG 当特征图输入匹配器。
+
+全局 `Trainer.init_with_corr` 包含删除已有初始化点和统一调整尺度的逻辑，不能直接施加于 removed 场景。新入口只复用匹配与三角化能力，再将候选追加到冻结背景，不替换背景。
+
+匹配使用**双向原始置信度硬门槛**，而不是只按分数加权随机抽样。对于 $p_A\to p_B$，在反向置信度图的 $p_B$ 位置插值得到 $c_{B\to A}(p_B)$，令
+
+$$
+c_{pair}=\min\bigl(c_{A\to B}(p_A),c_{B\to A}(p_B)\bigr),\qquad c_{pair}\geq\tau_c.
+$$
+
+`init.confidence_min` / `EDGS_MATCH_CONFIDENCE_MIN` 默认 **0.5**，越大越严格；这是网络置信分数，不是经过标定的几何正确概率。分数必须有限且处于有效概率范围，零分始终丢弃。门槛在抽样、三角化前执行，不能用同一数组下标代替反向目标坐标，也不能用两方向平均值让高分掩盖低分。通过门槛后，仍需满足双向回环误差 `init.cycle_pixels`（默认 3 个原图像素）、三角化重投影误差 `init.reprojection_pixels`（默认 2 个原图像素）与视差角条件。后两者是误差**上限**，减小才会更严格；不随 RoMa 内部匹配分辨率直接改变单位。`samples_per_pair` 仅是采样上限，合格匹配不足时保留实际数量，不降低门槛或补回被拒绝的匹配。匹配器不调用 RoMa 的 `sample()`；其上游 `sample_thresh` 是采样权重处理参数，不能代替这里的硬筛选。
+
+每个图对在 `edgs_init/diagnostics.json` 中记录洞内候选、双向置信度分位数、置信度通过数、回环通过数、抽样数、三角化与最终保留数。`support.npz` 中 `source_kind=0` 的 `confidence` 是双向分数的最小值；`source_kind=1` 是 depth 补点，其分数仍是独立的深度一致性证据，不能套用 RoMa 门槛解释。提高阈值通常会减少低可信匹配，但不保证清除几何杂散点，尤其不能直接过滤 depth 补点。LaMa 伪纹理仍可能形成高置信错误对应；过高门槛也可能损失弱纹理覆盖。改阈值必须重新初始化，不能在旧 checkpoint 上继续以为已经筛掉旧点；推荐新建 inpaint run，旧产物不自动删除或改写。
+
+#### 可选 depth 与 normal 如何参与
+
+启用 depth 后，三角化点位用同场景尺度的 completed plane z-depth 作为软先验精修；匹配覆盖不足处可由 depth 反投影增加候选。这一步属于 EDGS 初始化器内部，不要求运行 Inpaint360GS RGB finetune，也不依赖现有 `FUSION_SEED_FRAME`。多视图候选先做可见性检查、去重和局部密度预算；不能直接叠加 N 张点云，也不能把互相矛盾的表面平均成中间一层。预算可依据周边可见表面间距与洞内面积确定，不以手调密度比例作为统一质量门槛。
+
+启用 normal 后，对可信候选关联 `normal/*.npy` 和 validity，将相机法线转换到世界坐标，统一符号后做鲁棒聚合，用于 Gaussian 的最短尺度轴定向；切向尺度来自局部表面间距，法向厚度保持正值。对于 camera-to-world 的线性部分 $A$：
+
+$$
+n_w=\operatorname{normalize}(A^{-T}n_c).
+$$
+
+相机只含刚性旋转时等价于旋转法线；带 PCA 相似尺度时必须正确归一化。不能把平移加到法线上，不能直接平均不同相机坐标系下的向量。normal 不提供三维位置，不单独“反投影成点”；写入 PLY 的 `nx,ny,nz` 也不能代替实际 quaternion/scale 初始化。关闭 normal 时，不读取 completed normal，也不偷偷用 depth-derived normal 替代这个辅助开关。启用但缺少整路有效输入时预检失败；少量点缺少可信 normal 可保留未定向初值并记录比例。
+
+#### PGSR 联合训练
+
+训练从 `removed 背景 + 新 Gaussians` 开始，整段使用 PGSR 可微 renderer，同时输出 RGB、plane-depth、normal、alpha；不运行现有 Stage 5a/5b。新增点的 XYZ、rotation、scale、SH 和 opacity 可优化；首批背景、语义 embedding 与 classifier 冻结，完整场景一起渲染以保留遮挡。首批固定点数，不启用 clone/split/prune 或 opacity reset；任何拓扑更新须另立局部契约，不能继承全局调度。
+
+令 $M$ 为 hole mask，$I_0$ 为同相机下冻结 removed 场景的 PGSR 基线：
+
+$$
+L=L_{RGB}(M)+\lambda_K L_{preserve}(\bar M,I_0)+\lambda_A L_{coverage}(M)
+  +a_D(t)\lambda_D L_D+a_N(t)\lambda_N L_{LaMaN}
+  +a_G(t)\bigl(\lambda_C L_{D\leftrightarrow N}+\lambda_M L_{MV}\bigr).
+$$
+
+RGB 项拟合 completed RGB；洞外保持项保护原场景；覆盖项避免靠透明化、露洞降低损失。depth loss 为有效正深度上的鲁棒 log-depth 残差；LaMa normal loss 在同一相机坐标系单位向量之间用有符号 $1-\langle\hat n,\hat n^*\rangle$，统一朝向后再比较。后两项分别约束模型自身深度/法线一致性和可见对应处的多视角几何，不能把内部几何输出当作外部真值。
+
+外部 depth/normal loss 由训练开关决定，关闭时不要求相应目标或借用它构造权重；normal-only 外部监督不得依赖 completed depth 才能形成有效域。RGB/覆盖保护从开始生效，几何项按独立局部步数渐增，不继承全局 7000 步门槛。LaMa 的三种输出都是伪目标，分别计算停止梯度的可信度；`normal_valid` 不等于置信度，洞内低 removed alpha 也不能否决应补全的目标。
+
+初始化入口是 `submodules/EDGS/tools/initialize_paintmesh_edgs.py`，联合训练入口是 `submodules/EDGS/tools/train_paintmesh_pgsr.py`。共享 CPU 契约位于 `scripts/paintmesh/edgs_inpaint_io.py`，新增点全参数模型、loss 与 debug 位于 `source/paintmesh_joint_*.py`。匹配器使用 EDGS vendored RoMa，三角化复用其 `correspondence/geometry.py`；不调用全局 Trainer。发布器和最终提交按 producer 区分两条路径。
+
+当前实现采用空间/朝向近邻选对、双向匹配和两视图 DLT；跨图对在世界网格中保留高可信候选，不是完整的多视图轨迹 BA。depth 补点采用表面面积预算和近邻视图的软一致性证据；normal 对匹配的两次观测做世界坐标符号对齐聚合。训练的目标权重是各模态内部连续性的冻结启发式权重，不是经过标定的置信度，仍需检查伪目标冲突、分层与重影。
+
+已通过合成初始化、可选模态隔离、真实 PGSR 短训练/恢复与发布分流测试；只读验证 kitchen 90 帧数据契约，并在真实第 0/1 帧验证 RoMa 匹配和三角化。未执行完整 kitchen 初始化及 5000 步联合训练，不承诺密度或法线质量已提升。参数、运行命令及后续消融见 [plan.md 的同级 EDGS-PGSR 路径](plan.md#edgs-pgsr-direct-plan)。
+
 ### 3.10 模块 I：发布 EDGS 可加载的 inpainted 3DGS
 
 实现位于 [`publish_inpainted_edgs_model.py`](../../submodules/Inpaint360GS/tools/publish_inpainted_edgs_model.py)。
@@ -1451,6 +1637,8 @@ Stage 6 按开关选择 5a/5b；关闭时保持旧发布契约，开启时要求
 - removal、tracker、camera、LaMa、fusion 等 manifests。
 
 输入 PLY 按第 3.9a 节的局部优化开关选择，开启时另验 `local_geometry_manifest.json`；关闭时保留现有身份，不要求新字段。发布器不能忽略已请求但未完成的局部优化。
+
+以上是原路径发布输入。发布器现已按所选 producer 验证来源：第 3.9b 节的新路径使用 `edgs_init_manifest.json` / `edgs_joint_manifest.json`，不要求原路径的 fusion、seed、RGB finetune 或 local geometry receipt；保留 PLY 语义字段、classifier 和模型/mesh 来源一致性的共同检查。
 
 #### 计算过程
 
@@ -1582,13 +1770,14 @@ manifest 是整条 remove -> virtual views -> tracker -> LaMa -> RGB-D -> 3DGS -
 1. 语义标签是 scene-local instance ID，不能跨场景直接比较。
 2. `mask_associate` 使用 Gaussian 中心和启发式深度筛选，并非精确 alpha/visibility association。
 3. 蒸馏函数计算了 KL，但当前训练调用只使用 cosine 正则。
-4. LaMa depth 是把深度当图像做补全，几何一致性主要依赖多虚拟视角、RGB-D 初值和后续 3DGS 优化，而不是显式多视图 depth loss。
-5. 当前只用一个 `FUSION_SEED_FRAME` PLY 初始化 splats，未把 30 个支持 PLY 联合配准或融合成一个初始化点云。
+4. LaMa depth 是把深度当图像做补全，补全器本身不施加三维多视图一致性；默认路径主要依赖 RGB-D 初值与 RGB finetune，显式几何约束由可选 Stage 5b 或同级新路径承担。
+5. 默认路径只用一个 `FUSION_SEED_FRAME` PLY 初始化 splats，未把 N 个支持 PLY 联合配准或融合成一个初始化点云；第 3.9b 节的多视角候选初始化是另一条可选路径。
 6. Stage 5a RGB finetune 没有 depth/normal loss，也没有 semantic loss；只有显式开启的 Stage 5b 使用局部 depth、LaMa normal 与内部一致性监督。
 7. 补全 mesh 的细节上限受 PGSR plane depth、真实训练相机覆盖、TSDF voxel size 和连通分量过滤共同限制。
 8. `semantic_mesh.ply` 是便于查看的 vertex 着色副本；需要精确 face 语义时应读取 `.npy` sidecar 和 manifest。
 9. 自动 normal completion 与局部优化是两种独立行为：前者由上游模态触发，后者由默认关闭的 `LOCAL_GEOMETRY_REFINE` 显式启用。LaMa normal 不是几何真值，normal loss 也不等于增密。
 10. 所有局部几何参数只属于当前 inpaint run，禁止写回最初的全局训练配置或模型；第 1 节全局 `step > 7000` 调度保持不变。
+11. 同级 `edgs-pgsr` 路径及 `EDGS_INIT_USE_*` / `EDGS_TRAIN_USE_*` 已接通，但完整场景质量仍待评估。初始化或监督关闭不等于跳过公共 completion；RGB-only 不保证弱纹理覆盖，多种 LaMa 伪目标联合使用也不保证真实隐藏几何。
 
 ## 6. 主要源码索引
 

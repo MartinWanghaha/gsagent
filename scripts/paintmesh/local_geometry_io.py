@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from virtual_render_io import atomic_write, identity, read_json, sha256, write_json
+from virtual_render_io import atomic_write, identity, read_json, sha256, write_json, read_camera_manifest
 
 REPO = Path(__file__).resolve().parents[2]
 RGB_KIND = "paintmesh-rgb-finetune"
@@ -95,8 +95,8 @@ def load_config(path, **overrides):
         value = debug[key]
         if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
             raise ValueError(f"debug.{key} must be an integer >= {minimum}")
-    if debug["view_index"] >= 30 or debug["jpeg_quality"] > 100:
-        raise ValueError("debug.view_index must be < 30 and jpeg_quality <= 100")
+    if debug["jpeg_quality"] > 100:
+        raise ValueError("debug.jpeg_quality must be <= 100")
     if not (0 < valid["render_alpha_min"] <= valid["coverage_alpha_floor"] <= 1
             and 0 < valid["min_coverage_ratio"] <= 1 and valid["depth_jump_relative"] > 0
             and isinstance(valid["max_empty_steps"], int) and valid["max_empty_steps"] > 0):
@@ -136,12 +136,12 @@ def verify_targets(lama_path, camera_path):
             render.get("complete") is not True or render.get("status") != "complete" or
             render.get("artifact_id") != identity({k: v for k, v in render.items() if k != "artifact_id"})):
         raise ValueError("removed render identity mismatch")
-    camera = read_json(camera_path)
+    camera = read_camera_manifest(camera_path)
     if camera.get("artifact_id") != metadata["camera_artifact_id"]:
         raise ValueError("camera identity mismatch")
-    stems = [f"{index:05d}" for index in range(30)]
+    stems = [c["image_name"] for c in camera["cameras"]]
     if set(lama["frames"]) != set(stems) or set(inputs["frames"]) != set(stems):
-        raise ValueError("local geometry requires exactly 30 matched target frames")
+        raise ValueError("local geometry requires all camera-matched target frames")
     output_hashes = {}
     for stem in stems:
         outputs = lama["frames"][stem]["outputs"]

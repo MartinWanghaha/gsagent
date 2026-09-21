@@ -14,10 +14,10 @@ run_remove
   语义 3DGS/mesh
        -> 删除指定实例
        -> removed 3DGS + 重建后的 removed mesh
-       -> 30 个虚拟视角 + 交互跟踪 mask
+       -> N 个虚拟视角（默认 30，圆环/半球）+ 交互跟踪 mask
 
 run_inpaint
-  removed 结果 + 30 个跟踪 mask
+  removed 结果 + 同一批 N 个跟踪 mask
        -> LaMa RGB/depth 补全（有 removed normal 时自动补全 normal）
        -> inpainted 3DGS + 重建后的 inpainted mesh
 ```
@@ -260,6 +260,9 @@ END_STAGE=6 \
 | `RENDER_REMOVAL_TEST` | `false` | Stage 2 test 诊断渲染 |
 | `RENDER_EDGS_TEST` | `false` | Stage 3 是否渲染 EDGS test views |
 | `VIRTUAL_RENDERER` | `inpaint360gs` | Stage 4 虚拟渲染后端：`inpaint360gs` 或 `edgs-pgsr`；不改变训练或 mesh 后端 |
+| `VIRTUAL_CAMERA_PATH` | `circle` | 同级轨迹：`circle` 单圈或 `hemisphere` 连续上升的半球螺旋 |
+| `VIRTUAL_CAMERA_COUNT` | `30` | 总相机数 N（整数且至少 2），不是每圈数量；实际覆盖需检查 |
+| `VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG` | `85` | 半球末端仰角，有限且在 `(0,90)` 内；圆环忽略 |
 | `NORMAL_ALPHA_MIN` | `0.01` | PGSR 虚拟法线有效性阈值；depth 与 alpha 原始数组仍独立保存 |
 | `WRITE_DEBUG_PLY` | `false` | Stage 2 上游大体积诊断 PLY |
 | `LAUNCH_REFINER` | `true` | Stage 5 是否启动 PaintMesh 简化标注页 |
@@ -752,7 +755,7 @@ removal_manifest.json
 
 `mesh_manifest.json`、`geometry.ply` 和最终 `removal_manifest.json` 由入口脚本的内置契约步骤写入/链接，不是额外的独立 CLI。因此手动运行以上两个 Python 命令后，仍应执行一次 `END_STAGE=3 ... start_stage=3` 来提交完整产物。
 
-### Stage 4：生成 30 个虚拟视角和 tracker archive
+### Stage 4：生成虚拟视角和 tracker archive（默认 30 帧）
 
 入口先生成精确相机，再由同级的两个后端之一渲染 full/removed 模型。原生后端保留现有语义和诊断输出，并增加 alpha 和 RGB 浮点数组；PGSR 后端同步输出 RGB、plane-depth、直接 Gaussian normal 和 alpha。
 
@@ -769,6 +772,33 @@ VIRTUAL_RENDERER=edgs-pgsr RUN_NAME=target_14_pgsr END_STAGE=4 \
 ```
 
 同一 removal run 不允许切换后端；请使用新的 `RUN_NAME`，或为尚未生成虚拟产物的 run 指定后端。新 run 需要完成对应的 tracker mask 会话。后续使用 `run_inpaint.sh` 时指定相同 `RUN_NAME`；其工作区自动读取上游后端，也可通过 `VIRTUAL_RENDERER` 指定期望值进行校验。
+
+半球模式保持原圆环球心、半径和注视点，从赤道连续绕行上升至默认 85°；采用近似等面积布局，圈数随 N 自动调整。每帧用原圆环的场景 up 独立构建姿态，不累计滚转。只有首帧在赤道且与原圆环首帧相同，后续同名帧不是同一个观察位置。轨迹和 renderer 独立选择，默认 `circle + 30` 保留原相机结果。例如已有 kitchen 语义重建后，新建 90 帧 PGSR 半球 run：
+
+```bash
+VIRTUAL_RENDERER=edgs-pgsr \
+VIRTUAL_CAMERA_PATH=hemisphere \
+VIRTUAL_CAMERA_COUNT=90 \
+VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG=85 \
+RUN_NAME=target_14_hemi90_upright \
+END_STAGE=5 \
+bash scripts/paintmesh/run_remove.sh mip-nerf/360_v2 kitchen 8 14 none 1
+```
+
+首帧标记、Start Tracking、Finish 完成后，inpaint 自动读取上游 N，无需重新传轨迹参数：
+
+```bash
+REMOVAL_ROOT="$PWD/output/paintmesh/mip-nerf/360_v2/kitchen/removal/target_14_hemi90_upright" \
+INPAINT_RUN_NAME=normal_hemi90 \
+END_STAGE=3 \
+bash scripts/paintmesh/run_inpaint.sh mip-nerf/360_v2 kitchen 8 14 none 1
+```
+
+第二条只执行到 RGB/depth/normal LaMa completion；继续既有反投影和优化流程可设置 `END_STAGE=8`，局部优化仍需独立启用。换场景必须使用该场景自己的实例 ID，不能默认沿用 14。
+
+改变轨迹、N、半球仰角或姿态算法必须新建 removal run，不能复用已有 masks；从 Stage 5 恢复时也要传原来的相机参数。相机算法身份不匹配会提前拒绝，不能通过修改已有 manifest 绕过。先检查 `tracker/camera_trajectory.svg` 的带编号俯视/侧视投影，以及 `camera_trajectory.json` 的相邻距离、视轴角和姿态旋转诊断；`scene_up_roll.max_abs_deg` 应接近零，`undefined_frames` 应为零，`surface_coverage` 报告球面探针覆盖。视线与场景 up 数值共线时生成器报错，应检查相机或降低最高仰角。球面均匀不保证目标可见或 tracker 成功；增加 N 会增加渲染/LaMa 成本，不自动增加训练迭代数或初始化 Gaussian 数量。`FUSION_SEED_FRAME` 和局部 debug 的 `view_index` 必须小于 N，默认 seed=4 仍是第 5 帧。
+
+下面的 `00000..00029` 输出示例对应默认 N=30；其他配置均为 manifest 指定的 N 帧。
 
 手动运行等价的相机与渲染步骤：
 
@@ -806,6 +836,8 @@ work_model/virtual/render_backend.json
 work_model/virtual/virtual_render_manifest.json
 tracker/images.zip                        # 严格 00000.png..00029.png
 tracker/virtual_cameras.json              # 全精度相机姿态
+tracker/camera_trajectory.json            # 相机序列与几何诊断
+tracker/camera_trajectory.svg             # 带帧编号的 PCA 俯视/侧视轨迹
 tracker/tracking_session.json             # 初始为 in_progress
 ```
 
@@ -858,10 +890,10 @@ tracker/tracking_session.json             # 校验后为 complete
 1. 打开终端打印的 `http://127.0.0.1:7860`。
 2. 首帧自动显示，不需要上传、extract 或初始化 tracker。
 3. 使用“＋ 补全区域”点击需要补全的位置；使用“－ 排除区域”修正过大的分割。绿色覆盖为当前 mask，可撤销上一点或清空。
-4. 检查首帧分割后点击 **Start Tracking · 30 帧**，等待进度完成。只传播人工指定的补全区域，不自动发现其他物体。
+4. 检查首帧分割后点击 **Start Tracking · N 帧**（数量自动读取），等待进度完成。只传播人工指定的补全区域，不自动发现其他物体。
 5. 拖动帧滑块查看各帧 mask，点击 **完成并返回流水线**；服务退出，shell 自动校验并提交 tracking session。无需 Ctrl+C。简化页不生成 MP4/GIF，直接提供逐帧预览。
 
-新页面按固定相机尺寸生成二值 label masks（0=背景，1=补全区域），所有 30 帧成功后才一次性发布目录。中途失败可以调整首帧再试，不会把半成品当作完成结果；已有 masks 不会被覆盖。关闭页面不会停止服务，可以重新打开；如需中断服务仍可在终端 Ctrl+C，但未完成的序列不会通过校验。
+新页面按固定相机尺寸生成二值 label masks（0=背景，1=补全区域），所有 N 帧成功后才一次性发布目录。中途失败可以调整首帧再试，不会把半成品当作完成结果；已有 masks 不会被覆盖。关闭页面不会停止服务，可以重新打开；如需中断服务仍可在终端 Ctrl+C，但未完成的序列不会通过校验。
 
 页面仅绑定 `127.0.0.1` / `localhost`，沿用 `GRADIO_SERVER_PORT`（默认 7860）指定端口；远程机器使用 SSH 端口转发，不提供公网分享。若当前 run 已有完成且匹配的 masks，Stage 5 会复用它们而不打开页面；想重新标注请使用新的 removal run，从 Stage 1..4 生成对应虚拟序列，不要删除或篡改旧 tracking session。
 

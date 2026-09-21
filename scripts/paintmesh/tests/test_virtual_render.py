@@ -134,6 +134,23 @@ class GeometryContract(unittest.TestCase):
     "set PAINTMESH_GPU_SMOKE_MODEL to an existing removal work_model",
 )
 class GPUModelSmoke(unittest.TestCase):
+    def assert_upright_hemisphere(self, generated, baseline):
+        trajectory = generated.get("trajectory", {})
+        if trajectory.get("type") != "hemisphere":
+            return
+        self.assertEqual(trajectory["orientation"], "scene_up")
+        self.assertEqual(generated["cameras"][0], baseline["cameras"][0])
+        transform = np.asarray(trajectory["world_to_pca"])
+        for c in generated["cameras"]:
+            w2c = np.eye(4)
+            w2c[:3, :3], w2c[:3, 3] = np.asarray(c["R"]).T, c["T"]
+            c2w = transform @ np.linalg.inv(w2c)
+            axes = c2w[:3, :3]
+            axes /= np.linalg.norm(axes, axis=0)
+            right = np.cross(trajectory["scene_up_pca"], -axes[:, 2])
+            right /= np.linalg.norm(right)
+            np.testing.assert_allclose(axes[:, 0], right, atol=1e-9)
+
     def test_pose_generation_only(self):
         source = Path(os.environ["PAINTMESH_GPU_SMOKE_MODEL"]).resolve()
         cameras = read_json(source.parent / "tracker/virtual_cameras.json")
@@ -167,16 +184,24 @@ class GPUModelSmoke(unittest.TestCase):
                     "--tracker_archive",
                     str(root / "images.zip"),
                     "--poses-only",
+                    "--camera-path", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH", "circle"),
+                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30"),
                 ],
                 cwd=project,
                 env=dict(os.environ, PYTHONPATH=str(project)),
                 check=True,
             )
             generated = read_json(camera_path)
-            self.assertEqual(generated["frame_count"], 30)
+            self.assert_upright_hemisphere(generated, cameras)
+            self.assertEqual(generated["frame_count"], int(os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30")))
             self.assertTrue(generated["complete"])
             self.assertFalse((root / "images.zip").exists())
             self.assertFalse((model / "virtual").exists())
+            self.assertTrue((root / "camera_trajectory.svg").is_file())
+            if generated.get("trajectory", {}).get("type") == "hemisphere":
+                stats = read_json(root / "camera_trajectory.json")
+                self.assertLess(stats["scene_up_roll"]["max_abs_deg"], 1e-8)
+                self.assertEqual(stats["scene_up_roll"]["undefined_frames"], 0)
 
     def test_both_backends_on_same_real_cameras(self):
         source = Path(os.environ["PAINTMESH_GPU_SMOKE_MODEL"]).resolve()
@@ -187,6 +212,26 @@ class GPUModelSmoke(unittest.TestCase):
         edgs = os.environ["PAINTMESH_GPU_SMOKE_EDGS"]
         resolution = os.environ.get("PAINTMESH_GPU_SMOKE_RESOLUTION", "8")
         with tempfile.TemporaryDirectory(prefix="paintmesh-virtual-smoke-") as tmp:
+            if os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH"):
+                root = Path(tmp)
+                work = root / "camera-work"
+                work.mkdir()
+                for name in ("cfg_args", "point_cloud"):
+                    (work / name).symlink_to(source / name)
+                shutil.copytree(source.parent / "config", root / "config")
+                config = next((root / "config/object_removal").rglob("*.json"))
+                project = SCRIPTS.parents[1] / "submodules/Inpaint360GS"
+                camera_path = root / "virtual_cameras.json"
+                subprocess.run([sys.executable, str(project / "tools/virtual_pose.py"),
+                    "--source_path", scene, "--model_path", str(work), "--iteration", str(iteration),
+                    "--resolution", resolution, "--config_file", str(config),
+                    "--camera_manifest", str(camera_path), "--poses-only",
+                    "--camera-path", os.environ["PAINTMESH_GPU_SMOKE_CAMERA_PATH"],
+                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30")],
+                    cwd=project, env=dict(os.environ, PYTHONPATH=str(project)), check=True)
+                generated = read_json(camera_path)
+                self.assert_upright_hemisphere(generated, cameras)
+                cameras = generated
             for backend in ("inpaint360gs", "edgs-pgsr"):
                 with self.subTest(backend=backend):
                     model = Path(tmp) / backend
@@ -236,17 +281,16 @@ class GPUModelSmoke(unittest.TestCase):
                         model / "virtual/ours_object_removal" / f"iteration_{iteration}"
                     )
                     value = validate_render(removed, backend)
-                    self.assertEqual(len(value["frames"]), 30)
+                    self.assertEqual(len(value["frames"]), cameras["frame_count"])
                     if backend == "edgs-pgsr":
-                        n = np.load(removed / "normal/00000.npy")
-                        valid = (
-                            np.asarray(Image.open(removed / "normal_valid/00000.png"))
-                            > 0
-                        )
-                        self.assertTrue(valid.any())
-                        np.testing.assert_allclose(
-                            np.linalg.norm(n[valid], axis=-1), 1, atol=1e-5
-                        )
+                        for index in sorted({0, min(10, cameras["frame_count"]-1),
+                                             min(23, cameras["frame_count"]-1), cameras["frame_count"]-1}):
+                            name = f"{index:05d}"
+                            n = np.load(removed / f"normal/{name}.npy")
+                            valid = np.asarray(Image.open(removed / f"normal_valid/{name}.png")) > 0
+                            self.assertTrue(valid.any())
+                            self.assertTrue(np.isfinite(n).all())
+                            np.testing.assert_allclose(np.linalg.norm(n[valid], axis=-1), 1, atol=1e-5)
                     session = {
                         "input_virtual_render": {
                             "path": str(removed / "render_manifest.json"),

@@ -20,10 +20,10 @@ def prepare(args):
     if mode != "mass_adaptive":
         raise ValueError("unsupported density mode; use mass_adaptive")
     cfg = load_config(args.config)
-    if not 0 <= args.seed_frame < 30:
-        raise ValueError("seed frame must be in [0,29]")
     lama, inputs = verify_targets(args.lama, args.camera)
     cameras = read_json(args.camera)
+    if not 0 <= args.seed_frame < cameras["frame_count"]:
+        raise ValueError("seed frame is outside the camera frame set")
     metadata = inputs["parameters"]["normal"]
     render_path = verify_record(metadata["render_manifest"])
     render = validate_render(render_path.parent, "edgs-pgsr")

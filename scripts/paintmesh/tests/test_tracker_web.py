@@ -16,8 +16,12 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tracker_web import Workspace, NAMES, make_server, png
+from tracker_web import Workspace, make_server, png
 from virtual_render_io import sha256
+from virtual_render_io import camera_contract
+from types import SimpleNamespace
+
+NAMES = [f"{i:05d}.png" for i in range(30)]  # Legacy fixture, not a UI contract.
 
 
 class FakeModels:
@@ -32,17 +36,20 @@ class FakeModels:
             yield mask.copy()
 
 
-def fixture(root, models=None):
+def fixture(root, models=None, count=30):
+    names = [f"{i:05d}.png" for i in range(count)]
     archive = root / "images.zip"
     with zipfile.ZipFile(archive, "w") as stream:
-        for name in NAMES:
+        for name in names:
             stream.writestr(name, png(np.full((24, 32, 3), 100, np.uint8)))
     camera = root / "virtual_cameras.json"
-    camera.write_text(json.dumps(dict(cameras=[dict(image_name=n[:-4], image_height=24, image_width=32) for n in NAMES])))
+    cameras = [SimpleNamespace(image_name=n[:-4], image_height=24, image_width=32,
+        R=np.eye(3), T=np.zeros(3), FoVx=1., FoVy=1., znear=.01, zfar=100., trans=np.zeros(3), scale=1.) for n in names]
+    camera_contract().write_virtual_camera_manifest(camera, cameras, iteration=2000, circle_radius=1.)
     def record(path):
         return dict(path=str(path), sha256=sha256(path), size_bytes=path.stat().st_size, mtime_ns=path.stat().st_mtime_ns)
     session = dict(kind="paintmesh-tracking-session", status="in_progress", complete=False,
-                   expected_masks=NAMES, input_archive=record(archive), input_cameras=record(camera))
+                   expected_masks=names, input_archive=record(archive), input_cameras=record(camera))
     (root / "tracking_session.json").write_text(json.dumps(session))
     return Workspace(archive, root / "results", models or FakeModels())
 
@@ -55,6 +62,16 @@ def wait_done(workspace):
 
 
 class TrackerWebTests(unittest.TestCase):
+    def test_non30_sequence(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            w = fixture(Path(tmp), count=7)
+            self.assertEqual(w.state()["total"], 7)
+            w.annotate("point", [1, 1, 1]); w.start(); wait_done(w)
+            self.assertEqual(w.state()["phase"], "done")
+            self.assertEqual(sorted(p.name for p in w.destination.glob("*.png")), w.names)
+            with self.assertRaises(ValueError):
+                w.preview(7)
+
     def test_click_undo_clear_and_exact_outputs(self):
         with tempfile.TemporaryDirectory() as tmp:
             w = fixture(Path(tmp))

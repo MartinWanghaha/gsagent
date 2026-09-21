@@ -230,7 +230,7 @@ def test_local_debug_default_schedule_disabled_and_images(tmp_path):
 
 
 @pytest.mark.parametrize("setting", ["enabled: yesplease", "interval: 0", "from_step: -1",
-                                      "view_index: 30", "jpeg_quality: 101"])
+                                      "view_index: -1", "jpeg_quality: 101"])
 def test_invalid_debug_settings_rejected(tmp_path, setting):
     path = tmp_path / "debug.yaml"
     path.write_text("debug:\n  " + setting + "\n")
@@ -240,11 +240,12 @@ def test_invalid_debug_settings_rejected(tmp_path, setting):
 
 @pytest.mark.skipif(os.environ.get("PAINTMESH_LOCAL_GPU_TEST") != "1", reason="opt-in CUDA integration")
 @pytest.mark.parametrize('density_enabled',[False,True])
-def test_gpu_worker_30_frames_resume_and_reuse(tmp_path,density_enabled):
+@pytest.mark.parametrize('frame_count', [7, 30])
+def test_gpu_worker_30_frames_resume_and_reuse(tmp_path,density_enabled,frame_count):
     # Uses the real existing LaMa artifact fixture, NOT the LaMa network.
     sys.path.insert(0, str(REPO / "submodules/Inpaint360GS"))
     from tools.tests.test_paintmesh_normal import NormalFixture
-    fixture = NormalFixture(tmp_path, frames=30, shape=(16, 16))
+    fixture = NormalFixture(tmp_path, frames=frame_count, shape=(16, 16))
     fixture.prepare()
     fixture.make_valid_outputs()
     fixture.make_normal_outputs()

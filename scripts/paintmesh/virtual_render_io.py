@@ -7,6 +7,8 @@ import json
 import math
 import os
 import tempfile
+import importlib.util
+from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
@@ -14,6 +16,21 @@ from PIL import Image
 
 BACKENDS = ("inpaint360gs", "edgs-pgsr")
 KIND = "paintmesh-virtual-render"
+
+
+@lru_cache(maxsize=1)
+def camera_contract():
+    # Load by filename: EDGS and Inpaint360GS both have a package called utils.
+    path = Path(__file__).resolve().parents[2] / "submodules/Inpaint360GS/utils/virtual_camera_manifest.py"
+    spec = importlib.util.spec_from_file_location("paintmesh_camera_contract", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def read_camera_manifest(path):
+    camera_contract().load_virtual_camera_manifest(path)
+    return read_json(path)
 
 
 def identity(value):

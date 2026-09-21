@@ -19,10 +19,7 @@ import zipfile
 import numpy as np
 from PIL import Image, ImageDraw
 
-from virtual_render_io import sha256, verify_tracking_render
-
-NAMES = [f"{i:05d}.png" for i in range(30)]
-
+from virtual_render_io import sha256, verify_tracking_render, read_camera_manifest
 
 def png(array):
     stream = io.BytesIO()
@@ -81,6 +78,9 @@ class Workspace:
         self.session_path = self.run / "tracking_session.json"
         self.session_bytes = self.session_path.read_bytes()
         self.session = json.loads(self.session_bytes)
+        cameras = read_camera_manifest(self.session["input_cameras"]["path"])
+        self.names = [c["image_name"] + ".png" for c in cameras["cameras"]]
+        self.count = len(self.names)
         self.digest = sha256(self.archive)
         self.verify()
         self.results = Path(results).absolute()
@@ -89,16 +89,16 @@ class Workspace:
         self.destination = self.results / "images" / "images_masks"
         self.frames = []
         with zipfile.ZipFile(self.archive) as archive_file:
-            if sorted(archive_file.namelist()) != NAMES:
-                raise ValueError("images.zip must contain exactly 00000.png..00029.png at its root")
-            for name in NAMES:
+            if sorted(archive_file.namelist()) != self.names:
+                raise ValueError("images.zip must contain exactly the camera manifest frames at its root")
+            for name in self.names:
                 with Image.open(io.BytesIO(archive_file.read(name))) as image:
                     self.frames.append(np.asarray(image.convert("RGB")))
         if len({frame.shape for frame in self.frames}) != 1:
             raise ValueError("virtual sequence dimensions must match")
         camera_path = Path(self.session["input_cameras"]["path"])
         cameras = json.loads(camera_path.read_text())["cameras"]
-        if [c["image_name"] + ".png" for c in cameras] != NAMES:
+        if [c["image_name"] + ".png" for c in cameras] != self.names:
             raise ValueError("camera frame set differs from archive")
         for frame, camera in zip(self.frames, cameras):
             if frame.shape[:2] != (camera["image_height"], camera["image_width"]):
@@ -108,7 +108,7 @@ class Workspace:
         self.mask = None
         self.masks = []
         self.phase = "ready"
-        self.message = "已加载 30 帧。请在首帧点击需要补全的区域。"
+        self.message = f"已加载 {self.count} 帧。请在首帧点击需要补全的区域。"
         self.lock = threading.RLock()
         self.busy = threading.Lock()
         self.version = 0
@@ -119,7 +119,7 @@ class Workspace:
         if (self.session.get("kind") != "paintmesh-tracking-session"
                 or self.session.get("status") != "in_progress"
                 or self.session.get("complete") is not False
-                or self.session.get("expected_masks") != NAMES):
+                or self.session.get("expected_masks") != self.names):
             raise ValueError("Stage 5 requires an active tracking session; completed masks are not overwritten")
         for key, path in (("input_archive", self.archive), ("input_cameras", Path(self.session["input_cameras"]["path"]))):
             record = self.session[key]
@@ -131,13 +131,13 @@ class Workspace:
 
     def state(self):
         with self.lock:
-            return dict(phase=self.phase, message=self.message, count=len(self.masks), total=30,
+            return dict(phase=self.phase, message=self.message, count=len(self.masks), total=self.count,
                         points=len(self.points), version=self.version, run=self.run.parent.name,
                         width=self.frames[0].shape[1], height=self.frames[0].shape[0],
                         can_track=self.mask is not None and bool(self.mask.any()) and not bool(self.mask.all()))
 
     def preview(self, index=0):
-        if not 0 <= index < 30:
+        if not 0 <= index < self.count:
             raise ValueError("frame index out of range")
         with self.lock:
             mask = self.masks[index] if index < len(self.masks) else self.mask if index == 0 else None
@@ -210,7 +210,7 @@ class Workspace:
                 staged = Path(temporary) / "images_masks"
                 staged.mkdir()
                 for index, mask in enumerate(self.models.propagate(self.frames, self.mask.astype(np.uint8))):
-                    if index >= 30:
+                    if index >= self.count:
                         raise ValueError("tracker returned too many frames")
                     mask = np.asarray(mask)
                     if mask.shape != self.frames[index].shape[:2] or not np.isfinite(mask).all():
@@ -218,20 +218,20 @@ class Workspace:
                     mask = (mask != 0).astype(np.uint8)
                     if not mask.any() or mask.all():
                         raise ValueError(f"frame {index:05d} mask is empty/full; adjust first-frame prompts and retry")
-                    Image.fromarray(mask, mode="L").save(staged / NAMES[index])
+                    Image.fromarray(mask, mode="L").save(staged / self.names[index])
                     with self.lock:
                         self.masks.append(mask)
                         self.version += 1
-                        self.message = f"已跟踪 {index+1}/30 帧"
-                if len(self.masks) != 30:
-                    raise ValueError("tracker returned fewer than 30 frames")
+                        self.message = f"已跟踪 {index+1}/{self.count} 帧"
+                if len(self.masks) != self.count:
+                    raise ValueError("tracker returned fewer frames than required")
                 self.verify()
                 if self.destination.exists():
                     raise ValueError("masks appeared during tracking; refusing overwrite")
                 staged.rename(self.destination)
             with self.lock:
                 self.phase = "done"
-                self.message = "30 帧 masks 已保存。检查预览后，点击「完成并返回流水线」提交校验。"
+                self.message = f"{self.count} 帧 masks 已保存。检查预览后，点击「完成并返回流水线」提交校验。"
         except Exception as exc:
             with self.lock:
                 self.phase = "error"

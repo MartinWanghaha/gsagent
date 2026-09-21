@@ -1,0 +1,53 @@
+# Independent completion -> EDGS initialization -> PGSR joint training.
+# Never merged into run_seg's configuration.
+init:
+  use_depth: false
+  use_normal: false
+  neighbors: 4
+  samples_per_pair: 8192
+  max_points: 500000
+  # Hard gate on BOTH raw forward/reverse RoMa certainty, before sampling.
+  # Higher is stricter; this is not a calibrated geometric accuracy probability.
+  confidence_min: 0.8
+  reprojection_pixels: 2.0
+  cycle_pixels: 3.0
+  min_angle_deg: 0.5
+  depth_weight: 0.25
+  normal_thickness: 0.25
+  opacity: 0.1
+matcher:
+  model: outdoor
+  resolution: 560
+  weights: null
+  dinov2_weights: null
+supervision:
+  use_depth: null
+  use_normal: null
+iterations: 5000
+geometry_from_iter: 100
+geometry_ramp_iters: 2000
+seed: 0
+checkpoint_interval: 100
+diagnostic_interval: 100
+optimizer:
+  position_lr: 0.00016
+  scaling_lr: 0.005
+  rotation_lr: 0.001
+  feature_lr: 0.0025
+  opacity_lr: 0.05
+loss:
+  rgb_hole: 1.0
+  rgb_known_preserve: 1.0
+  alpha_preserve: 0.1
+  depth: 0.1
+  lama_normal: 0.05
+  depth_normal_consistency: 0.01
+  multiview: 0.01
+validity:
+  render_alpha_min: 0.01
+  coverage_alpha_floor: 0.5
+  depth_jump_relative: 0.05
+debug:
+  enabled: true
+  interval: 100
+  view_index: 0

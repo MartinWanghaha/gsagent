@@ -41,8 +41,8 @@ Stages:
   1 = validate removal/tracker inputs and create an isolated workspace
   2 = prepare run-local LaMa RGB/depth/mask and available normal inputs
   3 = complete RGB/depth and available normal with LaMa; validate every frame
-  4 = back-project the completed RGB-D views into support point clouds
-  5 = optimize the inpainted object-aware 3D Gaussian scene
+  4 = native RGB-D support OR EDGS correspondence/optional RGB-D-N initialization
+  5 = native RGB finetune (+ optional local geometry) OR PGSR joint training
   6 = publish an EDGS-loadable inpainted 3DGS
   7 = PGSR rendering and TSDF mesh reconstruction
   8 = semantic lifting and final artifact validation
@@ -63,6 +63,18 @@ Important environment overrides:
   LOCAL_GEOMETRY_ITERATIONS=1000
   LOCAL_GEOMETRY_FROM_ITER=100
   LOCAL_GEOMETRY_RAMP_ITERS=400
+  INPAINT_PIPELINE=inpaint360gs        # inpaint360gs | edgs-pgsr
+  EDGS_INPAINT_CONFIG=scripts/paintmesh/configs/edgs_inpaint.yaml
+  EDGS_INIT_USE_DEPTH=false
+  EDGS_INIT_USE_NORMAL=false
+  EDGS_MATCH_CONFIDENCE_MIN=0.5        # minimum of BOTH raw RoMa directions; higher is stricter
+  EDGS_MATCH_CYCLE_PIXELS=3.0          # maximum round-trip pixel error; lower is stricter
+  EDGS_MATCH_REPROJECTION_PIXELS=2.0   # maximum triangulation pixel error; lower is stricter
+  EDGS_TRAIN_USE_DEPTH=...             # defaults to resolved init setting
+  EDGS_TRAIN_USE_NORMAL=...            # defaults to resolved init setting
+  EDGS_INPAINT_ITERATIONS=5000
+  EDGS_GEOMETRY_FROM_ITER=100
+  EDGS_GEOMETRY_RAMP_ITERS=2000
   MASK_MIN_AREA=50
   MASK_DILATION=10
   RECURSIVE_GUIDE=false
@@ -242,8 +254,8 @@ RGB_FINETUNE_DENSIFY="${RGB_FINETUNE_DENSIFY:-true}"
 require_boolean "${RGB_FINETUNE_DENSIFY}"
 rgb_densify_arguments=()
 if ! is_true "${RGB_FINETUNE_DENSIFY}"; then rgb_densify_arguments+=(--disable-rgb-densify); fi
-[[ "${FUSION_SEED_FRAME}" =~ ^([0-9]|[12][0-9])$ ]] || \
-    fail "FUSION_SEED_FRAME must be an integer in [0, 29]"
+[[ "${FUSION_SEED_FRAME}" =~ ^(0|[1-9][0-9]*)$ ]] || \
+    fail "FUSION_SEED_FRAME must be a canonical nonnegative integer"
 printf -v FUSION_SEED_NAME '%05d' "${FUSION_SEED_FRAME}"
 SUPPORT_DENSITY_MODE="${SUPPORT_DENSITY_MODE:-legacy}"
 case "${SUPPORT_DENSITY_MODE}" in
@@ -262,6 +274,15 @@ MASK_DILATION="${MASK_DILATION:-10}"
 RECURSIVE_GUIDE="${RECURSIVE_GUIDE:-false}"
 LOCAL_GEOMETRY_REFINE="${LOCAL_GEOMETRY_REFINE:-false}"
 require_boolean "${LOCAL_GEOMETRY_REFINE}"
+INPAINT_PIPELINE="${INPAINT_PIPELINE:-inpaint360gs}"
+case "${INPAINT_PIPELINE}" in
+    inpaint360gs|edgs-pgsr) ;;
+    *) fail "INPAINT_PIPELINE must be inpaint360gs or edgs-pgsr" ;;
+esac
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    is_true "${LOCAL_GEOMETRY_REFINE}" && fail "edgs-pgsr is a peer path; LOCAL_GEOMETRY_REFINE must be false"
+    [[ "${SUPPORT_DENSITY_MODE}" == legacy ]] || fail "edgs-pgsr uses its own initialization budget; SUPPORT_DENSITY_MODE must be legacy"
+fi
 RENDER_INPAINT_VIDEO="${RENDER_INPAINT_VIDEO:-false}"
 RENDER_INPAINT_TRAIN="${RENDER_INPAINT_TRAIN:-false}"
 RENDER_INPAINT_TEST="${RENDER_INPAINT_TEST:-false}"
@@ -334,6 +355,8 @@ LOCAL_GEOMETRY_ROOT="${INPAINT_RUN_ROOT}/local_geometry"
 RGB_FINETUNE_MANIFEST="${MANIFEST_ROOT}/rgb_finetune_manifest.json"
 RGB_FINETUNE_CONTEXT="${LOCAL_GEOMETRY_ROOT}/rgb_context.json"
 LOCAL_GEOMETRY_MANIFEST="${MANIFEST_ROOT}/local_geometry_manifest.json"
+EDGS_INIT_MANIFEST="${MANIFEST_ROOT}/edgs_init_manifest.json"
+EDGS_JOINT_MANIFEST="${MANIFEST_ROOT}/edgs_joint_manifest.json"
 
 run_python() {
     local workdir="$1"
@@ -410,7 +433,7 @@ validate_lama_completion() {
         --model-path "${LAMA_MODEL_PATH}"
         --input-manifest "${LAMA_INPUT_MANIFEST}"
         --manifest "${LAMA_COMPLETION_MANIFEST}"
-        --frames 30
+        --frames "${VIRTUAL_FRAME_COUNT}"
     )
     if is_true "${RECURSIVE_GUIDE}"; then arguments+=(--recursive-guide); fi
     run_inpaint "${arguments[@]}"
@@ -595,6 +618,17 @@ require_file "${REMOVAL_MANIFEST}"
 require_file "${REMOVED_MODEL_MANIFEST}"
 require_file "${TRACKING_SESSION}"
 require_file "${VIRTUAL_CAMERA_MANIFEST}"
+VIRTUAL_FRAME_COUNT="$(run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${FUSION_SEED_FRAME}" "${VIRTUAL_CAMERA_COUNT:-}" "${INPAINT_PIPELINE}" <<'PY'
+import sys
+from utils.virtual_camera_manifest import load_virtual_camera_manifest as read_camera_manifest
+count = read_camera_manifest(sys.argv[1])["frame_count"]
+if sys.argv[4] == "inpaint360gs" and not 0 <= int(sys.argv[2]) < count:
+    raise ValueError("FUSION_SEED_FRAME is outside the virtual camera frame set")
+if sys.argv[3] and int(sys.argv[3]) != count:
+    raise ValueError("VIRTUAL_CAMERA_COUNT differs from removal; create a new removal run")
+print(count)
+PY
+)"
 require_dir "${TRACKING_MASK_ROOT}"
 require_file "${INPAINT_CONFIG}"
 if (( END_STAGE >= 3 )); then
@@ -606,9 +640,36 @@ mkdir -p "${INPAINT_RUN_ROOT}" "${MANIFEST_ROOT}"
 run_inpaint -c \
     'import cv2, lpips, numpy, open3d, plyfile, scipy, torch; print("paintmesh inpaint imports: OK")'
 validate_numeric_settings
-FINETUNE_ITERATION="$(read_final_iteration | tail -n 1)"
+edgs_inpaint_overrides=()
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    EDGS_INPAINT_CONFIG="$(resolve_from_invocation "${EDGS_INPAINT_CONFIG:-${SCRIPT_DIR}/configs/edgs_inpaint.yaml}")"
+    for setting in EDGS_INIT_USE_DEPTH EDGS_INIT_USE_NORMAL EDGS_TRAIN_USE_DEPTH EDGS_TRAIN_USE_NORMAL EDGS_INPAINT_ITERATIONS EDGS_GEOMETRY_FROM_ITER EDGS_GEOMETRY_RAMP_ITERS EDGS_MATCH_CONFIDENCE_MIN EDGS_MATCH_CYCLE_PIXELS EDGS_MATCH_REPROJECTION_PIXELS; do
+        if [[ -n "${!setting:-}" ]]; then
+            case "${setting}" in
+                EDGS_INIT_USE_DEPTH) option=--init-depth ;;
+                EDGS_INIT_USE_NORMAL) option=--init-normal ;;
+                EDGS_TRAIN_USE_DEPTH) option=--train-depth ;;
+                EDGS_TRAIN_USE_NORMAL) option=--train-normal ;;
+                EDGS_INPAINT_ITERATIONS) option=--iterations ;;
+                EDGS_GEOMETRY_FROM_ITER) option=--geometry-from-iter ;;
+                EDGS_GEOMETRY_RAMP_ITERS) option=--geometry-ramp-iters ;;
+                EDGS_MATCH_CONFIDENCE_MIN) option=--match-confidence-min ;;
+                EDGS_MATCH_CYCLE_PIXELS) option=--match-cycle-pixels ;;
+                EDGS_MATCH_REPROJECTION_PIXELS) option=--match-reprojection-pixels ;;
+            esac
+            edgs_inpaint_overrides+=("${option}" "${!setting}")
+        fi
+    done
+    FINETUNE_ITERATION="$(run_inpaint "${SCRIPT_DIR}/edgs_inpaint_io.py" config --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}" | tail -n 1)"
+else
+    FINETUNE_ITERATION="$(read_final_iteration | tail -n 1)"
+fi
+run_inpaint "${SCRIPT_DIR}/edgs_inpaint_io.py" select --root "${INPAINT_RUN_ROOT}" --pipeline "${INPAINT_PIPELINE}"
 EDGS_CONFIG="$(read_manifest_input_path "${REMOVED_MODEL_MANIFEST}" edgs_config | tail -n 1)"
 INPAINTED_WORK_PLY="${WORK_MODEL}/point_cloud_object_inpaint_virtual/iteration_${FINETUNE_ITERATION}/point_cloud.ply"
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    INPAINTED_WORK_PLY="${INPAINT_RUN_ROOT}/edgs_joint/point_cloud/iteration_${FINETUNE_ITERATION}/point_cloud.ply"
+fi
 INPAINTED_ITERATION_ROOT="${INPAINTED_GS_ROOT}/point_cloud/iteration_${FINETUNE_ITERATION}"
 INPAINTED_PLY="${INPAINTED_ITERATION_ROOT}/point_cloud.ply"
 INPAINTED_CLASSIFIER="${INPAINTED_ITERATION_ROOT}/classifier.pth"
@@ -628,6 +689,10 @@ echo "Source/final iteration: ${DISTILL_ITERATION}/${FINETUNE_ITERATION}"
 echo "RGB clone/split/prune  : ${RGB_FINETUNE_DENSIFY}"
 echo "Stages                : ${START_STAGE}..${END_STAGE}"
 echo "Local PGSR refinement : ${LOCAL_GEOMETRY_REFINE}"
+echo "Reconstruction path   : ${INPAINT_PIPELINE}"
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    echo "RGB_FINETUNE_DENSIFY / FUSION_SEED_FRAME: not used by EDGS-PGSR path"
+fi
 
 # These settings are never exported to run_seg or merged into its EDGS config.
 local_geometry_overrides=()
@@ -677,7 +742,7 @@ run_inpaint tools/prepare_paintmesh_lama_data.py prepare \
     --color-input "${LAMA_COLOR_INPUT}" \
     --depth-input "${LAMA_DEPTH_INPUT}" \
     --manifest "${LAMA_INPUT_MANIFEST}" \
-    --frames 30 \
+    --frames "${VIRTUAL_FRAME_COUNT}" \
     --min-area "${MASK_MIN_AREA}" \
     --dilation "${MASK_DILATION}"
 require_manifest_kind "${LAMA_INPUT_MANIFEST}" "paintmesh-lama-inputs"
@@ -733,6 +798,28 @@ fi
 require_manifest_kind "${LAMA_COMPLETION_MANIFEST}" "paintmesh-lama-completion"
 fi
 
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    if (( END_STAGE >= 4 )); then
+        echo "[4/8] EDGS RGB correspondence / optional depth-normal initialization"
+        edgs_init_arguments=(tools/initialize_paintmesh_edgs.py
+            --removed-model "${REMOVED_MODEL_MANIFEST}" --inpaint-config "${INPAINT_CONFIG}"
+            --lama "${LAMA_COMPLETION_MANIFEST}" --camera "${VIRTUAL_CAMERA_MANIFEST}"
+            --output-root "${INPAINT_RUN_ROOT}/edgs_init" --manifest "${EDGS_INIT_MANIFEST}"
+            --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}")
+        if ! should_run 4; then edgs_init_arguments+=(--validate-only); fi
+        run_edgs "${edgs_init_arguments[@]}"
+    fi
+    if (( END_STAGE >= 5 )); then
+        echo "[5/8] Independent PGSR joint RGB/geometry training"
+        edgs_joint_arguments=(tools/train_paintmesh_pgsr.py
+            --initialization "${EDGS_INIT_MANIFEST}" --lama "${LAMA_COMPLETION_MANIFEST}"
+            --camera "${VIRTUAL_CAMERA_MANIFEST}" --edgs-config "${EDGS_CONFIG}"
+            --output-root "${INPAINT_RUN_ROOT}/edgs_joint" --manifest "${EDGS_JOINT_MANIFEST}"
+            --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}")
+        if ! should_run 5; then edgs_joint_arguments+=(--validate-only); fi
+        run_edgs "${edgs_joint_arguments[@]}"
+    fi
+else
 if (( END_STAGE >= 4 )); then
 if should_run 4; then
     echo "[4/8] Back-projecting the completed RGB-D virtual views"
@@ -859,6 +946,14 @@ if is_true "${LOCAL_GEOMETRY_REFINE}"; then
 fi
 fi
 
+fi # peer reconstruction path
+
+producer_arguments=()
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    producer_arguments+=(--edgs-joint-manifest "${EDGS_JOINT_MANIFEST}")
+else
+    producer_arguments+=(--fusion-manifest "${FUSION_MANIFEST}" --fusion-seed-frame "${FUSION_SEED_FRAME}")
+fi
 if (( END_STAGE >= 6 )); then
 if should_run 6; then
     echo "[6/8] Publishing an EDGS-loadable inpainted 3DGS"
@@ -884,8 +979,7 @@ if should_run 6; then
         --workspace-manifest "${WORKSPACE_MANIFEST}" \
         --tracking-session "${TRACKING_SESSION}" \
         --lama-manifest "${LAMA_COMPLETION_MANIFEST}" \
-        --fusion-manifest "${FUSION_MANIFEST}" \
-        --fusion-seed-frame "${FUSION_SEED_FRAME}" \
+        "${producer_arguments[@]}" \
         --inpaint-config "${INPAINT_CONFIG}" \
         --output "${INPAINTED_GS_ROOT}" "${publish_local_arguments[@]}"
 else
@@ -902,9 +996,15 @@ if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then
     check_selection_arguments+=(--density "${MANIFEST_ROOT}/support_density_manifest.json"
         --rgb-manifest "${RGB_FINETUNE_MANIFEST}")
 fi
-run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" check-published \
-    --model-manifest "${INPAINTED_MODEL_MANIFEST}" --selected-ply "${INPAINTED_WORK_PLY}" \
-    "${check_selection_arguments[@]}"
+if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
+    run_inpaint "${SCRIPT_DIR}/edgs_inpaint_io.py" check-published \
+        --model-manifest "${INPAINTED_MODEL_MANIFEST}" --selected-ply "${INPAINTED_WORK_PLY}" \
+        --joint-manifest "${EDGS_JOINT_MANIFEST}"
+else
+    run_inpaint "${SCRIPT_DIR}/local_geometry_io.py" check-published \
+        --model-manifest "${INPAINTED_MODEL_MANIFEST}" --selected-ply "${INPAINTED_WORK_PLY}" \
+        "${check_selection_arguments[@]}"
+fi
 fi
 
 if (( END_STAGE >= 7 )); then
@@ -988,12 +1088,14 @@ if should_run 8; then
         --removal-manifest "${REMOVAL_MANIFEST}"
         --workspace-manifest "${WORKSPACE_MANIFEST}"
         --lama-manifest "${LAMA_COMPLETION_MANIFEST}"
-        --fusion-manifest "${FUSION_MANIFEST}"
         --gaussian-ply "${INPAINTED_PLY}"
         --mesh "${INPAINTED_RAW_MESH}"
         --geometry "${INPAINTED_MESH_ROOT}/geometry.ply"
         --output "${FINAL_MANIFEST}"
     )
+    if [[ "${INPAINT_PIPELINE}" == inpaint360gs ]]; then
+        finalize_arguments+=(--fusion-manifest "${FUSION_MANIFEST}")
+    fi
     run_inpaint "${finalize_arguments[@]}"
 else
     echo "[8/8] Reusing semantic inpaint result"

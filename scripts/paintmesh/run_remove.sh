@@ -73,6 +73,9 @@ Important environment overrides:
   END_STAGE=5
   DISTILL_ITERATION=2000
   VIRTUAL_RENDERER=inpaint360gs  # or edgs-pgsr
+  VIRTUAL_CAMERA_PATH=circle    # circle | hemisphere (independent of renderer)
+  VIRTUAL_CAMERA_COUNT=30       # total cameras, integer >= 2; both paths default to 30
+  VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG=85
   NORMAL_ALPHA_MIN=0.01
   REMOVAL_THRESHOLD=0.7
   RENDER_VIDEO=false
@@ -278,6 +281,9 @@ fi
 
 DISTILL_ITERATION="${DISTILL_ITERATION:-2000}"
 VIRTUAL_RENDERER="${VIRTUAL_RENDERER:-inpaint360gs}"
+VIRTUAL_CAMERA_PATH="${VIRTUAL_CAMERA_PATH:-circle}"
+VIRTUAL_CAMERA_COUNT="${VIRTUAL_CAMERA_COUNT:-30}"
+VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG="${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG:-85}"
 NORMAL_ALPHA_MIN="${NORMAL_ALPHA_MIN:-0.01}"
 case "${VIRTUAL_RENDERER}" in
     inpaint360gs|edgs-pgsr) ;;
@@ -616,7 +622,7 @@ PY
 }
 
 validate_tracker_archive() {
-    run_inpaint - "${TRACKER_ARCHIVE}" <<'PY'
+    run_inpaint - "${TRACKER_ARCHIVE}" "${VIRTUAL_CAMERA_MANIFEST}" <<'PY'
 from io import BytesIO
 from pathlib import Path
 import sys
@@ -630,10 +636,11 @@ if not path.is_file():
 with zipfile.ZipFile(path) as archive:
     members = [info for info in archive.infolist() if not info.is_dir()]
     names = [info.filename for info in members]
-    expected = [f"{index:05d}.png" for index in range(30)]
+    from virtual_render_io import read_camera_manifest
+    expected = [c["image_name"] + ".png" for c in read_camera_manifest(sys.argv[2])["cameras"]]
     if sorted(names) != expected:
         raise SystemExit(
-            "tracker archive must contain exactly 00000.png..00029.png at its root; "
+            "tracker archive must contain exactly the ordered camera frames at its root; "
             f"found {names}"
         )
     dimensions = []
@@ -646,7 +653,7 @@ if not dimensions or any(size != dimensions[0] for size in dimensions):
     raise SystemExit(f"tracker archive images have inconsistent dimensions: {dimensions}")
 if dimensions[0][0] <= 0 or dimensions[0][1] <= 0:
     raise SystemExit("tracker archive contains an empty image")
-print(f"Tracker archive: 30 images at {dimensions[0][0]}x{dimensions[0][1]}")
+print(f"Tracker archive: {len(expected)} images at {dimensions[0][0]}x{dimensions[0][1]}")
 PY
 }
 
@@ -671,11 +678,11 @@ camera_path = Path(sys.argv[3]).resolve(strict=True)
 stat = archive_path.stat()
 digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
 camera_stat = camera_path.stat()
-camera_payload = json.loads(camera_path.read_text(encoding="utf-8"))
+from virtual_render_io import read_camera_manifest
+camera_payload = read_camera_manifest(camera_path)
 if (
     camera_payload.get("kind") != "inpaint360gs-virtual-cameras"
     or camera_payload.get("complete") is not True
-    or camera_payload.get("frame_count") != 30
 ):
     raise SystemExit(f"virtual-camera manifest is incomplete or invalid: {camera_path}")
 payload = {
@@ -698,7 +705,7 @@ payload = {
         "sha256": hashlib.sha256(camera_path.read_bytes()).hexdigest(),
         "artifact_id": camera_payload.get("artifact_id"),
     },
-    "expected_masks": [f"{index:05d}.png" for index in range(30)],
+    "expected_masks": [c["image_name"] + ".png" for c in camera_payload["cameras"]],
 }
 render_path = Path(sys.argv[4])
 if render_path.is_file():
@@ -751,7 +758,7 @@ archive_path = Path(sys.argv[2])
 camera_path = Path(sys.argv[3])
 session_path = Path(sys.argv[4])
 session = json.loads(session_path.read_text(encoding="utf-8"))
-from virtual_render_io import verify_tracking_render
+from virtual_render_io import verify_tracking_render, read_camera_manifest
 verify_tracking_render(session)
 if session.get("kind") != "paintmesh-tracking-session":
     raise SystemExit(f"unexpected tracking-session manifest: {session_path}")
@@ -781,7 +788,7 @@ expected_cameras = {
 if session.get("input_cameras") != expected_cameras:
     raise SystemExit("virtual cameras changed after the interactive session started")
 
-expected_names = [f"{index:05d}.png" for index in range(30)]
+expected_names = [c["image_name"] + ".png" for c in read_camera_manifest(camera_path)["cameras"]]
 if session.get("expected_masks") != expected_names:
     raise SystemExit("tracking session has an unexpected mask contract")
 missing = [name for name in expected_names if not (root / name).is_file()]
@@ -872,7 +879,7 @@ try:
     if expected_state not in {"in_progress", "complete"}:
         raise ValueError("unsupported tracking state")
     session = json.loads(session_path.read_text(encoding="utf-8"))
-    from virtual_render_io import verify_tracking_render
+    from virtual_render_io import verify_tracking_render, read_camera_manifest
     verify_tracking_render(session)
     archive_path = archive_path.resolve(strict=True)
     archive_stat = archive_path.stat()
@@ -884,7 +891,8 @@ try:
     }
     camera_path = camera_path.resolve(strict=True)
     camera_stat = camera_path.stat()
-    camera_payload = json.loads(camera_path.read_text(encoding="utf-8"))
+    from virtual_render_io import read_camera_manifest
+    camera_payload = read_camera_manifest(camera_path)
     expected_cameras = {
         "path": str(camera_path),
         "size_bytes": int(camera_stat.st_size),
@@ -892,7 +900,7 @@ try:
         "sha256": hashlib.sha256(camera_path.read_bytes()).hexdigest(),
         "artifact_id": camera_payload.get("artifact_id"),
     }
-    expected_names = [f"{index:05d}.png" for index in range(30)]
+    expected_names = [c["image_name"] + ".png" for c in read_camera_manifest(camera_path)["cameras"]]
     if (
         session.get("schema_version") != 2
         or session.get("kind") != "paintmesh-tracking-session"
@@ -1585,6 +1593,7 @@ echo "Surrounding IDs        : ${SURROUNDING_IDS}"
 echo "Resolution             : ${RESOLUTION}"
 echo "Distill iteration      : ${DISTILL_ITERATION}"
 echo "Virtual renderer       : ${VIRTUAL_RENDERER}"
+echo "Virtual camera path    : ${VIRTUAL_CAMERA_PATH} (${VIRTUAL_CAMERA_COUNT} frames)"
 echo "Stages                 : ${START_STAGE}..${END_STAGE}"
 
 run_inpaint -c \
@@ -1592,6 +1601,17 @@ run_inpaint -c \
 run_edgs -c \
     'import diff_plane_rasterization, omegaconf, open3d, torch; print("paintmesh EDGS imports: OK")'
 validate_numeric_configuration
+run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${VIRTUAL_CAMERA_PATH}" "${VIRTUAL_CAMERA_COUNT}" "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" <<'PY'
+import sys
+from pathlib import Path
+from virtual_render_io import camera_contract, read_camera_manifest
+path, kind, count, elevation = sys.argv[1:]
+if not count.isdecimal() or str(int(count)) != count:
+    raise ValueError("VIRTUAL_CAMERA_COUNT must be a canonical integer")
+camera_contract().check_camera_request(
+    read_camera_manifest(path) if Path(path).exists() else None,
+    kind, int(count), elevation)
+PY
 validate_input_contract
 if (( END_STAGE >= 4 )); then
     virtual_render --check-backend
@@ -1781,6 +1801,9 @@ if should_run 4; then
         --config_file "${REMOVAL_CONFIG}" \
         --tracker_archive "${TRACKER_ARCHIVE}" \
         --camera_manifest "${VIRTUAL_CAMERA_MANIFEST}" \
+        --camera-path "${VIRTUAL_CAMERA_PATH}" \
+        --camera-count "${VIRTUAL_CAMERA_COUNT}" \
+        --hemisphere-max-elevation-deg "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" \
         --poses-only
     virtual_render
     validate_tracker_archive
@@ -1795,12 +1818,12 @@ if should_run 5; then
         echo "[5/5] Launching isolated interactive mask refinement"
         validate_tracker_archive
         if tracking_session_is_complete >/dev/null 2>&1; then
-            echo "      Reusing 30 archive-matched refined masks"
+            echo "      Reusing ${VIRTUAL_CAMERA_COUNT} archive-matched refined masks"
         elif validate_tracking_masks >/dev/null 2>&1; then
             # A previous tracker run may have produced all valid masks before
             # `conda run` translated Ctrl+C into exit status 1.  Commit the
             # artifacts first so resuming Stage 5 never relaunches needlessly.
-            echo "      Committed 30 session-matched refined masks"
+            echo "      Committed ${VIRTUAL_CAMERA_COUNT} session-matched refined masks"
         else
             require_dir "${CKPT_ROOT}"
             link_tracker_checkpoint "sam_vit_b_01ec64.pth"
@@ -1821,7 +1844,7 @@ if should_run 5; then
                 *) fail "interactive tracker exited with status ${tracker_status}" ;;
             esac
             if ! validate_tracking_masks; then
-                fail "interactive tracker exited with status ${tracker_status} and did not produce 30 valid masks"
+                fail "interactive tracker exited with status ${tracker_status} and did not produce ${VIRTUAL_CAMERA_COUNT} valid masks"
             fi
             if (( tracker_status == 1 )); then
                 echo "      Accepted Conda's Ctrl+C status 1 after full mask validation"
