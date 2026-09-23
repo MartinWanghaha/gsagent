@@ -1,0 +1,6 @@
+defaults:
+  - paper
+  - _self_
+
+training:
+  pgsr_neighbor_strategy: "pose"

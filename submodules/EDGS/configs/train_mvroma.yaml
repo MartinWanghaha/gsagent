@@ -1,0 +1,7 @@
+defaults:
+  - train
+  - mvroma@init_wC.mvroma: paper
+  - _self_
+
+init_wC:
+  backend: "mvroma"

@@ -1,0 +1,9 @@
+defaults:
+  - paper
+  - _self_
+
+group_planner:
+  budget_policy: "paper_full"
+
+training:
+  pgsr_neighbor_strategy: "hybrid"

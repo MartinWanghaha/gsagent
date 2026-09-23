@@ -1,0 +1,94 @@
+schema_version: 2
+algorithm_version: "paper-v1"
+
+root: null
+checkpoint: null
+checkpoint_sha256: null
+source_revision: null
+
+dinov2_root: null
+dinov2_checkpoint: null
+dinov2_checkpoint_sha256: null
+dinov2_source_revision: null
+
+prematcher: "ufm"
+prematcher_model_id: "infinity1096/UFM-Refine"
+prematcher_revision: "89cc70107b483170ebfc908630e6f40ca1b77315"
+prematcher_local_files_only: true
+prematch_resolution: [420, 560]
+prematch_batched: false
+
+coarse_resolution: [560, 560]
+target_resolution: [560, 840]
+num_clusters: 512
+track_cluster_mode: "visibility_partition"
+cluster_downsample_stride: 4
+cluster_kmeans_iters: 12
+cluster_kmeans_seed: 0
+upsample_preds: true
+apply_square: false
+covisibility_threshold: 0.3
+strict_checkpoint: false
+seed: 0
+image_root: null
+
+group_planner:
+  overlap_provider: "colmap_tracks"
+  sparse_model_path: null
+  targets_per_group: 4
+  min_targets_per_group: 2
+  budget_policy: "paper_half"
+  fixed_budget: null
+  overlap_threshold: 0.05
+  source_quota_exponent: 0.75
+  source_overlap_weight: 1.0
+  target_overlap_weight: 1.0
+  pair_reuse_penalty: 1.0
+  allow_partial_groups: true
+  augment_reciprocity: true
+
+postprocess:
+  mode: "paper"
+  confidence_threshold: 0.3
+  cycle_threshold_px: 3.0
+  nms_radius_px: 2
+  min_target_views: 2
+  sampling_strategy: "score"
+  sampling_grid_size_px: 32
+  visibility_score_weight: 1.0
+  triangulation_batch_size: 32768
+  pair_store:
+    mode: "auto"
+    dtype: "float32"
+    max_ram_gb: 8.0
+    temp_dir: null
+
+triangulation:
+  max_reprojection_error: 0.01
+  min_angle_deg: 0.5
+  reject_outliers: true
+
+seed_budget:
+  per_source: null
+  total: null
+  proposal_batch_size: 32768
+
+dedup:
+  enabled: true
+  voxel_size: null
+  voxel_scale: 0.1
+
+training:
+  pgsr_neighbor_strategy: "pose"
+  fallback_to_pose: true
+  min_overlap: 0.05
+  min_pair_quality: 0.0
+  max_neighbors: 8
+  overlap_weight: 1.0
+  pair_quality_weight: 1.0
+  pose_rank_weight: 1.0
+
+diagnostics:
+  enabled: true
+  output_dir: "correspondence_init"
+  save_dense_pairs: false

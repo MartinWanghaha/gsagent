@@ -1,0 +1,14 @@
+# Reproduce the pre-paper-postprocessing MV-RoMa adapter for ablations.
+defaults:
+  - paper
+  - _self_
+
+group_planner:
+  budget_policy: "one_per_source"
+
+postprocess:
+  mode: "legacy"
+  confidence_threshold: 0.5
+
+training:
+  pgsr_neighbor_strategy: "pose"

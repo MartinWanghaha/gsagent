@@ -1,0 +1,16 @@
+{   "hqsam":
+    {
+        "hqsam_config_file": "seg/detectron2/detectron2/projects/CropFormer/configs/entityv2/entity_segmentation/cropformer_hornet_3x.yaml",
+        "hqsam_weight_path": "seg/weight/CropFormer_hornet_3x_03823a.pth",
+        "threshold": 0.5
+    },
+    "sam":
+    {
+        "sam_encoder_version": "vit_h",
+        "sam_weight_path": "seg/weight/sam_vit_h_4b8939.pth",
+        "sam_num_points_per_side": 64,
+        "sam_num_points_per_batch": 64,
+        "sam_pred_iou_threshold": 0.8,
+        "threshold": 0.5
+    }
+}

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "torch>=2.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inpaint360gs"
+version = "0.1.0"
+dependencies = [
+    "plyfile",
+    "tqdm",
+    "scipy",
+    "opencv-python",
+    "scikit-learn",
+    "lpips",
+    "torchmetrics",
+    "numpy<2",
+    "wandb",
+    "imageio",
+    "open3d",
+    "mmcv",
+    "timm",
+    "pytorch_fid"
+]
+
+[tool.setuptools]
+packages = {find = {exclude = ["submodules*", "docs*", "tests*"]}}

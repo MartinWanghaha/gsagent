@@ -1,0 +1,12 @@
+# === Python  ===
+plyfile
+tqdm
+scipy
+opencv-python
+scikit-learn
+lpips
+torchmetrics
+
+# === Local submodules ===
+submodules/diff-gaussian-rasterization --no-build-isolation
+submodules/simple-knn --no-build-isolation

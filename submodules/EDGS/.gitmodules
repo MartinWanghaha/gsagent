@@ -1,0 +1,18 @@
+[submodule "submodules/gaussian-splatting"]
+	path = submodules/gaussian-splatting
+	url = https://github.com/graphdeco-inria/gaussian-splatting
+[submodule "submodules/RoMa"]
+	path = submodules/RoMa
+	url = https://github.com/Parskatt/RoMa.git
+[submodule "submodules/PGSR"]
+	path = submodules/PGSR
+	url = https://github.com/zju3dv/PGSR.git
+[submodule "submodules/MV-RoMa"]
+	path = submodules/MV-RoMa
+	url = https://github.com/IceTea-CV/MV-RoMa.git
+[submodule "submodules/UFM"]
+	path = submodules/UFM
+	url = https://github.com/UniFlowMatch/UFM.git
+[submodule "submodules/DINOv2"]
+	path = submodules/DINOv2
+	url = https://github.com/facebookresearch/dinov2.git

@@ -1,0 +1,22 @@
+# Coverage-oriented MV-RoMa initialization for large 360-degree captures.
+defaults:
+  - paper
+  - _self_
+
+algorithm_version: "coverage-v1"
+
+group_planner:
+  budget_policy: "one_per_source"
+
+postprocess:
+  # Source + one cycle-consistent target can cover surfaces outside the
+  # intersection shared by two or more target cameras.
+  min_target_views: 1
+  sampling_strategy: "grid_balanced"
+  sampling_grid_size_px: 32
+  # Confidence ranks candidates inside each tile; track length remains a
+  # validity condition instead of dominating the global sampling order.
+  visibility_score_weight: 0.0
+
+training:
+  pgsr_neighbor_strategy: "pose"

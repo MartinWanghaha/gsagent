@@ -1,0 +1,14 @@
+{
+    "removal_thresh": 0.7,
+    "select_obj_id": [14],
+    "images": "images_inpaint_unseen_virtual",
+    "object_path": "inpaint_2d_unseen_mask_virtual",
+    "lambda_dssim": 0.8,
+    "opacity_init": 0.1,
+    "lambda_lpips": 0.0005,
+    "finetune_iteration": 5000,
+    "target_id": [14],
+    "surrounding_ids": [],
+    "target_object_radius": 0.7514,
+    "circle_radius": 0.9224
+}

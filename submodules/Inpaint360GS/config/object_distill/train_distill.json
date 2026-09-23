@@ -1,0 +1,9 @@
+{
+    "reg3d_interval": 50,
+    "reg3d_k": 5,
+    "reg3d_lambda_val": 2,
+    "reg3d_max_points": 200000,   
+    "reg3d_sample_size": 1000,
+    "iterations": 2000,
+    "train_distill": true
+}

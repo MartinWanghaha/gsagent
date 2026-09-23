@@ -1,0 +1,51 @@
+defaults:
+  - base
+  - _self_
+
+# Hybrid mode: PGSR plane-aware rasterization and geometric losses while the
+# scene, Gaussian model, optimizer, initialization and densification stay EDGS.
+renderer:
+  backend: pgsr
+  clamp_rgb: true
+
+opt:
+  # Optional PGSR-style 2x4 training montage.  This is intentionally separate
+  # from pipe.debug, which controls CUDA crash snapshots rather than images.
+  pgsr_debug:
+    enabled: false
+    interval: 200
+    # null follows pgsr_loss.multi_view_from_iter (strictly greater-than), so
+    # the default first frame is iteration 7200, matching upstream PGSR.
+    from_iter: null
+    output_dir: debug
+    jpeg_quality: 95
+
+  pgsr_loss:
+    enabled: true
+
+    # PGSR scale regularization (active from the first optimization step).
+    scale_weight: 100.0
+
+    # Single-view depth-normal consistency.
+    single_view_weight: 0.015
+    single_view_from_iter: 7000
+    image_weight: true
+
+    # Multi-view geometric reprojection and local normalized cross-correlation.
+    multi_view_from_iter: 7000
+    geo_weight: 0.03
+    ncc_weight: 0.15
+    patch_size: 3
+    sample_num: 102400
+    pixel_noise_th: 1.0
+    wo_use_geo_occ_aware: false
+    ncc_scale: 1.0
+
+    # Neighbour-view selection.
+    neighbor_num: 8
+    max_angle_deg: 30.0
+    min_distance: 0.01
+    max_distance: 1.5
+
+    # The EDGS camera adapter currently supports real neighbouring cameras only.
+    virtual_camera: false
