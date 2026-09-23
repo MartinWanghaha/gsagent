@@ -1,5 +1,33 @@
 # PaintMesh normal 全流程、局部几何优化与同级 EDGS-PGSR 路径方案
 
+## 文档定位与本次代码一致性核对
+
+[PRINCIPLES.zh-CN.md](PRINCIPLES.zh-CN.md) 是当前可执行链的技术说明，覆盖全局重建、语义、remove、公共 completion、两个初始化/训练分支、发布与 TSDF；本文保留实施状态、验证记录及后续计划。下文已有测试数字是相应实现阶段的历史记录，不表示本次文档核对重新跑过完整 GPU 链路。
+
+| 核对项 | 当前代码事实 | 文档处理/剩余事项 |
+|---|---|---|
+| 脚本阶段 | seg 6、remove 5、inpaint 8；原 5a/5b 和路径 J 同级分流 | PRINCIPLES 增加全链框架、阶段 I/O 与参数更新范围表 |
+| 相机数 | 全链读取 manifest 的 N，30 仅默认 | 算法输入与流程图使用 N，历史实验保留实际帧数 |
+| removal variant | 公共虚拟渲染用 `all_selected`；发布的 removed 模型恢复 surrounding，为 `target_only` | 显式区分模型和用途，不使用含糊的 removed 名称代替来源身份 |
+| RoMa 误差单位 | 全局 `corr_init` 用归一化坐标；路径 J 用原图像素 | 不再把全局 `0.01` 解释为像素门槛 |
+| 路径 J 匹配阈值 | 当前工作区 YAML `init.confidence_min=0.7`；loader 实际读取 YAML | 保留用户配置；shell help 及部分测试仍写死 0.5，属于待同步项，本次不改代码 |
+| 路径 J 初始化 | 空间/朝向选对、两视图 DLT、3 次 depth IRLS、全有效 hole 的 depth 候选、网格择优 | 不再把条件数筛选、完整轨迹 BA、只补 RGB 缺失区或 D0 密度场写作已实现 |
+| normal 定向 | 最多两个观测的世界坐标符号对齐、等权合并 | 不写成鲁棒多视图融合；与二维 normal loss 分开说明 |
+| 训练 | 5a RGB；5b 固定外观的几何优化；J 新点外观/几何优化，所有几何项共享 ramp | 权重、有效域、学习率、debug、覆盖检查按实际入口分别记录 |
+| 最终 raw 导出 | 虚拟视角四模态已保存；最终真实视角 raw normal 等仍未完整导出 | 阶段 G 明确为延期，不当作已有目录契约 |
+| 质量验收 | manifest/小型测试不证明完整隐藏表面正确 | 保留真实全流程与消融待验收边界 |
+
+**待同步的非文档项（本次未修改）**：`run_inpaint.sh` 帮助文本的硬编码置信阈值；`tests/test_edgs_inpaint.py` 中假定仓库默认阈值恒为 0.5 的断言。应使 help 指向 YAML/解析结果，使算法测试显式指定所测阈值，再单独测试默认加载语义；不能为了让断言通过而把用户的 0.7 改回去。
+
+本次文档核对的实际检查（未启动完整训练）：
+
+- 两文档本地文件链接/章节锚点和代码围栏检查；三条 shell 的 `bash -n` 及 `git diff --check`。
+- 直接调用 `load_config()` 确认当前门槛为 0.7，显式覆盖 0.9 生效，默认外部 depth/normal 监督均关闭。
+- `test_edgs_inpaint.py`：32 passed、5 skipped、1 failed。失败为 `test_match_threshold_config_and_cli_override` 把缺省门槛写死为 0.5；实际读到 0.7。未修改配置掩盖该失败，GPU opt-in 测试未启用。
+- `test_virtual_render.py` + `test_rgb_density_policy.py`：11 passed、2 skipped。
+
+以下 A/A0/B/C/D0/F/J 已接通；D1/E 是原路径后续 RGB-D-N 融合/定向方案，G 的最终 raw 导出和专用 normal 网络仍是后续工作。各节“验收清单”是持续验收要求，不自动等于已通过。
+
 实现状态：阶段 A 的双后端渲染及阶段 C 的自动 `removed normal → LaMa → completed normal` 已落地。渲染入口为 `scripts/paintmesh/render_virtual_views.py`，同级适配器集中在 `render_virtual_worker.py` 的 `native()` / `pgsr()`。normal 输入准备/总校验位于 `prepare_paintmesh_lama_data.py`；独立 dataset、向量处理位于 `tools/paintmesh_normal.py`；推理位于 `LaMa/bin/predict_normal.py`；`run_inpaint.sh` Stage 2/3 按上游 normal 自动执行。
 
 阶段 A0 已实现：在当前圆环生成器旁增加同心同径的半球螺旋生成器，由独立的 `VIRTUAL_CAMERA_PATH` 选择；两种方式均以 `VIRTUAL_CAMERA_COUNT` 设置总帧数 N，默认 30。半球采用等球带面积间隔与随 N 自动变化的螺距，近似均匀覆盖球面，序列从赤道连续绕行上升至接近顶点。姿态逐帧固定锚定原圆环的场景 up，不累计滚转。全部下游共享同一个 N 帧精确相机 manifest；不改变 RGB/depth/normal completion、反投影和训练算法，其固定帧数校验与枚举已改为 manifest 驱动。已验证非 30 帧数据链与小型 CUDA 局部优化；真实长序列 tracking 和完整训练质量仍待评估。
@@ -38,16 +66,16 @@ RGB + PGSR plane-depth + PGSR normal + alpha
 
 - 虚拟视角双后端与 PGSR raw normal 导出已经实现；`virtual_pose.py --poses-only` 负责相机生成，`render_virtual_worker.py::pgsr` 负责四模态同步渲染；
 - A0 同级 circle/hemisphere、动态 N 帧、连续姿态与相机 manifest 兼容性改造已接入；默认 circle/30 相机不变；
-- [`PGSRRenderer.render()`]( /home/martin/code/gsagent/submodules/EDGS/source/renderers/pgsr.py:146) 已经返回：
+- [`PGSRRenderer.render()`](../../submodules/EDGS/source/renderers/pgsr.py) 已经返回：
   - `render`
   - `plane_depth`
   - `rendered_normal`
   - `rendered_alpha`
   - 可选的 `depth_normal`
-- [`EDGS/render.py`]( /home/martin/code/gsagent/submodules/EDGS/render.py:378) 的最终真实视角输出仍需扩展 raw normal；这与已完成的虚拟视角 raw normal 导出是不同入口；
+- [`EDGS/render.py`](../../submodules/EDGS/render.py) 的最终真实视角输出仍需扩展 raw normal；这与已完成的虚拟视角 raw normal 导出是不同入口；
 - `prepare_paintmesh_lama_data.py`、`run_inpaint.sh` Stage 3 和 `predict_normal.py` 已实现自动 normal 输入准备、LaMa 推理和完成校验；completed normal 已接入独立 Stage 5b loss，不改变融合/初始化；
-- [`edit_object_inpaint.py`]( /home/martin/code/gsagent/submodules/Inpaint360GS/edit_object_inpaint.py:251) 当前 finetune 只有 RGB loss，没有 depth/normal loss；
-- [`compose_utils.py`]( /home/martin/code/gsagent/submodules/Inpaint360GS/utils/compose_utils.py:90) 新 Gaussian 默认单位旋转、三轴相同尺度，PLY 中的 `nx,ny,nz` 目前也不会被实际用于初始化。
+- [`edit_object_inpaint.py`](../../submodules/Inpaint360GS/edit_object_inpaint.py) 当前 finetune 只有 RGB loss，没有 depth/normal loss；
+- 原路径的 [`compose_utils.py`](../../submodules/Inpaint360GS/utils/compose_utils.py) 新 Gaussian 默认单位旋转、三轴相同尺度，PLY 中的 `nx,ny,nz` 不用于定向；路径 J 的可选 normal 定向不是调用此初始化器。
 - 新路径 J 已新增 EDGS 局部初始化器、可选模态数据加载器、PGSR 外观/几何联合训练入口与分支发布契约；其完整场景质量消融仍未完成，不能用旧 Stage 5b 的通过记录代替验收。
 
 ---
@@ -69,7 +97,7 @@ RGB + PGSR plane-depth + PGSR normal + alpha
                     ▼
              removed EDGS-PGSR
                     │
-       同一组 30 个 virtual cameras
+       同一组 N 个 virtual cameras
                     │
                     ├── removed RGB
                     ├── removed depth
@@ -89,7 +117,7 @@ RGB + PGSR plane-depth + PGSR normal + alpha
         │           │                       │
         └─────┬─────┘                       │
               ▼                             │
-    原有 RGB-D 反投影（30 个 PLY）           │
+    原有 RGB-D 反投影（N 个 PLY）            │
               │                             │
               ▼                             │
     原有单 seed Gaussian 初始化             │
@@ -119,9 +147,11 @@ completed normal 在 Stage 5b 直接作为相机坐标系二维监督，不需�
 两个后端复用相同目录和帧命名规则，并在 manifest 中声明实际提供的模态。下面是 `edgs-pgsr` 分支每个视角的输出：
 
 ```text
-virtual/ours_object_removal/iteration_<N>/
+work_model/virtual/ours_object_removal/iteration_<T_sem>/
 ├── renders/
 │   └── 00000.png                  # RGB
+├── rgb_raw/
+│   └── 00000.npy                  # float32 HWC RGB，[0,1]
 ├── depth/
 │   └── 00000.npy                  # PGSR plane z-depth, float32, HxW
 ├── normal/
@@ -130,8 +160,6 @@ virtual/ours_object_removal/iteration_<N>/
 │   └── 00000.npy                  # PGSR accumulated alpha, float32, HxW
 ├── normal_valid/
 │   └── 00000.png                  # 独立的法线有效性 mask
-├── depth_normal/
-│   └── 00000.npy                  # 可选，depth 派生法线
 ├── normal_vis/
 │   └── 00000.png                  # 仅可视化
 └── render_manifest.json
@@ -355,7 +383,7 @@ PGSR 虚拟渲染不要求自动追加一次原生语义渲染。tracker 使用�
 
 复用现有 `PGSRRenderer`，无需新增 rasterizer。full 和 removed 的 RGB、depth、normal、alpha 必须来自各自模型在同一相机下的单次 PGSR 调用。
 
-核心解码逻辑：
+核心解码逻辑以 [`virtual_render_io.py::decode`](virtual_render_io.py) 为准，下面仅摘录 PGSR 向量解码示意，不代替完整形状/有限性校验与文件提交逻辑：
 
 ```python
 def decode_pgsr_geometry(package, alpha_min=0.01):
@@ -391,7 +419,7 @@ def decode_pgsr_geometry(package, alpha_min=0.01):
     }
 ```
 
-渲染调用如下；`return_depth_normal` 只控制可选的深度派生法线诊断，不是直接 normal 输出的前提：
+当前 worker 的渲染调用如下。`PGSRRenderer` 本身支持 `return_depth_normal`，但当前虚拟 worker 未请求或保存 `depth_normal/*.npy`，不能把它列为已有输出；直接 rendered normal 不依赖这一选项。
 
 ```python
 package = renderer.render(
@@ -400,7 +428,6 @@ package = renderer.render(
     pipeline,
     background,
     return_plane=True,
-    return_depth_normal=save_depth_normal,
 )
 ```
 
@@ -416,7 +443,7 @@ tracker archive 必须由本次选定后端的 removed RGB 生成。workspace、
 
 ### A5. 第一批实现与验收
 
-先实现统一入口、原生 adapter、PGSR adapter 与单视角输出校验，再扩展到 30 个虚拟视角并接入 Stage 4。验收包括：默认原生行为兼容；PGSR 四模态同源；未知后端和不支持的模态请求能提前报错；两后端复用完全相同的相机；切换后端后旧产物不被误复用。阶段 A 完成后再实现 normal completion。
+统一入口、原生 adapter、PGSR adapter、输出校验以及 N 帧 Stage 4 调度已实现。持续验收包括：默认原生行为兼容；PGSR 四模态同源；未知后端和不支持的模态请求提前报错；两后端复用完全相同的相机；切换后端后旧产物不被误复用。自动 normal completion 也已接通，不再属于阶段 A 之后尚待实现的前置任务。
 
 ---
 
@@ -443,17 +470,16 @@ semantic 3DGS
 如果当前有：
 
 ```text
-iteration_N
-iteration_N_removal_target
+iteration_<T_sem>                    # all_selected：target + surrounding 均移走
+iteration_<T_sem>_removal_target     # target_only：恢复 surrounding，用于发布
 ```
 
-这类多个 removed 版本，RGB、depth、normal 必须使用同一个版本，并在 manifest 中记录：
+这类多个 removed 版本，公共虚拟 RGB、depth、normal 使用 `all_selected`。variant 位于 render manifest 的 `inputs.removal_variant`，相机身份为 `camera_artifact_id`；以下仅摘录实际字段层级：
 
 ```json
 {
-  "removal_variant": "target_only",
-  "removed_model_artifact_id": "...",
-  "camera_manifest_id": "..."
+  "inputs": {"removal_variant": "all_selected"},
+  "camera_artifact_id": "..."
 }
 ```
 
@@ -471,7 +497,7 @@ full normal 只能用于诊断和坐标检查，不能直接作为实际洞区�
 
 | 上游状态 | 行为 |
 |---|---|
-| 声明并完整提供 30 帧 normal、normal_valid、alpha | Stage 2 自动准备 normal；Stage 3 必须完成 normal LaMa 才能提交完成标记 |
+| 声明并完整提供 N 帧 normal、normal_valid、alpha | Stage 2 自动准备 normal；Stage 3 必须完成 normal LaMa 才能提交完成标记 |
 | 明确不提供 normal，且不存在残留 normal 文件 | 保持原有 RGB/depth 路径与 manifest 身份，不生成 normal 产物 |
 | 声明有 normal 但缺帧、缺 sidecar、hash 不匹配；或目录与声明矛盾 | 提前报错，不静默跳过，不复用旧 RGB/depth-only completion |
 
@@ -586,7 +612,7 @@ CPU 测试覆盖：三路 hole mask 相同、mask 外 normal 数值与 valid 完
 #### D0.2 管线与数据域
 
 ```text
-30 帧 completed RGB-D、相机、mask + 实际保留背景 Gaussians
+N 帧 completed RGB-D、相机、mask + 实际保留背景 Gaussians
        -> 多尺度表面密度参考 + 观测不确定性
 seed 每个有效像素 -> 独立连续表面元 / 面积
        -> 传播目标密度 -> 扣除现存背景贡献 -> 每个表面元的缺点配额
@@ -595,13 +621,13 @@ seed 每个有效像素 -> 独立连续表面元 / 面积
        -> 可选 Stage 5b PGSR depth / LaMa normal loss
 ```
 
-仍是 Stage 4b，不合并 30 张补全深度成 30 层初始化点云；其他视角提供参考和软证据。LaMa normal 不反投影，不覆盖 completed depth，也不决定点数；法线分支继续 `removed normal → LaMa → completed normal → Stage 5b loss`。
+仍是 Stage 4b，不合并 N 张补全深度成 N 层初始化点云；其他视角提供参考和软证据。LaMa normal 不反投影，不覆盖 completed depth，也不决定点数；法线分支继续 `removed normal → LaMa → completed normal → Stage 5b loss`。
 
 最终采样域 Ω 是 seed 有效像素表面与 hole mask、原 gate 的交集。全 hole、有效 Ω、因非法深度/原 gate 限制不可处理的域分别记账，不能把分母缩成“成功放点的面积”来报告覆盖率。单 seed 不可见区域仍不在此版的可恢复范围。
 
 #### D0.3 自动估计周边密度，不把全场景混在一起
 
-1. 复用 Stage 5a 的实际保留行选择，跨视角按原 Gaussian 行号去重；不能拿 full 模型中删除物体的中心作参考。每个背景中心的观测只融合一次，30 帧不能把密度放大 30 倍。
+1. 复用 Stage 5a 的实际保留行选择，跨视角按原 Gaussian 行号去重；不能拿 full 模型中删除物体的中心作参考。每个背景中心的观测只融合一次，N 帧不能把密度放大 N 倍。
 2. 对所有不同 XYZ 的保留中心建立空间索引，使用可用的 `k=2,4,8,16,32` 邻域；数据极少时使用 k=1 的可辨识内外环。以外环留出计数的 Poisson 预测分数对不同尺度的 log-density 做模型平均，不依赖固定环带宽度或残差停止阈值。这是版本化有限模型族，不是无限范围的自动搜索。
 3. 当前强度估计为 `k/(πr_k²)`，以局部欧氏半径近似切面面积。使用完整保留中心而非薄环可减少参考截断，但**尚未严格校正相邻双层、尖锐折叠和体积 Gaussian 分布**；这些情况下会有密度偏差。估计尺度间的 log-density 方差降低该锚点精度，不把全场景密度平均成一个目标。
 4. 已知区 alpha、opacity、深度残差的 Cauchy 权重及可见性决定观测可靠度，跨相机取每个中心的最大可靠度；seed 已知区域中的投影作为密度锚点。噪声尺度由 MAD 估计，退化时仅使用数据尺度相关的机器精度正则，不新增米制/角度阈值。当前不读取 normal 参与密度估计；可靠度影响锚点可信程度，不把一个中心数成多个 splat。
@@ -649,7 +675,7 @@ N_new = round(M)                  # 自动总点数，记录不超过半个点�
 1. 按空间局部顺序遍历像素表面元，将 `m_u` 归一化到 `N_new`，用固定随机种子的系统分层重采样分配整数 `n_u`。总数严格为 `N_new`，每个表面元得到其归一化配额的向下或向上取整；这是整数计数要求，不是“低于阈值不采样”。
 2. 在获得 `n_u` 个点的面元内进行分层/低差异面积采样，按雅可比修正倾斜表面的采样分布；多个点占据不同子像素位置。位置由 `X_u(s,t)` 给出，不在三维空间随机抖动，不复制相同 XYZ，也不通过放大 scale 代替补点。
 3. 新点与现存点的间距可通过保持每个面元配额的受限位置优化改善，现存点固定；只能在同一表面元/表面假设内移动。默认配额采样不需要 Poisson 最小间距阈值；精确重复或不可表示的重合属于数值问题，在同面元重新布局，不能阈值删点破坏数量。
-4. 30 视角的深度重投影残差以数据估计的噪声尺度归一化，联合评估 seed 候选。已知区用 removed depth，hole 内用 completed depth；比观测表面更远的样本通过单侧 Cauchy 权重降低可见性贡献，这是遮挡近似，不是严格的后验边缘化。相机相关性核给近重复视角连续降权，同位置重复相机不提供独立证据，不用 2° 二值计票。
+4. N 视角的深度重投影残差以数据估计的噪声尺度归一化，联合评估 seed 候选。已知区用 removed depth，hole 内用 completed depth；比观测表面更远的样本通过单侧 Cauchy 权重降低可见性贡献，这是遮挡近似，不是严格的后验边缘化。相机相关性核给近重复视角连续降权，同位置重复相机不提供独立证据，不用 2° 二值计票。
 5. 这些证据参与面元的表面模型拟合/位置选择，**不事后按置信阈值删除已分配的点**；若位置模型改变了面积，应重新计算配额，而不是维持旧面积上的点数。低置信但有限的结果可以输出并标注不确定性，不保证“多帧一致即真实”。
 6. 自适应采样不执行统计离群点或半径过滤；`legacy` 不变。初始子像素布局若越出原 gate，在同像素内向可行求积节点收缩，不减少配额；有限精度内仍无法布局或产生 float32 重复点时返回 `geometry_unresolved`，不发布完成 manifest。全 hole 与 gate 内面积分别记录；完全没有 gate 内面元也报错，不能以空域宣称完成。
 
@@ -730,7 +756,7 @@ conda run --no-capture-output -n paintmesh \
 
 ### D1. 现有路径扩展 RGB-D-N 点云融合（仍延期，不是 D0 前置条件）
 
-现有实现保持 `edit_object_removal_plyfusion.py`、`point_utils.py` 的 RGB-D 反投影算法、30 个支持 PLY、`FUSION_SEED_FRAME` 和既有 fusion manifest 不变。下面 D1 仅保留未来 RGB-D-N 联合融合设计，不实施这些参数或本节的 normal support 契约，也不以完成 D1 作为局部优化或 D0 的前置条件。D0 的 `fused/density/support.npz` 是独立的密度采样 sidecar，不等于此处的 RGB-D-N support。
+现有实现保持 `edit_object_removal_plyfusion.py`、`point_utils.py` 的 RGB-D 反投影算法、N 个支持 PLY、`FUSION_SEED_FRAME` 和既有 fusion manifest 不变。下面 D1 仅保留未来 RGB-D-N 联合融合设计，不实施这些参数或本节的 normal support 契约，也不以完成 D1 作为局部优化或 D0 的前置条件。D0 的 `fused/density/support.npz` 是独立的密度采样 sidecar，不等于此处的 RGB-D-N support。
 
 本节是对现有 Inpaint360GS 融合器的候选扩展，不是新路径 J 的实施要求。新路径在自己的 EDGS 初始化器内生成、融合候选，不先改造或调用这里的 all-view fusion。
 
@@ -930,7 +956,7 @@ optimizer:
 输入严格绑定当前 inpaint run：
 
 - Stage 5a 最终提交的含语义 PLY、其 hash、行数与 SH degree；不是最初的 full/removed PLY；
-- 30 个精确虚拟相机，以及 RGB/depth/normal 共用的 hole masks；不能重新生成轨迹或以原始真实 RGB 监督洞区域；
+- N 个精确虚拟相机，以及 RGB/depth/normal 共用的 hole masks；不能重新生成轨迹或以原始真实 RGB 监督洞区域；
 - 已验证的 completed RGB、completed plane z-depth、float32 HWC completed normal、normal validity 和 LaMa completion manifest；depth 必须与当前模型同场景尺度，normal 为相机坐标、朝向相机；
 - 与 Stage 5a 最终 PLY 行顺序绑定的 `editable_mask.npy` 和 `rgb_finetune_manifest.json`。
 
@@ -945,14 +971,11 @@ Stage 5a 的训练、反投影和 gate 算法不变，仅在输出处记录既�
 用同一相机一次可微 PGSR render 得到 `render`、`plane_depth`、`rendered_normal`、`rendered_alpha`，需要一致性项时请求 `depth_normal`。训练不能复用阶段 A 的 `.detach()`/NumPy 导出路径。
 
 ```python
-N_pred = F.normalize(
-    pkg["rendered_normal"] / pkg["rendered_alpha"].clamp_min(1e-6),
-    dim=0, eps=1e-6,
-)
+N_pred = F.normalize(pkg["rendered_normal"], dim=0, eps=1e-6)
 N_target = completed_normal.permute(2, 0, 1)  # HWC -> CHW
 ```
 
-两者都是当前相机坐标系的单位向量，直接逐像素比较；不反投影 normal，不旋转到世界坐标，也不读取可视化 PNG。
+上面是有效向量上的简写；实际 `unit_normal()` 先隔离非有限值再单位化。在正 alpha 的有效域，与“除以 alpha 再单位化”方向相同，避免了不必要的除法。两者都是当前相机坐标系的单位向量，直接逐像素比较；不反投影 normal，不旋转到世界坐标，也不读取可视化 PNG。
 
 ```text
 L_lama_normal = weighted_mean(1 - clamp(dot(N_pred, N_target), -1, 1))
@@ -1081,7 +1104,7 @@ a(t) = clip((t - s) / r, 0, 1)    # r > 0
 | `EDGS_INPAINT_CONFIG` | `scripts/paintmesh/configs/edgs_inpaint.yaml` | 新路径独立配置，不复用 `local_geometry.yaml` |
 | `EDGS_INIT_USE_DEPTH` | `false` | 初始化是否消费 completed depth |
 | `EDGS_INIT_USE_NORMAL` | `false` | 初始化是否消费 completed normal；本批要求 depth 同时开启 |
-| `EDGS_MATCH_CONFIDENCE_MIN` | `0.5` | `init.confidence_min`：正反向原始 RoMa 置信度都必须达到此门槛，越大越严格 |
+| `EDGS_MATCH_CONFIDENCE_MIN` | 当前工作区 YAML 为 `0.7` | `init.confidence_min`：正反向原始 RoMa 置信度都必须达到此门槛，越大越严格；环境变量未设置时不覆盖 YAML |
 | `EDGS_MATCH_CYCLE_PIXELS` | `3.0` | `init.cycle_pixels`：原图像素单位的双向回环误差上限，越小越严格 |
 | `EDGS_MATCH_REPROJECTION_PIXELS` | `2.0` | `init.reprojection_pixels`：原图像素单位的三角化重投影误差上限，越小越严格 |
 | `EDGS_TRAIN_USE_DEPTH` | 未指定时继承解析后的 `EDGS_INIT_USE_DEPTH` | 是否启用外部 completed depth loss |
@@ -1090,7 +1113,7 @@ a(t) = clip((t - s) / r, 0, 1)    # r > 0
 | `EDGS_GEOMETRY_FROM_ITER` | `100` | 新路径几何项开始渐增的零起始局部步数 |
 | `EDGS_GEOMETRY_RAMP_ITERS` | `2000` | 新路径几何项渐增区间 |
 
-配置优先级为显式环境变量 > 独立 YAML > 默认值；先解析初始化开关，再解析训练开关的继承。YAML 中训练模态可以用 `null` 表示继承，最终 `config.resolved.json` 与 request 中保存明确布尔值。`matcher.weights` / `matcher.dinov2_weights` 可指定本地权重（相对 YAML 所在目录）；默认使用 PyTorch 缓存，首次缺失时下载官方权重，文件 hash 纳入初始化身份。
+配置优先级为显式环境变量 > 用户指定 YAML > 仓库 `configs/edgs_inpaint.yaml` 的缺省项；默认 loader 直接读取仓库 YAML，没有另一个固定为 0.5 的算法默认。先解析初始化开关，再解析训练开关的继承。YAML 中训练模态可以用 `null` 表示继承，最终 `config.resolved.json` 与 request 中保存明确布尔值。`matcher.weights` / `matcher.dinov2_weights` 可指定本地权重（相对 YAML 所在目录）；默认使用 PyTorch 缓存，首次缺失时下载官方权重，文件 hash 纳入初始化身份。
 
 初始化必须覆盖以下三种模式：
 
@@ -1106,33 +1129,39 @@ a(t) = clip((t - s) / r, 0, 1)    # r > 0
 
 ### J3. EDGS RGB 匹配与混合初始化
 
-1. **精确相机与配对。** N、顺序、K、camera-to-world、图像尺寸及 PCA/场景尺度都来自已验证 manifest，不重新 COLMAP，也不按帧名推导姿态。基于相机重叠与基线选对，半球支持跨圈邻接；保留洞外 RGB 上下文，逐批 RoMa 匹配，避免 N² 个全分辨率图对同时驻留 GPU。RoMa 权重冻结，仅用于初始化；PGSR 联合训练不训练匹配网络。
-2. **RGB 主干候选。** 复用 EDGS 对应与三角化函数，通过正深度、匹配可靠性、条件数和重投影检查生成局部候选。新增点应投影到支持视图的待补全区域，保留多视图观测轨迹；不把洞外匹配点重复加入已存在的背景。RGB-only 只依据 RGB、相机、mask 与保留场景作此判断，不读取 completed depth/normal 数值。全局 `Trainer.init_with_corr` 会删初始点及调整尺度，禁止直接对整个 removed 模型调用。
-3. **可选 depth 点位辅助。** 以鲁棒重投影残差为基础，加入同尺度 completed z-depth 软约束，精修匹配点；匹配不足的区域由有效 depth 反投影产生补充候选。不要求三角化点与 LaMa 深度硬一致，也不把全部点强行吸附到一张补全深度图。跨视角相互矛盾的层保留高可信假设或放弃低可信候选，不能简单平均成不存在的中间表面。
-4. **融合与密度预算。** 对重复轨迹/表面候选去重，避免 N 张深度图重复堆叠。RGB-only 从匹配点与可见边界邻域估计间距，不承诺低纹理区必然补齐；启用 depth 后，可从洞内表面积和周边同一表面 Gaussian 间距计算局部预算，再进行配额采样。可复用 D0 的纯几何/配额函数，但不依赖 seed gate、旧支持 PLY 或旧 receipt。密度预算不以手调密度比例为质量门槛，仍需数值有效性、几何可靠性检查和资源上限；不能混入远处背景密度。
-5. **可选 normal 定向。** 仅使用 raw completed normal 与 validity，不读取可视化 PNG。按 `normalize(A_camera_to_world^{-T} n_camera)` 转到世界坐标，统一符号、鲁棒聚合；最短尺度轴沿该方向，切向尺度由局部间距决定，法向厚度为严格正值。关闭 normal 时使用单位 quaternion、等向初始尺度。法线不产生三维点，也不是给 PLY 写 `nx,ny,nz` 就完成初始化。
-6. **追加并记录来源。** 原有背景参数逐行保留，仅追加新 Gaussians；RGB 初始化 SH，opacity 使用明确记录的初始化策略，语义 embedding 由保留场景的合法邻域继承并冻结。记录 `source_kind=rgb_match|depth_fill`、观测帧/pixel_uv、匹配轨迹、权重、可选 normal、逐点编辑归属与合并映射。removed variant、target/surrounding ID 及临时 surrounding 恢复规则必须显式绑定；不得复活 target 或重复恢复 surrounding。
+下面记录 `paintmesh_edgs_init.py` 的实际实现；公式与逐项默认值见 [PRINCIPLES 3.9b](PRINCIPLES.zh-CN.md#edgs-pgsr-direct)。
+
+1. **精确相机与配对。** N、顺序、K、camera-to-world、图像尺寸及 PCA/场景尺度来自已验证 manifest。以“中心距离/全对距离中位数 + 1 − 前向轴点积”排序，每相机取最多 4 个邻居，再去重；排除同位置/反向相机。支持跨圈选对，但不是测量真实表面重叠率。RoMa 默认 outdoor、560 coarse resolution，分别做两个方向的冻结网络匹配。
+2. **RGB 主干候选。** 双向 certainty 的最小值先过硬门槛，再过原图像素 cycle 门槛、按分数抽样、两视图 weighted DLT。检查有限性、正深度、最小视差角和重投影误差；两个观测都需在 hole 内。当前没有额外条件数筛选、完整多视图轨迹合并或 BA。RGB-only 不读取 completed depth/normal 数组，也不调用全局 `Trainer.init_with_corr` 删除背景。
+3. **可选 depth 点位辅助。** 三角化点做 3 次 IRLS，以像素重投影和软 log-depth 残差联合更新 XYZ，再复核原图重投影误差。另对每帧全部有效 hole 像素生成面积加权、子像素偏移的 depth 候选，**不是只对已判定 RGB 匹配不足的位置补点**。候选的近邻视图 depth 软一致性参与排序，不是严格遮挡验证。
+4. **间距与去重。** 用候选附近的保留背景中心及其最多 4 个非自身近邻，正距离中位数估计标量间距。depth 的逐帧近似面积预算是 `round(sum(robust_area)/gap²)`，不是 D0 局部密度场/背景质量扣除/世界曲面求积。合并后按 `floor(X/gap)` 网格保留最高分候选，并排除距背景小于 `gap/2` 的点；不平均不同点位。资源超限失败。多层表面、非单位相机尺度下的面积预算和稀疏背景仍需质量评估。
+5. **可选 normal 定向。** raw normal 按 `normalize(A_camera_to_world^{-T} n_camera)` 转世界坐标；RGB 对应最多两个观测，第二个相对第一个翻转符号后等权相加、单位化，depth 候选只有来源帧观测。用 quaternion 定向局部 z 轴，尺度初始化为 `(gap,gap,0.25*gap)`。无有效 normal 或关闭 normal 时用单位旋转与等向尺度，不用 depth-derived normal 暗中替代。
+6. **追加并记录来源。** `target_only` 背景逐行保留，仅追加新行；来源 RGB 初始化 SH DC，高阶 SH 为零，opacity 默认 0.1；`obj_*` 由背景 1-NN 复制并冻结。`support.npz` 保存数值 `source_kind=0|1`、获选候选的两个/一个观测、confidence、normal、spacing，不保存完整轨迹与全部合并历史；`editable_mask.npy` 与最终行序对应。原路径的 5-NN embedding 初始化不能混用来解释此路径。
 
 完成后至少输出初始模型、候选 sidecar、与最终行序对应的 editable mask、配对/候选统计及初始化 manifest。RGB-only 无有效三角化候选时清楚失败，不偷偷走 depth 或旧 seed 初始化。启用 depth 时允许匹配覆盖差而主要由 depth 补点，但必须仍执行匹配并报告实际两类贡献，不能冒充匹配成功。
 
 当前实现边界：先按空间距离/朝向选近邻图对，再做 RoMa 双向 cycle 检查和 EDGS 两视图 weighted DLT；没有新增多视图轨迹 bundle adjustment。跨图对候选在世界网格保留高可信观测，不平均点位；normal 聚合来自该匹配的两次观测。depth 反投影候选带近邻视图的软一致性分数，密度间距来自候选附近的保留背景；复杂遮挡、不同深度层以及边界参考被远处背景污染的情况仍需真实评估。`init.max_points` 是资源保护，不是指定密度；超限清楚报错，不偷偷降低密度。
 
-匹配精度控制已接入 `init.confidence_min=0.5`，原先只要求正向分数大于零的行为不再作为默认。先在正向命中的目标坐标插值反向 RoMa 分数，取两者最小值，再执行硬门槛、cycle 与三角化检查。门槛不能被抽样预算稀释；少于 `samples_per_pair` 就使用实际匹配数。单向高分/反向低分仍拒绝，非法分数、越界和非有限坐标不能通过边界插值被救回。RoMa 上游 `sample_thresh` 不等于本地硬门槛，本入口不调用其 `sample()`。
+匹配精度控制已接入 `init.confidence_min`（当前工作区 0.7），原先只要求正向分数大于零的行为不再作为默认。先在正向命中的目标坐标插值反向 RoMa 分数，取两者最小值，再执行硬门槛、cycle 与三角化检查。门槛不能被抽样预算稀释；少于 `samples_per_pair` 就使用实际匹配数。单向高分/反向低分仍拒绝，非法分数、越界和非有限坐标不能通过边界插值被救回。RoMa 上游 `sample_thresh` 不等于本地硬门槛，本入口不调用其 `sample()`。
 
-诊断逐图对记录 `matching.hole_candidates`、`bidirectional_confidence_quantiles`、`confidence_passed`、`cycle_passed`、`sampled`，再记录 `triangulated` 和 `accepted`；报告顶层保存实际 `matching_thresholds` 和 `confidence_kind=min_forward_reverse`。`support.npz` 中 RGB 匹配来源（`source_kind=0`）保存该双向最小分数；depth 补点（`source_kind=1`）的分数是另一类证据，不由 RoMa 门槛控制。阈值进入初始化和联合训练身份，修改后不能复用旧初始化/checkpoint。只需更严格匹配时，先保持 cycle=3 / reprojection=2，从置信度 0.5 开始，再单独提高到 0.7 或 0.8；仍有杂散点可另试 cycle=1 / reprojection=1，区分置信度与几何约束的作用，不能把减少点数等同于几何正确。
+诊断逐图对记录 `matching.hole_candidates`、`bidirectional_confidence_quantiles`、`confidence_passed`、`cycle_passed`、`sampled`，再记录 `triangulated` 和 `accepted`；报告顶层保存实际 `matching_thresholds` 和 `confidence_kind=min_forward_reverse`。`support.npz` 中 RGB 匹配来源（`source_kind=0`）保存该双向最小分数；depth 补点（`source_kind=1`）的分数是另一类证据，不由 RoMa 门槛控制。阈值进入初始化和联合训练身份，修改后不能复用旧初始化/checkpoint。消融时固定其他参数再单独改变置信度或 cycle/reprojection 上限；0.5/0.8/0.9 是历史实验设置，不覆盖当前 YAML 的 0.7。不能把减少点数等同于几何正确。
 
 ### J4. PGSR 外观与几何联合训练
 
-不能直接使用现有 `paintmesh_local_data.LocalGaussians`：其 SH/opacity 是冻结 buffer，只更新 XYZ/rotation/scale。新模型适配器需将**新增点**的 XYZ、rotation、scale、SH、opacity 都纳入 optimizer；背景、全部语义字段和 classifier 冻结，整个场景一起 PGSR 渲染，维持正确遮挡。首批固定点数，关闭 clone/split/prune、全局剪枝和 opacity reset；若初始化不足，不以未声明的增密补救。
+已实现的 `JointGaussians` 继承 `paintmesh_local_data.LocalGaussians`，将**新增点**的 SH/opacity 从冻结 buffer 改为可优化参数，与 XYZ/rotation/scale 一起进入 optimizer；背景、全部语义字段和 classifier 冻结，整个场景一起 PGSR 渲染，维持遮挡。固定点数，关闭 clone/split/prune、全局剪枝和 opacity reset；初始化不足不会自动增密。
 
 损失按 [PRINCIPLES 第 3.9b 节](PRINCIPLES.zh-CN.md#edgs-pgsr-direct) 组合，各自使用独立有效域，不能用 depth/normal valid mask 同时屏蔽 RGB 学习：
 
-- RGB：hole 内 completed RGB 的鲁棒光度损失；若使用 SSIM，窗口边缘必须正确处理 hole/已知区交界。
+- RGB：hole 内 completed RGB 的连续性加权 L1，当前没有 SSIM 或 LPIPS。
 - 已知区保持：hole 外与相同 PGSR 后端渲染的冻结 removed 基线比较，防止新增 splats 漫出编辑区域。梯度只回传新增参数。
 - 覆盖保护：可见待补全表面的 alpha/空洞惩罚及覆盖审计，不能仅靠降低 opacity 来减小几何 loss；也不能为了提高 alpha 无条件制造不透明前景。
 - 外部 depth：开启时在有效正深度上使用鲁棒 log-depth 误差，统一 scene-scale plane-z 定义，不把射线距离、未归一化累积深度或逐图归一化值混用。
 - 外部 LaMa normal：开启时按同相机、同朝向、单位向量计算有符号 `1-dot`；支持 normal-only 外部监督，不额外读取 completed depth。
-- 内部几何：模型渲染 depth 派生法线与 Gaussian rendered normal 一致性，以及可靠可见区域的多视角重投影一致性；内部项与外部监督分别记录，不把它们解释成独立真值。
+- 内部几何：模型渲染 depth 派生法线与 Gaussian rendered normal 的 `1-dot`；多视图项对源渲染深度反投影到邻居，与邻居渲染深度计算 SmoothL1(log-z)，不是全局 PGSR 的像素往返误差/LNCC。内部项不读取 completed depth/normal。
+
+权重依次为 RGB hole 1、known 1、alpha 0.1、depth 0.1、normal 0.05、内部 normal 一致性 0.01、多视图 0.01。alpha floor 为 0.5（不是 5b 的 0.1）；有效渲染 alpha 下限 0.01，内部几何相对深度差门槛 0.05。XYZ/scale/rotation/SH/opacity 学习率为 `0.00016/0.005/0.001/0.0025/0.05`，当前固定，不继承全局 position schedule。公式、连续性权重与有效域见 PRINCIPLES。
+
+当前最终检查要求有限指标且至少一个视角洞内覆盖大于零，未实现 5b 的“连续 60 步空监督失败”和“逐帧基线覆盖 0.8 倍”检查。更强的全视角覆盖、分层/杂散点质量门槛属于后续评估，不能在文档中提前宣称。
 
 LaMa RGB/depth/normal 是可能相互矛盾的伪目标，不能全图等权视作真实观测。分别记录目标有效性与质量权重；权重停止梯度，不能让模型靠改变权重逃避约束。关闭某个外部监督时不读取相应数组，也不用于另一项权重；`normal_valid` 只说明向量合法，不是可信度。洞内 removed alpha 低是补全原因，不能据此否决 hole 中所有目标。
 
@@ -1221,7 +1250,7 @@ PYTHONPATH="$PWD/submodules/EDGS" conda run --no-capture-output -n paintmesh \
 
 2026-09-21 另对 `target_14_hemi90_upright` 的真实 90 帧 completion 做了三种模态加载检查；仅用第 0/1 帧、缓存的 RoMa outdoor/DINOv2 权重执行真实匹配，8192 个洞内双向对应通过两视图几何检查。没有改动该 run 的产物，没有执行完整 90 帧初始化或 5000 步训练。发布分流测试使用合成 producer；全链真实 Stage 4..8 的视觉质量仍需评估。
 
-新增双向置信度门槛后，对 `edgs_rgbdn_joint` completion 的第 0/1 帧只读复测：同一份 RoMa 输出有 36,961 个洞内候选，双向最小分数中位数约 0.197。固定 cycle=3 / reprojection=2 时，阈值 0.5、0.8、0.9 分别有 4,994、69、1 个匹配通过回环与三角化。阈值 0 时有 31,423 个通过回环，再按预算采样 8,192 个。由此将默认硬门槛设为 0.5，较高门槛作为显式选项；这一单图对计数不代表整个场景的正确率或最佳参数。旧产物未改写，未重新执行完整初始化或训练。
+历史记录：新增双向置信度门槛后，对 `edgs_rgbdn_joint` completion 的第 0/1 帧只读复测，同一份 RoMa 输出有 36,961 个洞内候选，双向最小分数中位数约 0.197。固定 cycle=3 / reprojection=2 时，阈值 0.5、0.8、0.9 分别有 4,994、69、1 个匹配通过回环与三角化；阈值 0 时有 31,423 个通过回环，再按预算采样 8,192 个。当时记录的默认是 0.5；当前工作区 YAML 已为 0.7，本次保留。该单图对计数不代表整个场景正确率或最佳参数，也不是本次重新测量。旧产物未改写，未执行完整初始化或训练。
 
 门槛变更后的回归结果：PaintMesh 91 passed / 6 skipped（启用真实 RoMa 与 PGSR CUDA 检查），Inpaint360GS tools 148 passed / 5 skipped / 16 subtests passed，EDGS 78 passed。新增覆盖双向门槛、反向目标位置插值、匹配图/原图分辨率换算、无效分数/坐标、阈值先于采样、禁止低分补满、CLI/YAML 优先级、三角化误差上限与阈值变化拒绝旧初始化复用。
 
@@ -1263,7 +1292,7 @@ bash scripts/paintmesh/run_inpaint.sh mip-nerf/360_v2 kitchen 8 14 none 1
 
 Stage 7 始终使用 Stage 6 实际发布的 PLY：原路径局部优化关闭时是 5a，开启时是完成验证的 5b；路径 J 选择通过独立验证的联合训练输出。TSDF 算法与真实相机选择不变。以下最终真实视角 raw 导出仍为后续扩展，不是 Stage 5b 或路径 J 训练的前置条件；独立训练的诊断可直接保存 PGSR 返回的 raw 张量。
 
-扩展 [`EDGS/render.py`]( /home/martin/code/gsagent/submodules/EDGS/render.py:443)，保留已有 PNG，同时增加原始数组：
+后续拟扩展 [`EDGS/render.py`](../../submodules/EDGS/render.py)，保留已有 PNG，同时增加以下原始数组；下面是目标布局，不是当前已输出文件清单：
 
 ```text
 inpainted_3dgs/train/ours_5000/
@@ -1287,7 +1316,7 @@ TSDF 仍然使用：
 PGSR RGB + PGSR plane_depth
 ```
 
-不要直接把二维 normal 融入 TSDF。Open3D 提取 mesh 后重新计算 mesh vertex normals，再将 mesh normal 投影回视图，与 PGSR rendered normal 比较：
+不要直接把二维 normal 融入 TSDF。后续质量诊断拟在 Open3D 提取 mesh 并计算 vertex normals 后，将 mesh normal 投影回视图，与 PGSR rendered normal 比较；目前未接通以下统一评估：
 
 ```text
 normal angular error
@@ -1301,7 +1330,7 @@ normal seam error
 
 ## 十一、`run_remove.sh` 和 `run_inpaint.sh` 的改造
 
-建议保持旧的 8 个 stage 编号，增加子阶段，避免破坏旧 RGB/depth 结果。
+当前保持 `run_remove.sh` 的 5 个、`run_inpaint.sh` 的 8 个 stage 编号；子阶段不改变整数 stage 的续跑接口。
 
 ### `run_remove.sh`
 
@@ -1319,7 +1348,7 @@ Stage 4 改为：
 
 normal completion 根据上游数据自动执行，无需额外配置。默认原生分支没有 normal 时继续现有 RGB/depth 路径；PGSR 分支有 normal 时必须在同一个 Stage 3 完成 normal LaMa。虚拟视角 backend 不隐式启用局部优化。下面列出原 `inpaint360gs` 路径：Stage 5b 及其发布绑定已接入，Stage 4 与 seed 初始化保持原样。新 `INPAINT_PIPELINE=edgs-pgsr` 的 Stage 4/5/6 分派已按 J1/J5 接入，不使用下面的旧调用链。
 
-本入口已从上游 manifest 读取 N，将下面当前的 30 个支持 PLY、LaMa 帧集合和训练相机集合统一为 N；不在 inpaint 阶段重新选择轨迹，不改变单 seed 与 RGB-D 反投影算法。
+本入口从上游 manifest 读取 N，支持 PLY、LaMa 帧集合和训练相机集合均以该 N 为准；不在 inpaint 阶段重新选择轨迹，不改变单 seed 与 RGB-D 反投影算法。
 
 ```text
 Stage 2:
@@ -1330,7 +1359,10 @@ Stage 3:
     按 required modalities 统一验证并提交 completion manifest
 
 Stage 4:
-    原有 RGB-D 反投影 -> 30 个 support PLY（不变）
+    原有 RGB-D 反投影 -> N 个 support PLY
+
+Stage 4b:
+    仅 SUPPORT_DENSITY_MODE=mass_adaptive 时生成 seed 密度配额支持点
 
 Stage 5a:
     原有单 seed 初始化 + RGB 3DGS finetune（算法不变）
@@ -1439,30 +1471,17 @@ Stage 5a PLY + editable_mask -> rgb_finetune_manifest.json
 
 两个训练 producer 的验证分支互斥，公共发布检查不变。Stage 6/8 按记录的 pipeline 与本次请求交叉验证，不能只凭目录名选择来源，也不能要求新路径提供旧 fusion 或 RGB finetune 记录。详见 J5。
 
-各阶段 manifest 记录自身数据及上游 artifact IDs；以下是 PGSR normal 分支的字段示意（H/W 是待替换的数值）：
+各阶段 manifest 各有 schema，不存在一个混合所有字段的通用 JSON。当前关键字段分布如下，完整结构以各自 writer/validator 为准：
 
-```json
-{
-  "backend": "edgs-pgsr",
-  "capabilities": ["rgb", "depth", "alpha", "normal"],
-  "normal_source": "rendered_normal",
-  "camera_manifest_id": "...",
-  "model_artifact_id": "...",
-  "removal_variant": "all_selected",
-  "frames": ["00000", "00001"],
-  "shape": [H, W],
-  "normal_space": "camera",
-  "normal_orientation": "toward_camera",
-  "normal_layout": "HWC",
-  "depth_type": "plane_z",
-  "depth_unit": "scene",
-  "alpha_threshold": 0.01,
-  "required_modalities": ["rgb", "depth", "normal"],
-  "normal_completion_method": "lama",
-  "normal_encoding": "xyz_to_rgb_affine_v1",
-  "normal_completion_trigger": "upstream_normal_present"
-}
-```
+| 记录 | 当前字段/层级 | 含义 |
+|---|---|---|
+| `render_manifest.json` | `backend`、`capabilities`、`depth_kind`、`depth_unit` | 后端与真实提供的模态；PGSR 为 `plane_z/scene` |
+| 同上 | `normal_source`、`normal_space`、`normal_axes`、`normal_orientation`、`alpha_min` | 直接法线来源、坐标及有效性规则 |
+| 同上 | `camera_artifact_id`、`inputs.removal_variant`、`inputs.files` | 精确相机与 full/all-selected 模型来源 |
+| 同上 | `frames.<stem>.shape`、`frames.<stem>.outputs` | 每帧尺寸及相对输出路径 → SHA-256 |
+| `lama_input_manifest.json` | `parameters.required_modalities`、`parameters.normal` | normal 存在时三路需求；normal method/encoding/space/上游身份 |
+| `normal/prediction.json` | predictor/model/config/逐帧来源与输出记录 | normal 推理 receipt，不代替 completion |
+| `lama_completion_manifest.json` | `parameters.required_modalities`、`parameters.normal_method`、`parameters.normal_prediction_artifact_id` | 自动 normal 分支完成身份及统一逐帧输出校验 |
 
 按后端能力与阶段检查以下条件；normal 检查只适用于声明有 normal 的产物：
 
@@ -1479,7 +1498,7 @@ Stage 5a PLY + editable_mask -> rgb_finetune_manifest.json
 - 所需模态由上游推导；有 normal 时，不能复用缺 normal 的旧 completion manifest。
 - 模型权重、共同 hole mask、normal 推理 mask 与输入/输出 hash 都参与缓存身份。
 
-上述字段为概念示意；实际输入 manifest 在 `parameters.normal` 保存 method/encoding 与来源，`parameters.required_modalities` 保存三路需求。原生分支为兼容旧缓存不新增该字段（缺省含义为 RGB/depth），不生成占位 normal。method 是固定来源说明，不是运行模式选择。
+原生分支为兼容旧缓存不新增 normal 需求字段（缺省含义为 RGB/depth），不生成占位 normal。method 是固定来源说明，不是运行模式选择。改变 schema/字段不能通过手改 manifest 来伪造缓存兼容，必须经过对应 producer 和 validator。
 
 ---
 
@@ -1528,4 +1547,4 @@ Stage 5a PLY + editable_mask -> rgb_finetune_manifest.json
 
 J6 代码已接入，可运行接口与测试记录见 J7/J8。复用公共 completion，不以旧路径的 P1/P2 或延期的 D1/E 为前置依赖；未修改 Inpaint360GS 初始化器或全局 `run_seg`。下一步是真实完整初始化/训练与质量消融，不能把短训练和单对匹配测试解释为完整几何质量提升。
 
-本文记录设计要求与实现顺序；所列新增入口、配置和 worker 在落地并通过对应验收前，均不代表已有运行能力。
+本文同时保留实现状态与后续设计，二者以各节显式标注为准。当前可运行接口见 A/A0/B/C/D0/F/J；D1/E、G 的 raw 导出和专用 normal 网络不得当成已有功能。完整真实场景质量仍需单独验收。

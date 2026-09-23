@@ -8,7 +8,7 @@ init:
   max_points: 500000
   # Hard gate on BOTH raw forward/reverse RoMa certainty, before sampling.
   # Higher is stricter; this is not a calibrated geometric accuracy probability.
-  confidence_min: 0.8
+  confidence_min: 0.7
   reprojection_pixels: 2.0
   cycle_pixels: 3.0
   min_angle_deg: 0.5
