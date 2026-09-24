@@ -1,0 +1,4 @@
+*.pth
+CLAUDE.md
+*.pyc
+__pycache__/
