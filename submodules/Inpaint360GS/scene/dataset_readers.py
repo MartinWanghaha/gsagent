@@ -117,7 +117,7 @@ def readColmapCameras(cam_extrinsics, cam_intrinsics, images_folder, objects_fol
         
         if object_path is None:
             objects = None
-        elif ("inpaint360" in image_path) and ("test" in os.path.basename(extr.name)):
+        elif ("inpaint360" in image_path) and os.path.basename(extr.name).lower().startswith("test_"):
             # Note: For 'test_' images in inpainting360, 
             # DEVA and mask association outputs are skipped by default.
             objects = None
@@ -171,6 +171,14 @@ def readColmapSceneInfo(args, images, eval, object_path, llffhold=8, n_views=100
         cam_extrinsics = read_extrinsics_text(cameras_extrinsic_file)
         cam_intrinsics = read_intrinsics_text(cameras_intrinsic_file)
 
+    if getattr(args, "exclude_test_images", False):
+        cam_extrinsics = {
+            key: camera for key, camera in cam_extrinsics.items()
+            if not os.path.basename(camera.name).lower().startswith("test_")
+        }
+        if not cam_extrinsics:
+            raise ValueError(f"No reconstruction cameras remain in {path}")
+
     reading_dir = "images" if images == None else images
     object_dir = 'object_mask' if object_path == None else object_path    
 
@@ -194,10 +202,10 @@ def readColmapSceneInfo(args, images, eval, object_path, llffhold=8, n_views=100
         else:
             if "inpaint360" in args.source_path:
                 #  inpaint360 dataset contains inpaint GT
-                train_and_test_cam_infos = [c for idx, c in enumerate(cam_infos) if "test" not in c.image_name]
+                train_and_test_cam_infos = [c for c in cam_infos if not c.image_name.lower().startswith("test_")]
                 train_cam_infos = [c for idx, c in enumerate(train_and_test_cam_infos) if idx % llffhold != 0]
                 test_cam_infos = [c for idx, c in enumerate(train_and_test_cam_infos) if idx % llffhold == 0]
-                inpaint_cam_infos = [c for idx, c in enumerate(cam_infos) if "test" in c.image_name]
+                inpaint_cam_infos = [c for c in cam_infos if c.image_name.lower().startswith("test_")]
             else:
                 train_cam_infos = [c for idx, c in enumerate(cam_infos) if idx % llffhold != 0]
                 test_cam_infos = [c for idx, c in enumerate(cam_infos) if idx % llffhold == 0]
@@ -222,9 +230,9 @@ def readColmapSceneInfo(args, images, eval, object_path, llffhold=8, n_views=100
 
     else:
         if "inpaint360" in args.source_path:  #  mask association
-            train_cam_infos = [c for idx, c in enumerate(cam_infos) if "test" not in c.image_name]
+            train_cam_infos = [c for c in cam_infos if not c.image_name.lower().startswith("test_")]
             test_cam_infos = []
-            inpaint_cam_infos = [c for idx, c in enumerate(cam_infos) if "test" in c.image_name]   
+            inpaint_cam_infos = [c for c in cam_infos if c.image_name.lower().startswith("test_")]
         else:
             if train_split:
                 train_dir = os.path.join(path, "images_train")

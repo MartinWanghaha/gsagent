@@ -10,6 +10,7 @@ set -Eeuo pipefail
 #
 # Examples:
 #   scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 1
+#   scripts/paintmesh/run_seg "mip-nerf/360_v2" all 2 1
 #   EDGS_MODEL_ROOT=/absolute/path/to/an/edgs/run \
 #       scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 2
 #
@@ -24,6 +25,11 @@ set -Eeuo pipefail
 # Runtime configuration is provided through environment variables. Important
 # overrides include PAINTMESH_ENV, DATA_ROOT, OUTPUT_ROOT, EDGS_MODEL_ROOT,
 # BASE_ITERATION, DISTILL_ITERATION, GPU, PGSR_DEBUG and WRITE_COLORED_MESH.
+
+# Parse the full pipeline before starting long subprocesses. Bash otherwise
+# reads later commands from the script file after training returns; editing
+# that file during a run can leave its read offset inside unrelated syntax.
+main() {
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "${SCRIPT_DIR}/../.." && pwd)"
@@ -41,6 +47,42 @@ resolve_from_invocation() {
     fi
 }
 
+fail() {
+    echo "Error: $*" >&2
+    exit 1
+}
+
+resolve_scene() {
+    local dataset_root="$1"
+    local scene="$2"
+    local candidate
+    local -a matches=()
+
+    # Keep explicit paths and direct scene directories authoritative. Search
+    # the same single grouping level as batch discovery for a bare scene name.
+    if [[ "${scene}" == "all" || "${scene}" == */* || -d "${dataset_root}/${scene}" ]]; then
+        printf '%s\n' "${scene}"
+        return 0
+    fi
+    for candidate in "${dataset_root}"/*/"${scene}"; do
+        [[ -d "${candidate}/images" ]] || continue
+        matches+=("${candidate#"${dataset_root}/"}")
+    done
+    case "${#matches[@]}" in
+        0) printf '%s\n' "${scene}" ;;
+        1)
+            echo "Resolved scene: ${scene} -> ${matches[0]}" >&2
+            printf '%s\n' "${matches[0]}"
+            ;;
+        *)
+            printf "Error: ambiguous scene '%s' under %s; use a relative scene path:\n" \
+                "${scene}" "${dataset_root}" >&2
+            printf '  %s\n' "${matches[@]}" >&2
+            return 1
+            ;;
+    esac
+}
+
 DATA_ROOT="$(resolve_from_invocation "${DATA_ROOT:-${REPO_ROOT}/data}")"
 CKPT_ROOT="$(resolve_from_invocation "${CKPT_ROOT:-${REPO_ROOT}/ckpt}")"
 OUTPUT_ROOT="$(resolve_from_invocation "${OUTPUT_ROOT:-${REPO_ROOT}/output}")"
@@ -56,8 +98,34 @@ SCENE="${2:-${SCENE:-doppelherz}}"
 RESOLUTION="${3:-${RESOLUTION:-2}}"
 START_STAGE="${4:-${START_STAGE:-1}}"
 
+# Resolve before deriving output paths so shorthand, explicit, and batch runs
+# all share the same scene-specific artifacts.
+if [[ "${DATASET_NAME}" != "-h" && "${DATASET_NAME}" != "--help" ]]; then
+    SCENE="$(resolve_scene "${DATA_ROOT}/${DATASET_NAME}" "${SCENE}")"
+fi
+
+# Dataset names remain paths relative to DATA_ROOT. Inpaint360GS can contain
+# inpaint360/<scene> and others/<scene>, alongside mip-nerf/360_v2/<scene>.
+DATASET_TYPE="${DATASET_TYPE:-auto}"
+if [[ "${DATASET_TYPE}" == "auto" ]]; then
+    case "/${DATA_ROOT,,}/${DATASET_NAME,,}/" in
+        */inpaint360/*|*/inpaint360gs/*) DATASET_TYPE=inpaint360 ;;
+        *) DATASET_TYPE=colmap ;;
+    esac
+fi
+if [[ "${DATASET_TYPE}" == "inpaint360" ]]; then
+    EVAL="${EVAL:-false}"
+    EXCLUDE_TEST_IMAGES=true
+else
+    EVAL="${EVAL:-true}"
+    EXCLUDE_TEST_IMAGES=false
+fi
+
 BASE_ITERATION="${BASE_ITERATION:-30000}"
 DISTILL_ITERATION="${DISTILL_ITERATION:-2000}"
+DISTILL_DATA_DEVICE="${DISTILL_DATA_DEVICE:-cpu}"
+EDGS_SAVE_ITERATIONS="${EDGS_SAVE_ITERATIONS:-${BASE_ITERATION}}"
+DISTILL_SAVE_ITERATIONS="${DISTILL_SAVE_ITERATIONS:-${DISTILL_ITERATION}}"
 EDGS_IMAGES="${EDGS_IMAGES:-images}"
 NO_DENSIFY="${NO_DENSIFY:-true}"
 PGSR_DEBUG="${PGSR_DEBUG:-false}"
@@ -83,6 +151,14 @@ MESH_NORMAL_POWER="${MESH_NORMAL_POWER:-2.0}"
 MESH_MIN_CONFIDENCE="${MESH_MIN_CONFIDENCE:-0.10}"
 MESH_MIN_MARGIN="${MESH_MIN_MARGIN:-0.02}"
 MESH_UNKNOWN_ID="${MESH_UNKNOWN_ID:-65535}"
+
+# Explicit scene-specific output paths cannot be shared by a batch.
+SCENE_OUTPUT_OVERRIDES=()
+for output_variable in PIPELINE_ROOT EDGS_MODEL_ROOT EDGS_BRIDGE_ROOT SEMANTIC_GS_ROOT SEMANTIC_MESH_ROOT; do
+    if [[ -n "${!output_variable:-}" ]]; then
+        SCENE_OUTPUT_OVERRIDES+=("${output_variable}")
+    fi
+done
 
 PIPELINE_ROOT="$(resolve_from_invocation "${PIPELINE_ROOT:-${OUTPUT_ROOT}/paintmesh/${DATASET_NAME}/${SCENE}}")"
 EDGS_MODEL_ROOT="$(resolve_from_invocation "${EDGS_MODEL_ROOT:-${PIPELINE_ROOT}/edgs}")"
@@ -110,8 +186,48 @@ Usage:
 
 Examples:
   scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 1
+  scripts/paintmesh/run_seg "mip-nerf/360_v2" all 2 1
+  scripts/paintmesh/run_seg Inpaint360GS all 2 1
+  scripts/paintmesh/run_seg Inpaint360GS bag 2 1
+  scripts/paintmesh/run_seg Inpaint360GS inpaint360/doppelherz 2 1
   EDGS_MODEL_ROOT=/absolute/path/to/an/edgs/run \
       scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 2
+
+scene=all:
+  Run every scene directory containing images/ under DATA_ROOT/dataset_name,
+  sequentially on the selected GPU. Validate all input paths before starting;
+  stop on the first failed scene. Existing complete results are reused.
+  Use OUTPUT_ROOT to relocate batch outputs. Scene-specific output overrides
+  (PIPELINE_ROOT, EDGS_MODEL_ROOT, EDGS_BRIDGE_ROOT, SEMANTIC_GS_ROOT,
+  SEMANTIC_MESH_ROOT) are only supported for single-scene runs.
+  Scene directories may also be inside one grouping directory (e.g. inpaint360/).
+
+Single scenes:
+  Direct scene paths take precedence. A bare name such as Inpaint360GS bag also
+  searches one grouping level and resolves a unique match to inpaint360/bag.
+  Ambiguous names require an explicit path such as inpaint360/bag or others/bag.
+  Outputs retain the resolved relative scene path, as in batch mode.
+
+Dataset policy:
+  DATASET_TYPE=auto detects inpaint360/Inpaint360GS path components, ignoring case.
+  Inpaint360GS skips test_* reference images and defaults to EVAL=false: all
+  remaining images train the model. EVAL=true holds out every eighth eligible
+  image. Other COLMAP datasets, including mip-nerf, default to EVAL=true.
+  Missing Inpaint360GS images_2/4/8 are generated from the selected source images.
+  DATASET_TYPE=inpaint360 or colmap explicitly overrides detection.
+
+PLY save iterations (comma-separated positive integers):
+  EDGS_SAVE_ITERATIONS=3000,6000,9000,12000,15000,18000,21000,24000,27000,30000
+  DISTILL_SAVE_ITERATIONS=500,1000,1500,2000
+  Defaults save only the final iteration. The final iteration is always added;
+  requested iterations must not exceed BASE_ITERATION or DISTILL_ITERATION.
+  New save schedules apply to training; complete results are still reused.
+
+Distillation camera storage:
+  DISTILL_DATA_DEVICE=cpu (default) keeps images and instance masks in RAM;
+  the selected mask is transferred to CUDA for each training step.
+  Rendering and optimization still run on the selected GPU at the requested resolution.
+  Set DISTILL_DATA_DEVICE=cuda to preload all cameras into GPU memory.
 
 start_stage:
   1 = train EDGS-PGSR and extract the base TSDF mesh
@@ -133,11 +249,6 @@ not enable CUDA rasterizer crash snapshots.
 EOF
 }
 
-fail() {
-    echo "Error: $*" >&2
-    exit 1
-}
-
 require_dir() {
     [[ -d "$1" ]] || fail "required directory does not exist: $1"
 }
@@ -152,6 +263,29 @@ require_positive_integer() {
 
     [[ "${value}" =~ ^[1-9][0-9]*$ ]] || \
         fail "${name} must be a positive integer; got '${value}'"
+}
+
+parse_save_iterations() {
+    local value="$1"
+    local maximum="$2"
+    local name="$3"
+    local -n result="$4"
+    local iteration
+
+    [[ "${value}" =~ ^[0-9]+(,[0-9]+)*$ ]] || \
+        fail "${name} must be comma-separated positive integers without spaces; got '${value}'"
+    IFS=',' read -r -a result <<< "${value}"
+    for iteration in "${result[@]}"; do
+        require_positive_integer "${iteration}" "${name} entry"
+        # Compare as strings before arithmetic to reject arbitrarily large input
+        # without overflowing Bash integers.
+        if (( ${#iteration} > ${#maximum} )) || \
+            { (( ${#iteration} == ${#maximum} )) && [[ "${iteration}" > "${maximum}" ]]; }; then
+            fail "${name} entry ${iteration} exceeds final iteration ${maximum}"
+        fi
+    done
+    result+=("${maximum}")
+    mapfile -t result < <(printf '%s\n' "${result[@]}" | sort -n -u)
 }
 
 require_nonnegative_integer() {
@@ -294,7 +428,7 @@ validate_mask_pairs() {
     local mask_root="$2"
     local description="$3"
 
-    run_inpaint - "${image_root}" "${mask_root}" "${description}" <<'PY'
+    run_inpaint - "${image_root}" "${mask_root}" "${description}" "${EXCLUDE_TEST_IMAGES}" <<'PY'
 from pathlib import Path
 import sys
 
@@ -304,6 +438,7 @@ from PIL import Image
 image_root = Path(sys.argv[1])
 mask_root = Path(sys.argv[2])
 description = sys.argv[3]
+exclude_test_images = sys.argv[4] == "true"
 extensions = {".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff"}
 
 def index_by_stem(paths, kind):
@@ -328,11 +463,13 @@ images = index_by_stem(
         path
         for path in image_root.iterdir()
         if path.is_file() and path.suffix.lower() in extensions
+        and not (exclude_test_images and path.name.lower().startswith("test_"))
     ),
     "image",
 )
 masks = index_by_stem(
-    (path for path in mask_root.glob("*.png") if path.is_file()),
+    (path for path in mask_root.glob("*.png") if path.is_file()
+     and not (exclude_test_images and path.name.lower().startswith("test_"))),
     "mask",
 )
 
@@ -393,7 +530,7 @@ validate_bridge_contract() {
         "${SCENE_ROOT}" \
         "${EDGS_IMAGES}" \
         "${RESOLUTION}" \
-        "${BASE_ITERATION}" <<'PY'
+        "${BASE_ITERATION}" "${EVAL_OVERRIDE}" "${EXCLUDE_TEST_IMAGES}" <<'PY'
 import json
 from pathlib import Path
 import sys
@@ -412,6 +549,8 @@ checks = {
     "resolution": (int(payload["dataset"]["resolution"]), expected_resolution),
     "iteration": (int(payload["edgs"]["iteration"]), expected_iteration),
     "renderer backend": (payload["edgs"]["renderer_backend"], "pgsr"),
+    "evaluation split": (payload["dataset"]["eval"], sys.argv[6] == "true"),
+    "exclude test_* images": (payload["dataset"].get("exclude_test_images", False), sys.argv[7] == "true"),
 }
 mismatches = [
     f"{name}: actual={actual!r}, expected={expected!r}"
@@ -602,6 +741,9 @@ esac
 
 require_positive_integer "${BASE_ITERATION}" "BASE_ITERATION"
 require_positive_integer "${DISTILL_ITERATION}" "DISTILL_ITERATION"
+parse_save_iterations "${EDGS_SAVE_ITERATIONS}" "${BASE_ITERATION}" EDGS_SAVE_ITERATIONS EDGS_SAVE_STEPS
+parse_save_iterations "${DISTILL_SAVE_ITERATIONS}" "${DISTILL_ITERATION}" DISTILL_SAVE_ITERATIONS DISTILL_SAVE_STEPS
+EDGS_SAVE_CONFIG="[$(IFS=','; echo "${EDGS_SAVE_STEPS[*]}")]"
 require_positive_integer "${NUM_CLUSTERS}" "NUM_CLUSTERS"
 require_positive_integer "${MESH_NEIGHBORS}" "MESH_NEIGHBORS"
 require_positive_integer "${MESH_CHUNK_SIZE}" "MESH_CHUNK_SIZE"
@@ -610,6 +752,22 @@ require_boolean "${PGSR_DEBUG}"
 require_boolean "${USE_DEPTH_FILTER}"
 require_boolean "${RENDER_VIDEO}"
 require_boolean "${WRITE_COLORED_MESH}"
+case "${DATASET_TYPE}" in
+    inpaint360|colmap) ;;
+    *) fail "DATASET_TYPE must be auto, inpaint360, or colmap; got '${DATASET_TYPE}'" ;;
+esac
+require_boolean "${EVAL}"
+EVAL_OVERRIDE=false
+INPAINT_DATA_ARGS=()
+SEGMENTATION_DATA_ARGS=()
+if is_true "${EVAL}"; then
+    EVAL_OVERRIDE=true
+    INPAINT_DATA_ARGS+=(--eval)
+fi
+if is_true "${EXCLUDE_TEST_IMAGES}"; then
+    INPAINT_DATA_ARGS+=(--exclude_test_images)
+    SEGMENTATION_DATA_ARGS+=(--exclude_test_images)
+fi
 if is_true "${NO_DENSIFY}"; then
     NO_DENSIFY_OVERRIDE=true
 else
@@ -631,11 +789,63 @@ require_relative_subdirectory \
 
 require_dir "${EDGS_ROOT}"
 require_dir "${INPAINT_ROOT}"
-require_dir "${SCENE_ROOT}"
-require_dir "${SCENE_ROOT}/${EDGS_IMAGES}"
 command -v "${CONDA_BIN}" >/dev/null || fail "conda executable not found: ${CONDA_BIN}"
 
+if [[ "${SCENE}" == "all" ]]; then
+    if (( ${#SCENE_OUTPUT_OVERRIDES[@]} > 0 )); then
+        fail "scene=all cannot share scene-specific output overrides: ${SCENE_OUTPUT_OVERRIDES[*]}; use OUTPUT_ROOT instead"
+    fi
+    DATASET_ROOT="${DATA_ROOT}/${DATASET_NAME}"
+    require_dir "${DATASET_ROOT}"
+    BATCH_SCENES=()
+    for scene_directory in "${DATASET_ROOT}"/*/ "${DATASET_ROOT}"/*/*/; do
+        [[ -d "${scene_directory}/images" ]] || continue
+        scene_name="${scene_directory%/}"
+        scene_name="${scene_name#"${DATASET_ROOT}/"}"
+        [[ "${scene_name}" != "all" ]] || fail "'all' is reserved for batch runs; rename the scene directory ${scene_directory}"
+        BATCH_SCENES+=("${scene_name}")
+        require_dir "${scene_directory}/${EDGS_IMAGES}"
+        if (( START_STAGE <= 5 )); then
+            if [[ "${DATASET_TYPE}" != "inpaint360" ]] || (( START_STAGE > 2 )); then
+                require_dir "${scene_directory}/${SEGMENTATION_IMAGE_FOLDER}"
+            fi
+            require_dir "${scene_directory}/sparse/0"
+            require_colmap_model "${scene_directory}/sparse/0"
+        fi
+    done
+    (( ${#BATCH_SCENES[@]} > 0 )) || fail "no scene directories containing images/ found under ${DATASET_ROOT}"
+    if (( START_STAGE <= 2 )); then
+        require_file "${CKPT_ROOT}/CropFormer_hornet_3x_03823a.pth"
+    fi
+    echo "Batch dataset : ${DATASET_ROOT}"
+    echo "Batch scenes  : ${BATCH_SCENES[*]}"
+    echo "Dataset policy: ${DATASET_TYPE}; eval=${EVAL_OVERRIDE}; exclude_test_images=${EXCLUDE_TEST_IMAGES}"
+    echo "EDGS PLY save iterations: ${EDGS_SAVE_STEPS[*]}"
+    echo "Semantic PLY save iterations: ${DISTILL_SAVE_STEPS[*]}"
+    for (( scene_index = 0; scene_index < ${#BATCH_SCENES[@]}; scene_index++ )); do
+        scene_name="${BATCH_SCENES[scene_index]}"
+        echo "[scene $((scene_index + 1))/${#BATCH_SCENES[@]}] ${scene_name}"
+        if "${SCRIPT_DIR}/run_seg.sh" "${DATASET_NAME}" "${scene_name}" "${RESOLUTION}" "${START_STAGE}"; then
+            echo "Completed scene: ${scene_name}"
+        else
+            scene_status=$?
+            echo "Error: batch stopped at scene '${scene_name}' (exit ${scene_status})." >&2
+            exit "${scene_status}"
+        fi
+    done
+    echo "Completed all ${#BATCH_SCENES[@]} scenes."
+    exit 0
+fi
+
+require_dir "${SCENE_ROOT}"
+require_dir "${SCENE_ROOT}/${EDGS_IMAGES}"
+
 if (( START_STAGE <= 5 )); then
+    if [[ "${DATASET_TYPE}" == "inpaint360" ]] && (( START_STAGE <= 2 )); then
+        run_inpaint "${SCRIPT_DIR}/prepare_seg_images.py" \
+            --source "${SCENE_ROOT}" --images "${EDGS_IMAGES}" \
+            --resolution "${RESOLUTION}" "${SEGMENTATION_DATA_ARGS[@]}"
+    fi
     require_dir "${SCENE_ROOT}/${SEGMENTATION_IMAGE_FOLDER}"
     require_dir "${SCENE_ROOT}/sparse/0"
     require_colmap_model "${SCENE_ROOT}/sparse/0"
@@ -662,8 +872,12 @@ echo "EDGS model             : ${EDGS_MODEL_ROOT}"
 echo "Semantic 3DGS          : ${SEMANTIC_GS_ROOT}"
 echo "Semantic mesh          : ${SEMANTIC_MESH_ROOT}"
 echo "Resolution             : ${RESOLUTION}"
+echo "Dataset policy         : ${DATASET_TYPE}; eval=${EVAL_OVERRIDE}; exclude_test_images=${EXCLUDE_TEST_IMAGES}"
 echo "Base iteration         : ${BASE_ITERATION}"
 echo "Distill iteration      : ${DISTILL_ITERATION}"
+echo "Distill camera storage : ${DISTILL_DATA_DEVICE}"
+echo "EDGS PLY save iterations: ${EDGS_SAVE_STEPS[*]}"
+echo "Semantic PLY save iterations: ${DISTILL_SAVE_STEPS[*]}"
 echo "Start stage            : ${START_STAGE}"
 if is_true "${PGSR_DEBUG}"; then
     echo "PGSR training debug    : ${EDGS_DEBUG_ROOT} (every ${PGSR_DEBUG_INTERVAL} steps, after ${PGSR_DEBUG_FROM_ITER})"
@@ -730,8 +944,11 @@ if (( START_STAGE <= 1 )); then
             "gs.dataset.model_path=${EDGS_MODEL_ROOT}"
             "gs.dataset.images=${EDGS_IMAGES}"
             "gs.dataset.resolution=${RESOLUTION}"
-            gs.dataset.eval=true
-            "gs.opt.save_iterations=[${BASE_ITERATION}]"
+            "gs.dataset.eval=${EVAL_OVERRIDE}"
+            "gs.opt.evaluation_enabled=${EVAL_OVERRIDE}"
+            "gs.do_train_test_split=${EVAL_OVERRIDE}"
+            "gs.dataset.exclude_test_images=${EXCLUDE_TEST_IMAGES}"
+            "gs.opt.save_iterations=${EDGS_SAVE_CONFIG}"
             init_wC.use=true
             wandb.mode=disabled
         )
@@ -788,7 +1005,8 @@ if (( START_STAGE <= 2 )); then
         --scene_name "${SCENE}" \
         --image_folder "${SEGMENTATION_IMAGE_FOLDER}" \
         --method hqsam \
-        --threshold "${SEG_THRESHOLD}"
+        --threshold "${SEG_THRESHOLD}" \
+        "${SEGMENTATION_DATA_ARGS[@]}"
 else
     echo "[2/6] Skipping per-view CropFormer masks"
 fi
@@ -809,12 +1027,13 @@ if (( START_STAGE <= 3 )); then
         --resolution "${RESOLUTION}" \
         --mask_generator hqsam \
         --patch "${ASSOCIATION_PATCH}" \
-        --eval
+        "${INPAINT_DATA_ARGS[@]}"
 
     run_inpaint tools/add_label_num_hqsam.py \
         --source_path "${SCENE_ROOT}" \
         --resolution "${RESOLUTION}" \
-        --mask_generator hqsam
+        --mask_generator hqsam \
+        "${SEGMENTATION_DATA_ARGS[@]}"
 else
     echo "[3/6] Skipping cross-view instance association"
 fi
@@ -835,11 +1054,12 @@ if (( START_STAGE <= 4 )); then
         --images "${EDGS_IMAGES}" \
         --resolution "${RESOLUTION}" \
         --object_path associated_hqsam \
+        --data_device "${DISTILL_DATA_DEVICE}" \
         --config_file "${DISTILL_CONFIG}" \
         --test_iterations "${DISTILL_ITERATION}" \
-        --save_iterations "${DISTILL_ITERATION}" \
+        --save_iterations "${DISTILL_SAVE_STEPS[@]}" \
         --checkpoint_iterations "${DISTILL_ITERATION}" \
-        --eval
+        "${INPAINT_DATA_ARGS[@]}"
 else
     echo "[4/6] Skipping Gaussian object-feature distillation"
 fi
@@ -910,3 +1130,9 @@ fi
 echo "PaintMesh semantic segmentation completed."
 echo "Semantic 3DGS: ${SEMANTIC_ITERATION_ROOT}"
 echo "Semantic mesh: ${SEMANTIC_MESH_ROOT}"
+
+}
+
+# Parse exit together with the call, so Bash never rereads a changed file after
+# the pipeline returns either.
+main "$@"; exit $?

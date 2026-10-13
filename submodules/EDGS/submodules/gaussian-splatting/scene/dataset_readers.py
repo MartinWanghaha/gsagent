@@ -142,7 +142,7 @@ def storePly(path, xyz, rgb):
     ply_data = PlyData([vertex_element])
     ply_data.write(path)
 
-def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8):
+def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8, exclude_test_images=False):
     try:
         cameras_extrinsic_file = os.path.join(path, "sparse/0", "images.bin")
         cameras_intrinsic_file = os.path.join(path, "sparse/0", "cameras.bin")
@@ -153,6 +153,16 @@ def readColmapSceneInfo(path, images, depths, eval, train_test_exp, llffhold=8):
         cameras_intrinsic_file = os.path.join(path, "sparse/0", "cameras.txt")
         cam_extrinsics = read_extrinsics_text(cameras_extrinsic_file)
         cam_intrinsics = read_intrinsics_text(cameras_intrinsic_file)
+
+    # Inpaint360GS test_* frames show the edited scene. They must be removed
+    # before either loading images or selecting the optional LLFF holdout.
+    if exclude_test_images:
+        cam_extrinsics = {
+            key: camera for key, camera in cam_extrinsics.items()
+            if not os.path.basename(camera.name).lower().startswith("test_")
+        }
+        if not cam_extrinsics:
+            raise ValueError(f"No reconstruction cameras remain in {path}")
 
     depth_params_file = os.path.join(path, "sparse/0", "depth_params.json")
     ## if depth_params_file isnt there AND depths file is here -> throw error

@@ -143,6 +143,16 @@ def test_trainer_keeps_legacy_config_on_native_backend(monkeypatch):
     assert isinstance(trainer._get_lpips(), _FakeLPIPS)
 
 
+def test_disabled_evaluation_has_no_scheduled_metric_passes():
+    trainer = EDGSTrainer(
+        _FakeGS(backend="native"),
+        _training_config(evaluation_enabled=False),
+        device="cpu", log_wandb=False,
+    )
+    assert trainer.evaluate_iterations == []
+    assert trainer.lpips is None
+
+
 def test_trainer_rejects_pgsr_loss_with_native_renderer():
     gs = _FakeGS(backend="native")
 

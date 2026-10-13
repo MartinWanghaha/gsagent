@@ -42,17 +42,17 @@ scripts/paintmesh/run_inpaint --help
 # 1. 语义重建：Stage 1..6
 PAINTMESH_ENV=paintmesh GPU=0 \
   scripts/paintmesh/run_seg \
-  "mip-nerf/360_v2" kitchen 8 1
+  "mip-nerf/360_v2" kitchen 2 1
 
 # 2. 移除并启动交互 tracker：Stage 1..5
 PAINTMESH_ENV=paintmesh GPU=0 END_STAGE=5 \
   scripts/paintmesh/run_remove \
-  "mip-nerf/360_v2" kitchen 8 14 none 1
+  "mip-nerf/360_v2" kitchen 2 14 none 1
 
 # 3. RGB/depth/3DGS/mesh 补全：Stage 1..8
 PAINTMESH_ENV=paintmesh LAMA_ENV=lama GPU=0 END_STAGE=8 \
   scripts/paintmesh/run_inpaint \
-  "mip-nerf/360_v2" kitchen 8 14 none 1
+  "mip-nerf/360_v2" kitchen 2 14 none 1
 ```
 
 三个入口的依赖关系不可颠倒：`run_remove` 读取 `run_seg` 的冻结语义结果，`run_inpaint` 读取已经完成 Stage 4–5 的 `run_remove` 结果。
@@ -77,7 +77,7 @@ LAMA_ENV=lama
 ```text
 data/<dataset>/<scene>/
 ├── images/
-├── images_2/、images_4/ 或 images_8/   # 选择对应倍率时必须存在
+├── images_2/、images_4/ 或 images_8/   # 对应倍率；Inpaint360GS 缺失时自动生成
 └── sparse/0/                            # COLMAP 模型
 ```
 
@@ -86,6 +86,8 @@ data/<dataset>/<scene>/
 - `1`：2D 分割读取 `images/`；
 - `2/4/8`：2D 分割读取 `images_<resolution>/`；
 - EDGS 和 Inpaint360GS 同时接收 `--resolution`/`gs.dataset.resolution`，因此三个脚本必须使用同一个倍率。
+
+预生成的 `images_2/4/8` 与相机加载器的取整结果可能相差 1 个像素。Stage 3 仅在投影时用最近邻缩放对齐这类差异，关联 mask 仍保存为原分割图像尺寸；Stage 4 加载标签时再对齐相机尺寸。实例 ID 使用整数保存，尺寸差异超过 1 像素仍会报错。
 
 ### 2.3 Checkpoint
 
@@ -119,9 +121,69 @@ scripts/paintmesh/run_seg dataset_name scene resolution start_stage
 | 位置 | 参数 | 默认值 | 说明 |
 |---:|---|---|---|
 | 1 | `dataset_name` | `inpaint360` | `DATA_ROOT` 下的相对数据集路径，可包含 `/` |
-| 2 | `scene` | `doppelherz` | 单个场景目录名 |
+| 2 | `scene` | `doppelherz` | 单个场景目录名，或 `all` 依次运行全部场景 |
 | 3 | `resolution` | `2` | `1/2/4/8` |
 | 4 | `start_stage` | `1` | 首个执行阶段，范围 `1..6` |
+
+全场景以 1/2 分辨率执行 Stage 1–6：
+
+```bash
+PAINTMESH_ENV=paintmesh GPU=0 \
+  scripts/paintmesh/run_seg "mip-nerf/360_v2" all 2 1
+```
+
+`all` 扫描数据集下包含 `images/` 的场景目录，运行前检查所有场景的图像目录和 COLMAP 文件，然后顺序执行；任一场景失败就停止，已有完整结果会复用。每个场景使用独立的默认输出目录。批量修改输出位置请设置 `OUTPUT_ROOT`；`PIPELINE_ROOT`、`EDGS_MODEL_ROOT`、`EDGS_BRIDGE_ROOT`、`SEMANTIC_GS_ROOT`、`SEMANTIC_MESH_ROOT` 只用于单场景运行。
+
+同级的 Inpaint360GS 数据也支持，包括解压后的分组目录：
+
+```text
+data/
+├── mip-nerf/360_v2/<scene>/
+└── Inpaint360GS/
+    ├── inpaint360/<scene>/
+    └── others/<scene>/
+```
+
+```bash
+# 全部场景，包括 inpaint360 和 others，1/4 分辨率
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS all 4 1
+
+# 只运行主数据集的 11 个场景
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS/inpaint360 all 4 1
+
+# 单场景
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS inpaint360/doppelherz 4 1
+
+# 场景名唯一时可省略分组，1/2 分辨率
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS bag 2 1
+```
+
+单场景优先使用直接目录；若不存在，则向下一层分组查找。`Inpaint360GS bag` 会自动解析为 `Inpaint360GS inpaint360/bag`，两种写法默认均输出到 `output/paintmesh/Inpaint360GS/inpaint360/bag/`，与批量运行一致。同名场景出现在多个分组时，必须指定分组路径。
+
+Inpaint360GS 默认 `EVAL=false`：所有非 `test_*` 图像都用于 3DGS 训练，不再每 8 张留出 1 张，也关闭训练中的定期指标评估。文件名前缀 `test_`（忽略大小写）表示修复参考图，始终从训练、分割、关联、蒸馏和对应 mask 校验中排除，原文件保留。设置 `EVAL=true` 可以对剩余图像启用每 8 张留出 1 张的评估划分；这些留出图像仍生成关联 mask。
+
+mip-nerf 保持默认 `EVAL=true`。`DATASET_TYPE=auto` 根据数据路径中的 `inpaint360`/`Inpaint360GS` 目录名识别类型；重命名后的数据可用 `DATASET_TYPE=inpaint360` 指定。`all` 同时发现直接子目录和下一层分组目录中的场景，输出保留相对场景路径，避免重名冲突。
+
+Inpaint360GS 缺少的 `images_2/4/8` 会从非 `test_*` 原图自动生成，已有图像不覆盖；相机与分割图尺寸使用同一取整规则。模型保存排除规则和评估配置，恢复阶段会检查它们是否与当前请求一致。
+
+更多 PLY 保存节点并记录终端输出：
+
+```bash
+mkdir -p logs
+set -o pipefail
+log_file="logs/run_seg_all_r2_$(date +%Y%m%d_%H%M%S).log"
+
+PAINTMESH_ENV=paintmesh GPU=0 PYTHONUNBUFFERED=1 \
+  OUTPUT_ROOT=output/multi_ply_r2 \
+  EDGS_SAVE_ITERATIONS=3000,6000,9000,12000,15000,18000,21000,24000,27000,30000 \
+  DISTILL_SAVE_ITERATIONS=500,1000,1500,2000 \
+  scripts/paintmesh/run_seg "mip-nerf/360_v2" all 2 1 \
+  2>&1 | tee "$log_file"
+```
+
+两个保存参数使用逗号分隔的正整数，不含空格，分别不能超过 `BASE_ITERATION` 和 `DISTILL_ITERATION`；最终步会自动加入。EDGS 保存 PLY 和训练 checkpoint，语义蒸馏保存 PLY 及对应的 `classifier.pth`。默认仍只保存最终节点。
+
+此示例使用新的 `output/multi_ply_r2` 根目录，中间 PLY 位于各场景 `edgs/point_cloud/iteration_<步数>/point_cloud.ply` 和 `semantic_3dgs/point_cloud/iteration_<步数>/point_cloud.ply`。保存节点只对新训练生效，已完成结果的中间节点不能补生成。`tee` 同时输出到终端与日志，`pipefail` 保留流水线失败状态。
 
 `run_seg` 没有 `END_STAGE`：`start_stage=N` 会验证前置产物，然后执行 `N..6`。例如从语义提升恢复：
 
@@ -227,6 +289,9 @@ END_STAGE=6 \
 | 变量 | 默认值 | 作用 |
 |---|---|---|
 | `BASE_ITERATION` | `30000` | EDGS-PGSR 训练/mesh 迭代 |
+| `DATASET_TYPE` | `auto` | `auto`、`inpaint360` 或 `colmap`；控制数据集识别和 `test_*` 过滤 |
+| `EVAL` | Inpaint360GS 为 `false`，其他为 `true` | 控制每 8 张留出 1 张以及训练中的指标评估；Inpaint360GS 的 `test_*` 参考图始终排除 |
+| `DISTILL_DATA_DEVICE` | `cpu` | Stage 4 图像和实例 mask 存放在内存，按需传到 GPU；渲染和训练仍使用 GPU，分辨率不变。设为 `cuda` 会将全部相机数据常驻显存 |
 | `NO_DENSIFY` | `true` | 传给 `train.no_densify` |
 | `SEG_THRESHOLD` | `0.5` | CropFormer mask 阈值 |
 | `ASSOCIATION_PATCH` | `16` | 跨视角关联 patch 大小 |

@@ -20,6 +20,8 @@ def main(args):
 
     all_labels = set()
     for image_name in images_path:
+        if args.exclude_test_images and image_name.lower().startswith("test_"):
+            continue
         image_path = os.path.join(img_dir, image_name)
         image = cv2.imread(image_path)
         if image is None:
@@ -81,6 +83,7 @@ if __name__ == "__main__":
                         help="Image resolution level, e.g., 1 or 2")
     parser.add_argument("--mask_generator", type=str, default="hqsam",
                         help="Type of mask generator, e.g., hqsam or sam")
+    parser.add_argument("--exclude_test_images", action="store_true")
     args = parser.parse_args()
 
     main(args)

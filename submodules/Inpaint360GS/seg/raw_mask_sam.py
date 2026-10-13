@@ -50,6 +50,12 @@ except AttributeError:
     if hasattr(MetadataCatalog, "_NAME_TO_META"):
         MetadataCatalog._NAME_TO_META.clear()
 
+# CropFormer's dataset registration derives its COCO metadata from Detectron2's
+# built-in datasets. Recreate those entries after clearing both catalogs.
+import importlib
+from detectron2.data.datasets import builtin as _detectron2_builtin
+importlib.reload(_detectron2_builtin)
+
 # ============================================================
 # Now safely import detectron2 / CropFormer
 # ============================================================
@@ -120,7 +126,7 @@ def generate_hqsam_mask(model, image, threshold: float):
     return mask_id
 
 
-def process_images(model, method: str, image_folder: str, output_folder: str, threshold: float):
+def process_images(model, method: str, image_folder: str, output_folder: str, threshold: float, exclude_test_images=False):
     
     os.makedirs(output_folder, exist_ok=True)
 
@@ -129,6 +135,7 @@ def process_images(model, method: str, image_folder: str, output_folder: str, th
         for name in sorted(os.listdir(image_folder))
         if os.path.isfile(os.path.join(image_folder, name))
         and os.path.splitext(name)[1].lower() in IMAGE_EXTENSIONS
+        and not (exclude_test_images and name.lower().startswith("test_"))
     ]
     if not image_names:
         raise FileNotFoundError(f"No supported input images found in {image_folder}")
@@ -168,6 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--image_folder", "-i", default="images_2", type=str)
     parser.add_argument("--method", "-m", default="hqsam", type=str, choices=["hqsam", "sam"])
     parser.add_argument("--threshold", "-t", default=0.5, type=float)
+    parser.add_argument("--exclude_test_images", action="store_true", help="Skip Inpaint360GS test_* reference images")
 
     args = parser.parse_args()
     if not 0.0 <= args.threshold <= 1.0:
@@ -187,4 +195,4 @@ if __name__ == "__main__":
     model = load_segmentation_model(config, args.method, device)
 
     print("Generating masks...")
-    process_images(model, args.method, image_folder, output_folder, args.threshold)
+    process_images(model, args.method, image_folder, output_folder, args.threshold, args.exclude_test_images)

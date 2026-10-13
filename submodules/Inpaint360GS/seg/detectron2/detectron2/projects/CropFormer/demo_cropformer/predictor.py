@@ -17,7 +17,10 @@ from detectron2.engine.defaults import DefaultPredictor
 from detectron2.utils.video_visualizer import VideoVisualizer
 from detectron2.utils.visualizer import ColorMode, Visualizer
 
-from mask2former.data.dataset_mappers.crop_augmentations import BatchResizeShortestEdge, EntityCrop, EntityCropTransform
+if __package__ and ".CropFormer." in __package__:
+    from ..mask2former.data.dataset_mappers.crop_augmentations import BatchResizeShortestEdge, EntityCrop, EntityCropTransform
+else:
+    from mask2former.data.dataset_mappers.crop_augmentations import BatchResizeShortestEdge, EntityCrop, EntityCropTransform
 
 
 class VisualizationDemo(object):

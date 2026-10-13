@@ -95,6 +95,7 @@ class GaussianMaskAssociator(torch.nn.Module):
         self.keyobject_database = []
         self.assigned_gaussians = []
         self.num_classes = 0
+        self._reported_mask_resizes = set()
     
     def update_keyobject_database(self, obj_index: int, foreground_gaussians: torch.Tensor):
         """
@@ -229,16 +230,10 @@ class GaussianMaskAssociator(torch.nn.Module):
             else:
                 labels = self.associate(cam_view.to(self.device))
             
-            mask_path = os.path.join(self.raw_mask_folder, cam_view.image_name + ".png")  
-            raw_mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
-            if raw_mask is None:
-                raise FileNotFoundError(f"Mask file not found: {mask_path}")
-            expected_shape = (cam_view.image_height, cam_view.image_width)
-            if raw_mask.shape != expected_shape:
-                raise ValueError(
-                    f"Mask {mask_path} has shape {raw_mask.shape}; expected {expected_shape}. "
-                    "Generate masks at the same resolution used by the cameras."
-                )
+            # Save at the original segmentation image size. Only projection
+            # needs camera-sized masks; distillation resizes these label PNGs
+            # with nearest-neighbor interpolation when loading each camera.
+            raw_mask = self._read_raw_mask(cam_view)
             remapped_mask = self.remap_mask(labels, raw_mask)                         
             remapped_mask_path = os.path.join(self.associated_mask_folder, cam_view.image_name + ".png") 
             if not cv2.imwrite(remapped_mask_path, remapped_mask):
@@ -298,20 +293,39 @@ class GaussianMaskAssociator(torch.nn.Module):
         return projected_gaussian
 
     
-    def get_binary_mask(self, cam_view):
-
+    def _read_raw_mask(self, cam_view):
         mask_path = os.path.join(self.raw_mask_folder, cam_view.image_name + ".png")
         mask = cv2.imread(mask_path, cv2.IMREAD_UNCHANGED)
 
         if mask is None:
             raise FileNotFoundError(f"Mask file not found: {mask_path}")
-        if len(mask.shape) != 2:
+        if mask.ndim != 2 or not np.issubdtype(mask.dtype, np.integer):
             raise ValueError(f"Invalid mask shape: {mask.shape} in {mask_path}")
         expected_shape = (cam_view.image_height, cam_view.image_width)
-        if mask.shape != expected_shape:
+        # Precomputed images_2/4/8 and round(original_size / resolution)
+        # can differ by one pixel. Reject larger mismatches, which may be
+        # stale masks generated at another resolution.
+        if any(abs(actual - expected) > 1 for actual, expected in zip(mask.shape, expected_shape)):
             raise ValueError(f"Invalid mask shape: {mask.shape} in {mask_path}; expected {expected_shape}")
+        return mask
 
-        binary_mask_np = convert_instance_mask_to_binary_masks(mask)
+    def get_binary_mask(self, cam_view):
+        mask = self._read_raw_mask(cam_view)
+        num_instances = int(mask.max())
+        expected_shape = (cam_view.image_height, cam_view.image_width)
+        if mask.shape != expected_shape:
+            sizes = (mask.shape, expected_shape)
+            if sizes not in self._reported_mask_resizes:
+                print(
+                    f"Aligning raw masks {mask.shape} -> {expected_shape} for Gaussian "
+                    "projection with nearest-neighbor interpolation; saved masks retain their original size."
+                )
+                self._reported_mask_resizes.add(sizes)
+            mask = cv2.resize(mask, (cam_view.image_width, cam_view.image_height), interpolation=cv2.INTER_NEAREST)
+
+        # Keep one channel for every original ID even when a one-pixel
+        # instance disappears during resampling, so remapping remains valid.
+        binary_mask_np = convert_instance_mask_to_binary_masks(mask, num_instances=num_instances)
         binary_mask = torch.tensor(binary_mask_np, dtype=torch.bool, device=self.device)
 
         return binary_mask

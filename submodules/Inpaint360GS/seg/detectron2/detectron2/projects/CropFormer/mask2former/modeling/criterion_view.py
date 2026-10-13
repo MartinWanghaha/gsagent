@@ -15,7 +15,7 @@ from detectron2.projects.point_rend.point_features import (
     point_sample,
 )
 
-from mask2former.utils.misc import is_dist_avail_and_initialized
+from ..utils.misc import is_dist_avail_and_initialized
 
 import pdb
 

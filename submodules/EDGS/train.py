@@ -40,6 +40,7 @@ def main(cfg: omegaconf.DictConfig):
             "train_test_exp": cfg.gs.dataset.train_test_exp,
             "data_device": cfg.gs.dataset.data_device,
             "eval": cfg.gs.dataset.eval,
+            "exclude_test_images": cfg.gs.dataset.get("exclude_test_images", False),
             "convert_SHs_python": cfg.gs.pipe.convert_SHs_python,
             "compute_cov3D_python": cfg.gs.pipe.compute_cov3D_python,
             "debug": cfg.gs.pipe.debug,

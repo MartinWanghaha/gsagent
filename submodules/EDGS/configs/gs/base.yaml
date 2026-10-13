@@ -1,6 +1,7 @@
 _target_: source.networks.Warper3DGS
 
 verbose: True
+do_train_test_split: true
 viewpoint_stack: !!null
 sh_degree: 3
 
@@ -30,6 +31,7 @@ opt:
   random_background: false
   save_iterations: [3000, 7000, 15000, 30000]
   batch_size: 64
+  evaluation_enabled: true
   exposure_lr_init: 0.01
   exposure_lr_final: 0.0001
   exposure_lr_delay_steps: 0
@@ -56,5 +58,6 @@ dataset:
   white_background: false
   data_device: cuda
   eval: false
+  exclude_test_images: false
   depths: ""
   train_test_exp: False

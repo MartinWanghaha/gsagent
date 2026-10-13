@@ -638,7 +638,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             load_iteration=iteration,
             shuffle=False,
         )
-        scene_cameras_train_test_split(scene, verbose=not args.quiet)
+        if config.gs.get("do_train_test_split", True):
+            scene_cameras_train_test_split(scene, verbose=not args.quiet)
         background = torch.tensor(
             (
                 [1.0, 1.0, 1.0]

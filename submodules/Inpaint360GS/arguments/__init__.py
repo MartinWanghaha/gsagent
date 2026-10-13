@@ -50,6 +50,7 @@ class ModelParams(ParamGroup):
         self._vanilla_3dgs_path = ""
         self._object_path = "object_mask"
         self.eval = False
+        self.exclude_test_images = False
 
  
 

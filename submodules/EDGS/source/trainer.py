@@ -89,7 +89,7 @@ class EDGSTrainer:
         self.gs_step = 0
         self.CONSOLE = Console(width=120, theme=custom_theme)
         self.saving_iterations = training_config.save_iterations
-        self.evaluate_iterations = None
+        self.evaluate_iterations = None if getattr(training_config, "evaluation_enabled", True) else []
         self.batch_size = training_config.batch_size
         self.ema_loss_for_log = 0.0
 

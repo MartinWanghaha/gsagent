@@ -51,6 +51,60 @@ ckpt/groundingdino_swint_ogc.pth
 scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 1
 ```
 
+Use `all` to run every scene in the dataset at half resolution:
+
+```bash
+PAINTMESH_ENV=paintmesh GPU=0 \
+  scripts/paintmesh/run_seg "mip-nerf/360_v2" all 2 1
+```
+
+Batch mode finds scene directories containing `images/`, checks all required
+image directories and COLMAP files before starting, and runs scenes
+sequentially. It stops at the first failed scene and reuses complete outputs.
+Each scene retains its own default output directory. Use `OUTPUT_ROOT` to
+relocate batch outputs; `PIPELINE_ROOT`, `EDGS_MODEL_ROOT`, `EDGS_BRIDGE_ROOT`,
+`SEMANTIC_GS_ROOT`, and `SEMANTIC_MESH_ROOT` are single-scene overrides.
+
+Inpaint360GS can live alongside mip-nerf under `data/`, including its extracted
+`inpaint360/<scene>` and `others/<scene>` groups:
+
+```bash
+# All groups; replace Inpaint360GS with Inpaint360GS/inpaint360 for the main 11 scenes.
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS all 4 1
+# One scene, addressed relative to the dataset directory.
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS inpaint360/doppelherz 4 1
+# A unique scene name can omit its group (half resolution).
+PAINTMESH_ENV=paintmesh GPU=1 scripts/paintmesh/run_seg Inpaint360GS bag 2 1
+```
+
+Direct scene directories take precedence. Otherwise, a bare scene name searches
+one grouping level: `Inpaint360GS bag` resolves to `Inpaint360GS inpaint360/bag`.
+Both use `output/paintmesh/Inpaint360GS/inpaint360/bag/` by default, matching batch
+mode. If multiple groups contain that name, specify the group explicitly.
+
+For Inpaint360GS, case-insensitive `test_*` reference frames are excluded from
+reconstruction, segmentation, association, distillation, and mask validation.
+`EVAL=false` is the default: all remaining frames train the model, with no
+every-eighth-frame holdout or periodic training metrics. `EVAL=true` enables
+that holdout on the eligible frames while still excluding `test_*` references.
+mip-nerf retains `EVAL=true` by default. `DATASET_TYPE=auto` detects `inpaint360`
+or `Inpaint360GS` path components; use `DATASET_TYPE=inpaint360` for renamed data.
+Batch discovery covers direct scenes and one grouping level, retaining relative
+scene paths in outputs. Saved bridge metadata is checked against the requested
+evaluation and reference-image policy when resuming.
+
+Set `EDGS_SAVE_ITERATIONS=3000,6000,9000,12000,15000,18000,21000,24000,27000,30000`
+and `DISTILL_SAVE_ITERATIONS=500,1000,1500,2000` to save intermediate PLY files.
+Each list accepts comma-separated positive integers up to its stage's final
+iteration; the final iteration is always included. EDGS also saves training
+checkpoints, and distillation saves the corresponding classifier with each
+PLY. Complete existing results are reused, so use a new `OUTPUT_ROOT` when
+retraining with more save points.
+
+For console and file logging, use `PYTHONUNBUFFERED=1`, enable
+`set -o pipefail`, and pipe the command through `2>&1 | tee logs/run.log`
+after creating `logs/`.
+
 Arguments are:
 
 ```text
@@ -60,7 +114,9 @@ dataset_name scene resolution start_stage
 `resolution` accepts `1`, `2`, `4`, or `8`. Value `1` uses `images/`; the
 other values use `images_<resolution>/` for 2D segmentation while EDGS and
 Inpaint360GS use the same `round()`-based output dimensions. The corresponding
-image directory must already exist.
+image directory must already exist for COLMAP datasets. For Inpaint360GS,
+missing resized images are generated from eligible source images; existing
+files and original images are preserved.
 
 The stages are:
 
@@ -168,6 +224,9 @@ carry a universal scene ID.
 PAINTMESH_ENV=paintmesh          # conda environment
 GPU=0                            # optional CUDA_VISIBLE_DEVICES value
 BASE_ITERATION=30000             # EDGS checkpoint/mesh iteration
+DISTILL_DATA_DEVICE=cpu          # Stage 4 camera images/masks in RAM; training stays on GPU
+DATASET_TYPE=auto                # auto, inpaint360, or colmap
+# EVAL defaults to false for Inpaint360GS, true for other COLMAP datasets.
 DISTILL_ITERATION=2000           # must match train_distill.json when stage 4 runs
 NO_DENSIFY=true
 PGSR_DEBUG=false
