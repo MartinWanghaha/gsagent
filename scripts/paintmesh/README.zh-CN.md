@@ -231,6 +231,8 @@ END_STAGE=3 LAUNCH_REFINER=false \
 
 ### 3.3 `run_inpaint`
 
+修复后的七项论文指标及表 1 实验协议见 [Inpaint360GS 评估指南](INPAINT360_EVALUATION.zh-CN.md)。`eval_inpaint360.py` 单独渲染真实 `test_*` 相机并使用官方 `unseen_mask`，与训练时的每 8 张留出测试视图分开。
+
 ```text
 scripts/paintmesh/run_inpaint \
     dataset_name scene resolution target_ids surrounding_ids start_stage

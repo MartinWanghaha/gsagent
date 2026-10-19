@@ -47,6 +47,8 @@ ckpt/groundingdino_swint_ogc.pth
 
 ## Run from scratch
 
+For the seven Inpaint360GS benchmark metrics, see the [evaluation guide](INPAINT360_EVALUATION.zh-CN.md). `eval_inpaint360.py` renders object-free `test_*` COLMAP cameras and uses official `unseen_mask` images without modifying the model's training split.
+
 ```bash
 scripts/paintmesh/run_seg "mip-nerf/360_v2" kitchen 8 1
 ```

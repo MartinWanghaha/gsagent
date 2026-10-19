@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "kind": "paintmesh-lama-dilation-policy",
+  "created_at": "2026-10-16T21:34:39.441642+08:00",
+  "dataset": "Inpaint360GS/inpaint360",
+  "resolution": 4,
+  "recursive_guide": false,
+  "mask_kernel": "ellipse",
+  "min_area": 50,
+  "candidate_dilations": [
+    10,
+    20,
+    30
+  ],
+  "selection_method": "visual_review_of_virtual_inputs_masks_and_lama_rgb_completions",
+  "selection_scope": "one_fixed_radius_per_scene_for_all_90_virtual_views",
+  "evaluation_gt_used": false,
+  "limitations": "按已检查虚拟视角视觉选择，不是定量最优值或逐帧自适应算法；没有人工阴影标注，不能保证所有阴影完整覆盖。",
+  "scenes": {
+    "bag": {
+      "target_id": 36,
+      "mask_dilation": 30,
+      "reason": "10 的多个视角有明显深色带状痕迹；20 有改善，30 在已检查方位更充分消除暗带，保留木板缝。仍可能有木纹差异。",
+      "reviewed_frames": [
+        "00000",
+        "00015",
+        "00016",
+        "00017",
+        "00018",
+        "00019",
+        "00020",
+        "00021",
+        "00022",
+        "00023",
+        "00024",
+        "00025",
+        "00026",
+        "00027",
+        "00028",
+        "00029",
+        "00045",
+        "00060",
+        "00061",
+        "00062",
+        "00063",
+        "00064",
+        "00065",
+        "00066",
+        "00067",
+        "00068",
+        "00069",
+        "00070",
+        "00071",
+        "00072",
+        "00073",
+        "00074"
+      ],
+      "available_candidate_frames": 90,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4/comparison_overview.png",
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4/bag_views_60_74.jpg"
+      ],
+      "evidence_experiment_sha256": "d91020c20a42d1ff886c19eddff91723715c65f553dc247f9984d3b973f6eb84"
+    },
+    "car": {
+      "target_id": 7,
+      "mask_dilation": 30,
+      "reason": "00000、00029、00059、00089 中，10 的车形暗斑明显，20 减轻，30 最充分减轻暗斑；路面砖缝仍有局部变形。",
+      "reviewed_frames": [
+        "00000",
+        "00029",
+        "00059",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/car_review.png"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "cone_red": {
+      "target_id": 24,
+      "mask_dilation": 30,
+      "reason": "检查 13 个方位：10 在蓝色网格与黑色边框交界有暗角；20 改善，30 整体更充分减轻暗角，边框转角更完整。网格仍非严格几何重建。",
+      "reviewed_frames": [
+        "00000",
+        "00007",
+        "00014",
+        "00022",
+        "00029",
+        "00037",
+        "00045",
+        "00051",
+        "00059",
+        "00066",
+        "00074",
+        "00081",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/cone_red_review.png",
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/cone_red_views_00_12.jpg"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "cone_yellow": {
+      "target_id": 8,
+      "mask_dilation": 30,
+      "reason": "00029 中 10/20 留有台阶上沿的凸起/暗边，30 更干净；00059、00089 的台阶线与砖缝整体连续性更好。",
+      "reviewed_frames": [
+        "00000",
+        "00029",
+        "00059",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/cone_yellow_review.png"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "cube": {
+      "target_id": 25,
+      "mask_dilation": 20,
+      "reason": "10 在部分方位有暗边和条纹模糊；30 重绘更多布面并在部分方位改变条纹宽度/接续。20 作为减少残留和保留条纹的折中，各组仍有局部错接。",
+      "reviewed_frames": [
+        "00000",
+        "00007",
+        "00014",
+        "00022",
+        "00029",
+        "00037",
+        "00045",
+        "00051",
+        "00059",
+        "00066",
+        "00074",
+        "00081",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/cube_review.png",
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/cube_views_00_12.jpg"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "doppelherz": {
+      "target_id": 18,
+      "mask_dilation": 10,
+      "reason": "10 已能延续红白格纹；20/30 没有稳定可见收益，且更大 mask 靠近保留的瓶子边缘，因此使用较小范围保护邻近物体与格纹。",
+      "reviewed_frames": [
+        "00000",
+        "00029",
+        "00059",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/doppelherz_review.png"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "redbull": {
+      "target_id": 8,
+      "mask_dilation": 10,
+      "reason": "10 的蓝白条纹已较连贯；20/30 扩大重绘范围但没有稳定改进，部分方位条纹宽度/边界变化，保留 10。",
+      "reviewed_frames": [
+        "00000",
+        "00029",
+        "00059",
+        "00089"
+      ],
+      "available_candidate_frames": 13,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_scene_review_20261016_174238/redbull_review.png"
+      ],
+      "evidence_experiment_sha256": "22f5c04d6ab312987546e41a267342757bb9698d7c911eed72bf3cff239a9fa6"
+    },
+    "truck": {
+      "target_id": 50,
+      "mask_dilation": 10,
+      "reason": "查看多个方位：20/30 会使桌布红边缺失、变淡或错接，10 相对保留更多红边结构。仍有色差和纹理问题，增大半径不能单独解决。",
+      "reviewed_frames": [
+        "00000",
+        "00030",
+        "00031",
+        "00032",
+        "00033",
+        "00034",
+        "00035",
+        "00036",
+        "00037",
+        "00038",
+        "00039",
+        "00040",
+        "00041",
+        "00042",
+        "00043",
+        "00044",
+        "00045",
+        "00060",
+        "00061",
+        "00062",
+        "00063",
+        "00064",
+        "00065",
+        "00066",
+        "00067",
+        "00068",
+        "00069",
+        "00070",
+        "00071",
+        "00072",
+        "00073",
+        "00074"
+      ],
+      "available_candidate_frames": 90,
+      "evidence_root": "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4",
+      "review_images": [
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4/comparison_overview.png",
+        "/home/member/wyc/gsagent/output/evaluation/lama_dilation_bag_truck_r4/truck_views_60_74.jpg"
+      ],
+      "evidence_experiment_sha256": "d91020c20a42d1ff886c19eddff91723715c65f553dc247f9984d3b973f6eb84"
+    }
+  }
+}
