@@ -1,0 +1,41 @@
+# Distances are in target-radius units, not metres. All fields bind run identity.
+algorithm: collision_aware_v1
+seed: 0
+candidate_directions: 256
+max_candidates: 16000
+radius_multipliers: [0.9, 1.2, 1.6]
+surface_probes: 2048
+max_refinement_rounds: 2
+collision:
+  unknown_space: reject
+  body_radius_over_target_radius: 0.02
+  clearance_over_target_radius: 0.03
+  numeric_margin_over_target_radius: 0.0001
+  edge_min_step_over_target_radius: 0.002
+  edge_max_subdivisions: 16
+free_space:
+  # Conservative observed depth tiles, rather than interpolated empty voxels.
+  tile_pixels: 12
+  max_training_views: 64
+  max_tiles: 200000
+  max_size: 192
+  alpha_min: 0.9
+  depth_agreement_over_target_radius: 0.05
+  max_depth_spread_over_target_radius: 0.15
+view_quality:
+  min_target_visible_ratio: 0.6
+  target_area_fraction: [0.01, 0.6]
+  image_border_fraction: 0.04
+  min_context_valid_ratio: 0.6
+  context_ring_pixels: 5
+  preview_alpha_min: 0.5
+  max_elevation_deg: 80.0
+  surface_match_over_target_radius: 0.03
+  min_known_surface_coverage: 0.15
+selection:
+  beam_width: 16
+  start_count: 8
+  max_neighbors: 20
+  max_neighbor_rotation_deg: 15.0
+  max_neighbor_translation_over_target_radius: 0.25
+  minimum_common_target_samples: 32

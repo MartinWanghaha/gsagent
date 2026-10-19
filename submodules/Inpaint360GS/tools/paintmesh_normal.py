@@ -46,17 +46,14 @@ def read_normal(path, validity_path):
 
 
 def read_cameras(path, stems):
-    from utils.virtual_camera_manifest import load_virtual_camera_manifest
+    from utils.virtual_camera_manifest import load_virtual_camera_manifest, camera_artifact_id
     load_virtual_camera_manifest(path, expected_frame_count=len(stems))
     payload = json.loads(Path(path).read_text())
-    keys = ("schema_version", "kind", "frame_count", "iteration", "circle_radius", "cameras")
-    if payload.get("schema_version") == 2:
-        keys += ("trajectory",)
     if (
         payload.get("kind") != "inpaint360gs-virtual-cameras"
-        or payload.get("schema_version") not in (1, 2)
+        or payload.get("schema_version") not in (1, 2, 3)
         or payload.get("complete") is not True
-        or payload.get("artifact_id") != identity({k: payload[k] for k in keys})
+        or payload.get("artifact_id") != camera_artifact_id(payload)
     ):
         raise ValueError("invalid normal camera manifest or identity")
     records = payload["cameras"]

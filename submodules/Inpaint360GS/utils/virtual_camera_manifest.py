@@ -217,7 +217,7 @@ def validate_virtual_camera_manifest(
         raise ValueError(
             f"unexpected virtual camera manifest kind: {payload.get('kind')!r}"
         )
-    if payload.get("schema_version") not in (1, 2):
+    if payload.get("schema_version") not in (1, 2, 3):
         raise ValueError(
             f"unsupported virtual camera schema: {payload.get('schema_version')!r}"
         )
@@ -227,9 +227,13 @@ def validate_virtual_camera_manifest(
         raise ValueError(
             f"virtual camera iteration is {iteration}, expected {expected_iteration}"
         )
-    circle_radius = _finite_float(
-        payload.get("circle_radius"), "circle_radius", positive=True
-    )
+    circle_radius = None
+    if payload["schema_version"] != 3:
+        circle_radius = _finite_float(
+            payload.get("circle_radius"), "circle_radius", positive=True
+        )
+    elif "circle_radius" in payload:
+        raise ValueError("collision-aware cameras cannot declare a circle_radius")
     frame_count = _positive_int(payload.get("frame_count"), "frame_count")
     if expected_frame_count is not None and frame_count != expected_frame_count:
         raise ValueError(
@@ -304,7 +308,15 @@ def validate_virtual_camera_manifest(
         "circle_radius": circle_radius,
         "cameras": normalized_records,
     }
-    if payload["schema_version"] == 2:
+    if payload["schema_version"] == 3:
+        result.pop("circle_radius")
+        validate_collision_trajectory(payload.get("trajectory"), frame_count)
+        distinct = {json.dumps({k: v for k, v in record.items() if k != "image_name"},
+                               sort_keys=True) for record in normalized_records}
+        if len(distinct) != frame_count:
+            raise ValueError("collision-aware cameras must contain N distinct poses")
+        result["trajectory"] = copy.deepcopy(payload["trajectory"])
+    elif payload["schema_version"] == 2:
         trajectory = payload.get("trajectory")
         validate_trajectory(trajectory, frame_count)
         result["trajectory"] = copy.deepcopy(trajectory)
@@ -340,13 +352,54 @@ def load_virtual_camera_manifest(
         expected_iteration=expected_iteration,
         expected_frame_count=expected_frame_count,
     )
-    keys = list(normalized)
-    expected_id = hashlib.sha256(json.dumps(
-        {k: payload[k] for k in keys}, sort_keys=True, separators=(",", ":")
-    ).encode()).hexdigest()
+    expected_id = camera_artifact_id(payload)
     if artifact_id != expected_id:
         raise ValueError("virtual camera manifest artifact_id mismatch")
     return normalized
+
+
+def camera_identity_payload(payload):
+    """One identity definition for all consumers; v1/v2 bytes stay unchanged."""
+    keys = ("schema_version", "kind", "frame_count", "iteration", "cameras")
+    if payload.get("schema_version") in (1, 2):
+        keys += ("circle_radius",)
+    if payload.get("schema_version") in (2, 3):
+        keys += ("trajectory",)
+    return {key: payload[key] for key in keys}
+
+
+def camera_artifact_id(payload):
+    return hashlib.sha256(json.dumps(camera_identity_payload(payload),
+        sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def validate_collision_trajectory(value, count):
+    if not isinstance(value, dict) or value.get("type") != "collision_aware":
+        raise ValueError("schema 3 requires collision_aware trajectory")
+    if value.get("algorithm_revision") != 1 or value.get("frame_count") != count:
+        raise ValueError("collision-aware revision/count mismatch")
+    for key in ("config_sha256", "input_sha256", "evidence_sha256"):
+        digest = value.get(key)
+        if not isinstance(digest, str) or len(digest) != 64 or any(c not in "0123456789abcdef" for c in digest):
+            raise ValueError(f"invalid planning {key}")
+    for key in ("focus_world", "scene_up_world"):
+        _array(value.get(key), (3,), key)
+    if not math.isclose(np.linalg.norm(value["scene_up_world"]), 1., abs_tol=1e-6):
+        raise ValueError("scene up must be normalized")
+    _finite_float(value.get("safe_radius_world"), "safe_radius_world", positive=True)
+    _positive_int(value.get("target_id"), "target_id")
+    selected = value.get("selected_candidate_ids")
+    if (not isinstance(selected, list) or len(selected) != count or
+            any(type(i) is not int or i < 0 for i in selected) or len(set(selected)) != count):
+        raise ValueError("collision-aware route must contain exactly N distinct candidates")
+    if value.get("unknown_space") != "reject" or value.get("path_model") != "certified_piecewise_linear":
+        raise ValueError("unsupported collision-aware safety policy")
+
+
+def build_collision_camera_manifest(records, *, iteration, trajectory):
+    payload = validate_virtual_camera_manifest(dict(schema_version=3, kind=MANIFEST_KIND,
+        frame_count=len(records), iteration=iteration, cameras=records, trajectory=trajectory))
+    return dict(payload, artifact_id=camera_artifact_id(payload), complete=True, status="complete")
 
 
 def validate_trajectory(value, count):
@@ -387,8 +440,8 @@ def validate_trajectory(value, count):
 
 def check_camera_request(payload, path_type, count, max_elevation=85.0):
     """Check a requested generation policy before reusing any downstream data."""
-    if path_type not in ("circle", "hemisphere") or type(count) is not int or count < 2:
-        raise ValueError("camera path must be circle/hemisphere and count an integer >= 2")
+    if path_type not in ("circle", "hemisphere", "collision_aware") or type(count) is not int or count < 2:
+        raise ValueError("camera path must be circle/hemisphere/collision_aware and count an integer >= 2")
     if path_type == "hemisphere":
         hemisphere_spiral_layout(count, max_elevation)
     if payload is None:
@@ -511,14 +564,18 @@ def virtual_views_from_manifest(
 ) -> list[Any]:
     """Recreate render-camera objects from validated, exact per-frame values."""
 
+    payload = validate_virtual_camera_manifest(manifest)
+    return camera_views_from_records(base_view, payload["cameras"])
+
+
+def camera_views_from_records(base_view, records):
+    """Reconstruct trusted internal planning records with the same render math."""
     import torch
     from utils.graphics_utils import getProjectionMatrix, getWorld2View2
-
-    payload = validate_virtual_camera_manifest(manifest)
     views = []
     device = base_view.world_view_transform.device
     dtype = base_view.world_view_transform.dtype
-    for index, record in enumerate(payload["cameras"]):
+    for index, record in enumerate(records):
         if record["image_width"] != int(base_view.image_width) or record[
             "image_height"
         ] != int(base_view.image_height):

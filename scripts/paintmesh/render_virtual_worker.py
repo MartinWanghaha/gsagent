@@ -8,7 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from render_virtual_views import REPO, parser, render_roots
-from virtual_render_io import FrameWriter, identity, read_json, sha256
+from virtual_render_io import FrameWriter, identity, read_json, sha256, write_json, atomic_write
 
 
 def camera_module():
@@ -236,6 +236,82 @@ def pgsr(args):
 ADAPTERS = {"inpaint360gs": native, "edgs-pgsr": pgsr}
 
 
+def planning_preview(args):
+    """Isolated low-resolution evidence, with identical backend/model roles.
+
+    No production render directories or tracking archives are touched. Each
+    output records the actual resized camera, not the full-resolution template.
+    """
+    import numpy as np
+    import torch
+    from virtual_render_io import decode
+    from view_planning_io import resize_planning_cameras
+    module = camera_module()
+    records = read_json(args.planning_cameras)["cameras"]
+    resized = resize_planning_cameras(records, args.planning_max_size)
+    if args.backend == "edgs-pgsr":
+        from omegaconf import OmegaConf
+        from source.vendor import bootstrap_gaussian_splatting
+        from source.renderers.pgsr import PGSRRenderer
+        bootstrap_gaussian_splatting()
+        from scene import GaussianModel
+        config = OmegaConf.load(args.edgs_model_path / "config.yaml")
+        if config.gs.renderer.backend != "pgsr":
+            raise ValueError("planning requires PGSR-configured source geometry")
+        model = GaussianModel(int(config.gs.sh_degree))
+        white = config.gs.dataset.white_background
+        renderer = PGSRRenderer()
+        pipeline = SimpleNamespace(convert_SHs_python=False, compute_cov3D_python=False,
+                                   debug=False, antialiasing=False)
+        def render(view):
+            return renderer.render(view, model, pipeline, background, return_plane=True)
+    else:
+        from scene.gaussian_model import GaussianModel
+        from gaussian_renderer import render as native_render
+        # cfg_args is a literal Namespace, never evaluate arbitrary code.
+        expression = ast.parse((args.model_path / "cfg_args").read_text(), mode="eval").body
+        if (not isinstance(expression, ast.Call) or not isinstance(expression.func, ast.Name)
+                or expression.func.id != "Namespace" or expression.args):
+            raise ValueError("cfg_args must be a literal Namespace")
+        cfg = {kw.arg: ast.literal_eval(kw.value) for kw in expression.keywords if kw.arg}
+        model = GaussianModel(cfg["sh_degree"])
+        white = cfg["white_background"]
+        pipeline = SimpleNamespace(convert_SHs_python=False, compute_cov3D_python=False, debug=False)
+        def render(view):
+            return native_render(view, model, pipeline, background)
+    background = torch.tensor([1, 1, 1] if white else [0, 0, 0], dtype=torch.float32, device="cuda")
+    args.planning_output.mkdir(parents=True, exist_ok=True)
+    full, removed = model_files(args)
+    variants = [("full", full)]
+    if args.planning_target_ply:
+        variants += [("target", args.planning_target_ply), ("removed", removed)]
+    for label, path in variants:
+        model.load_ply(str(path))
+        for record in resized:
+            # Training photographs may have different sizes; never borrow an
+            # unrelated first image's width/height for these real-view rays.
+            base = SimpleNamespace(world_view_transform=torch.eye(4, device="cuda"),
+                image_width=record["image_width"], image_height=record["image_height"])
+            view = module.camera_views_from_records(base, [record])[0]
+            decoded = decode(render(view), args.backend, args.alpha_min)
+            path = args.planning_output / (record["image_name"] + ".npz")
+            arrays = {}
+            if label != "full":
+                with np.load(path, allow_pickle=False) as previous:
+                    arrays = {key: previous[key] for key in previous.files}
+            arrays.update({label + "_depth": decoded["depth"],
+                label + "_alpha": decoded["alpha"], label + "_rgb": decoded["rgb_raw"]})
+            atomic_write(path, lambda stream, data=arrays: np.savez_compressed(stream, **data))
+    files = {}
+    for record in resized:
+        name = record["image_name"]
+        path = args.planning_output / (name + ".npz")
+        files[name] = {"path": str(path.resolve()), "sha256": sha256(path)}
+    write_json(args.planning_output / "preview.json", dict(complete=True, backend=args.backend,
+        cameras=resized, files=files, request_sha256=sha256(args.planning_cameras),
+        models={label: {"path": str(path.resolve()), "sha256": sha256(path)} for label, path in variants}))
+
+
 def main():
     args = parser().parse_args()
     import torch
@@ -243,7 +319,12 @@ def main():
     if not torch.cuda.is_available():
         raise RuntimeError("virtual rendering requires CUDA")
     with torch.no_grad():
-        ADAPTERS[args.backend](args)
+        if args.planning_cameras:
+            if args.planning_output is None:
+                raise ValueError("planning-output is required")
+            planning_preview(args)
+        else:
+            ADAPTERS[args.backend](args)
 
 
 if __name__ == "__main__":

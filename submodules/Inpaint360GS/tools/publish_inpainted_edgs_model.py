@@ -300,20 +300,16 @@ def _recorded_path(value: Any, location: str) -> Path:
 def _validate_camera_artifact_id(camera: Mapping[str, Any]) -> str:
     """Verify the camera content-addressed ID while ignoring envelope metadata."""
 
-    identity = {
-        key: camera.get(key)
-        for key in (
-            "schema_version",
-            "kind",
-            "frame_count",
-            "iteration",
-            "circle_radius",
-            "cameras",
-        )
-    }
-    if camera.get("schema_version") == 2:
-        identity["trajectory"] = camera.get("trajectory")
-    expected = _identity(identity)
+    # Load by filename: this publisher is also used from EDGS's utils namespace.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("paintmesh_camera_identity",
+        Path(__file__).resolve().parents[1] / "utils/virtual_camera_manifest.py")
+    contract = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(contract)
+    try:
+        expected = contract.camera_artifact_id(camera)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise ArtifactError("invalid virtual-camera identity fields") from exc
     observed = camera.get("artifact_id")
     if not isinstance(observed, str) or not observed:
         raise ArtifactError("virtual-camera manifest has no artifact_id")

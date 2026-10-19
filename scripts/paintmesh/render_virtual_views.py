@@ -46,6 +46,10 @@ def parser():
     p.add_argument("--validate-only", action="store_true")
     p.add_argument("--inpaint-python", default=sys.executable)
     p.add_argument("--edgs-python", default=sys.executable)
+    p.add_argument("--planning-cameras", type=Path, help=argparse.SUPPRESS)
+    p.add_argument("--planning-output", type=Path, help=argparse.SUPPRESS)
+    p.add_argument("--planning-target-ply", type=Path, help=argparse.SUPPRESS)
+    p.add_argument("--planning-max-size", type=int, default=192, help=argparse.SUPPRESS)
     return p
 
 
@@ -113,6 +117,10 @@ def main(argv=None):
         return 0
     if args.camera_manifest is None or args.tracker_archive is None:
         raise ValueError("camera-manifest and tracker-archive are required")
+    cameras = read_camera_manifest(args.camera_manifest)
+    if cameras["schema_version"] == 3:
+        from view_planning_io import validate_published_plan
+        validate_published_plan(args.camera_manifest, backend=args.backend)
     if args.validate_only:
         validate_pair(args)
         return 0

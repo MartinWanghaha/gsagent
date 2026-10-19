@@ -2,6 +2,8 @@
 
 ## 文档定位与本次代码一致性核对
 
+新增 A1：`collision_aware` 虚拟相机模式已接入 `run_remove.sh` Stage 4。完整 raw mesh 避障、真实观测支持的自由空间、目标可见性/构图、连续路径认证、固定 N 帧图搜索、Gaussian 预渲染有限重规划和 schema 3 全链读取均已实现。使用说明见 [README](README.zh-CN.md#避障虚拟相机collision_aware)，原始设计和首版差异见 [避障方案](COLLISION_AWARE_VIEWS_PLAN.zh-CN.md)。当前自由空间采用有资源上限的深度片区凸视锥并集；连续空间 A* 仍未实现。真实场景的 CUDA 渲染、tracking 与最终补全质量尚未验收，不能将合成几何/协议回归等同于完整场景验证。
+
 [PRINCIPLES.zh-CN.md](PRINCIPLES.zh-CN.md) 是当前可执行链的技术说明，覆盖全局重建、语义、remove、公共 completion、两个初始化/训练分支、发布与 TSDF；本文保留实施状态、验证记录及后续计划。下文已有测试数字是相应实现阶段的历史记录，不表示本次文档核对重新跑过完整 GPU 链路。
 
 | 核对项 | 当前代码事实 | 文档处理/剩余事项 |

@@ -138,6 +138,19 @@ def  virtual(dataset : ModelParams, iteration : int, pipeline : PipelineParams):
     with torch.no_grad():
         gaussians = GaussianModel(dataset.sh_degree)
         scene = Scene(dataset, gaussians, load_iteration=iteration, shuffle=False)
+
+        if getattr(args, "export_planning_context", None):
+            from utils.virtual_camera_manifest import _camera_record
+            records = [_camera_record(v) for v in scene.getTrainCameras()]
+            for i, record in enumerate(records):
+                record["source_image_name"] = record["image_name"]
+                record["image_name"] = f"{i:05d}"
+            _atomic_write_text(Path(args.export_planning_context), json.dumps(dict(
+                kind="paintmesh-planning-context", schema_version=1,
+                iteration=int(scene.loaded_iter), cameras=records,
+                model_path=str(Path(dataset.model_path).resolve()),
+                source_path=str(Path(dataset.source_path).resolve())), indent=2) + "\n")
+            return
  
         target_object_physical_radius = args.target_object_radius
 
@@ -258,6 +271,7 @@ if __name__ == "__main__":
                         help="Total frames for either path (default 30, minimum 2)")
     parser.add_argument("--hemisphere-max-elevation-deg", type=float, default=85.0)
     parser.add_argument("--poses-only", action="store_true", help="Write exact cameras without rendering or packaging tracker images")
+    parser.add_argument("--export-planning-context", help="Export exact real training cameras only; does not generate a trajectory")
     parser.add_argument("--skip_ellipse_video", action="store_true")
     parser.add_argument("--is_circle", action="store_false")
     parser.add_argument("--circle_radius", default=-1.0, type=float, help="smaller ratio means closer camera to object")

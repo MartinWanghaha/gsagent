@@ -24,6 +24,27 @@ run_inpaint
 
 CropFormer/Inpaint360GS 生成的是当前场景内的实例 ID，而不是 `chair`、`table` 等类别名。ID `0` 是背景；mesh 语义中的 `65535` 默认表示支撑不足或预测歧义的未知区域。
 
+### 避障虚拟相机：`collision_aware`
+
+`run_remove` 的 Stage 4 新增独立模式。它以单个 target 为观察中心，使用**移除前完整 raw TSDF mesh**检查相机保护球及相邻帧之间的连续扫掠体；保护球包含近裁剪面四角和额外间隔。目标、surrounding 和未知语义面片均保留为障碍。它不会调整 near/far 来隐藏穿模。
+
+```bash
+VIRTUAL_CAMERA_PATH=collision_aware \
+VIRTUAL_CAMERA_COUNT=60 \
+VIRTUAL_VIEW_CONFIG=scripts/paintmesh/configs/virtual_view_planning.yaml \
+VIRTUAL_RENDERER=edgs-pgsr \
+RUN_NAME=target14_collision_v1 \
+scripts/paintmesh/run_remove "mip-nerf/360_v2" kitchen 8 14 none 1
+```
+
+首次运行使用新的 `RUN_NAME`，需要已完成同源 `run_seg`。规划环境除原依赖外需要 Open3D、NumPy、SciPy、PyYAML 和 plyfile；现有 PaintMesh 环境通常已有这些包。全局基础模型必须保留 `edgs/mesh/ours_<T_base>/tsdf_fusion.ply`，不能用删除后的 mesh 或已删小组件的 post mesh 代替。规划器自动从 bridge 获取基础迭代；它与语义迭代 `DISTILL_ITERATION` 可以不同。
+
+规划先用选定渲染后端在真实训练相机下预渲染。只有完整 mesh 首次命中与高 alpha Gaussian 深度相互支持的深度片区才形成已观测自由空间，首个表面之后和无有效深度区域保持未知。候选还要满足目标构图、首交点可见性、相邻共视和姿态变化要求。最终 N 个不同位姿经过完整/孤立目标/移除后 Gaussian 预渲染复核，洞外上下文不足时有限重规划；洞内低 alpha 本身不会被误判为失败。所有转折都计入 N，不对结果重新插值抄近路。
+
+输出仍为 `tracker/virtual_cameras.json`，新模式使用 schema 3，不声明虚假的圆环半径。full/removed、tracker、normal、RGB-D 融合及后续训练共用这些精确相机。诊断保存在 `tracker/view_planning/`：`target_roi.json`、`observed_space.json`、`candidate_metrics.json`、`candidates.npz`、`path_edges.json`、`safety_report.json`、`coverage_report.json`、`preview_contact_sheet.png` 和每轮预渲染；轨迹另有 `camera_trajectory.svg`。不可行时写 `failure.json`，不发布完成相机、不放宽安全阈值、不回退圆环。相机、mesh、目标、后端或规划约束改变时必须新建 removal run；只改变 JSON 排版不会误判为几何变化。
+
+默认 circle/30 及已有 hemisphere 保持原算法和身份。规划、渲染后端和 `INPAINT_PIPELINE` 独立。新模式首版支持一个 target，可带多个 surrounding；其“最优”仅指有限候选和 beam search 预算内的覆盖与路径选择。保证限于已重建几何和明确的分段线性路径，不能证明漏建真实障碍的安全性。深度片区模型保守，靠墙或观测不足时允许报告不可行。首版未实现连续空间 A*；已有候选图可绕障，搜索失败不会声称场景无解。真实场景的渲染、跟踪和补全质量仍需 CUDA 全流程评估。
+
 ## 1. 稳定入口与快速开始
 
 请从仓库根目录运行无扩展名的入口；它们分别转发到同名的 `.sh` 实现文件：

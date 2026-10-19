@@ -8,6 +8,8 @@
 
 本文以当前工作区的实际入口、配置与计算为准，而不是对上游论文流程的泛化描述。范围是 `scripts/paintmesh` 所编排的端到端项目链，包括它调用的 EDGS、Inpaint360GS、LaMa 与 SAM-Track；不把其他实验入口默认并入这条链。运行命令、断点续跑和目录参数请参阅 [README.zh-CN.md](README.zh-CN.md)。[plan.md](plan.md) 保留实施状态、验证记录与延期方案，不能把其中的未来候选接口当成已实现功能。
 
+新增 `collision_aware` 虚拟相机模式：先在移除前完整 raw TSDF mesh 上规划，再共用原 full/removed 渲染与 RGB-D-N completion。它以目标实例的语义表面和实际删除 Gaussian 包络构图，通过真实相机下 mesh/Gaussian 深度交叉支持估计自由空间，采用 unsigned distance 检查包含近裁剪面的相机保护球，并用距离场的 1-Lipschitz 下界认证整段扫掠体。已认证的候选图上选择恰好 N 个不同位姿，保留转折，再用同后端的孤立目标、完整和移除模型预渲染复核可见性及洞外上下文。未知空间不放行，失败不回退圆环。schema 3 冻结精确相机及输入/配置/安全证据身份，下游读取不依赖 Open3D/CUDA。首版用保守的观测深度片区凸视锥并集替代方案中的稠密自由空间体素，不含连续空间 A*，不承诺全局最优或漏建障碍安全；实现与验证边界见 [避障相机说明](README.zh-CN.md#避障虚拟相机collision_aware) 和 [方案](COLLISION_AWARE_VIEWS_PLAN.zh-CN.md)。
+
 阅读顺序：先读 [完整框架与阶段映射](#project-framework)，再读 [数据和坐标契约](#coordinate-contract)，随后按第 1/2/3 章查各模块的输入、计算和输出。两个重建分支的区别见 [优化范围对照](#optimization-contract)，产物衔接与恢复见 [身份链](#artifact-chain)。文中 `N` 统一表示虚拟相机数（默认 30），`T_base/T_sem/T_rgb/T_local/T_joint` 分别表示各阶段迭代预算，目录 `iteration_*` 中的数字不是相机数。
 
 配置以实际 loader 的解析结果为准，示例不代表固定算法常数。本次核对时 [edgs_inpaint.yaml](configs/edgs_inpaint.yaml) 的 `init.confidence_min` 为 **0.7**，保留当前工作区设置；显式 `EDGS_MATCH_CONFIDENCE_MIN` 会覆盖它。历史 0.5/0.8/0.9 的测试记录不构成当前默认值。

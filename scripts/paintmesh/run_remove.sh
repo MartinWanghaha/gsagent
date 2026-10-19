@@ -73,8 +73,9 @@ Important environment overrides:
   END_STAGE=5
   DISTILL_ITERATION=2000
   VIRTUAL_RENDERER=inpaint360gs  # or edgs-pgsr
-  VIRTUAL_CAMERA_PATH=circle    # circle | hemisphere (independent of renderer)
+  VIRTUAL_CAMERA_PATH=circle    # circle | hemisphere | collision_aware (independent of renderer)
   VIRTUAL_CAMERA_COUNT=30       # total cameras, integer >= 2; both paths default to 30
+  VIRTUAL_VIEW_CONFIG=...yaml   # collision_aware constraints; default configs/virtual_view_planning.yaml
   VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG=85
   NORMAL_ALPHA_MIN=0.01
   REMOVAL_THRESHOLD=0.7
@@ -284,6 +285,14 @@ VIRTUAL_RENDERER="${VIRTUAL_RENDERER:-inpaint360gs}"
 VIRTUAL_CAMERA_PATH="${VIRTUAL_CAMERA_PATH:-circle}"
 VIRTUAL_CAMERA_COUNT="${VIRTUAL_CAMERA_COUNT:-30}"
 VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG="${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG:-85}"
+VIRTUAL_VIEW_CONFIG="$(resolve_from_invocation "${VIRTUAL_VIEW_CONFIG:-${SCRIPT_DIR}/configs/virtual_view_planning.yaml}")"
+case "${VIRTUAL_CAMERA_PATH}" in
+    circle|hemisphere) ;;
+    collision_aware)
+        [[ "${TARGET_IDS}" != *,* ]] || fail "collision_aware v1 requires exactly one target ID"
+        ;;
+    *) fail "VIRTUAL_CAMERA_PATH must be circle, hemisphere or collision_aware" ;;
+esac
 NORMAL_ALPHA_MIN="${NORMAL_ALPHA_MIN:-0.01}"
 case "${VIRTUAL_RENDERER}" in
     inpaint360gs|edgs-pgsr) ;;
@@ -329,6 +338,7 @@ REMOVED_MESH_ROOT="${REMOVAL_ROOT}/removed_mesh"
 TRACKER_RUN_ROOT="${REMOVAL_ROOT}/tracker"
 TRACKER_ARCHIVE="${TRACKER_RUN_ROOT}/images.zip"
 VIRTUAL_CAMERA_MANIFEST="${TRACKER_RUN_ROOT}/virtual_cameras.json"
+VIRTUAL_PLANNING_CONTEXT="${TRACKER_RUN_ROOT}/view_planning/training_context.json"
 TRACKER_ASSETS_ROOT="${TRACKER_RUN_ROOT}/assets"
 TRACKING_RESULTS_ROOT="${TRACKER_RUN_ROOT}/results"
 TRACKING_MASK_ROOT="${TRACKING_RESULTS_ROOT}/images/images_masks"
@@ -1600,17 +1610,25 @@ run_inpaint -c \
     'import numpy, plyfile, scipy, torch; print("paintmesh removal imports: OK")'
 run_edgs -c \
     'import diff_plane_rasterization, omegaconf, open3d, torch; print("paintmesh EDGS imports: OK")'
+if [[ "${VIRTUAL_CAMERA_PATH}" == "collision_aware" ]]; then
+    run_edgs -c 'import open3d, numpy, scipy, yaml, plyfile; print("collision-aware planning imports: OK")'
+fi
 validate_numeric_configuration
-run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${VIRTUAL_CAMERA_PATH}" "${VIRTUAL_CAMERA_COUNT}" "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" <<'PY'
+run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${VIRTUAL_CAMERA_PATH}" "${VIRTUAL_CAMERA_COUNT}" "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" "${VIRTUAL_VIEW_CONFIG}" "${VIRTUAL_RENDERER}" <<'PY'
 import sys
 from pathlib import Path
 from virtual_render_io import camera_contract, read_camera_manifest
-path, kind, count, elevation = sys.argv[1:]
+path, kind, count, elevation, config, backend = sys.argv[1:]
 if not count.isdecimal() or str(int(count)) != count:
     raise ValueError("VIRTUAL_CAMERA_COUNT must be a canonical integer")
 camera_contract().check_camera_request(
     read_camera_manifest(path) if Path(path).exists() else None,
     kind, int(count), elevation)
+if kind == "collision_aware":
+    from view_planning_io import load_config, validate_published_plan
+    resolved = load_config(config)
+    if Path(path).exists():
+        validate_published_plan(path, backend=backend, config=resolved)
 PY
 validate_input_contract
 if (( END_STAGE >= 4 )); then
@@ -1793,7 +1811,29 @@ if should_run 4; then
     invalidate_manifest \
         "${TRACKING_SESSION_MANIFEST}" \
         "paintmesh-tracking-session"
-    run_inpaint tools/virtual_pose.py \
+    if [[ "${VIRTUAL_CAMERA_PATH}" == "collision_aware" ]]; then
+        run_inpaint tools/virtual_pose.py \
+            --source_path "${SCENE_ROOT}" \
+            --model_path "${WORK_MODEL_ROOT}" \
+            --iteration "${DISTILL_ITERATION}" \
+            --resolution "${RESOLUTION}" \
+            --config_file "${REMOVAL_CONFIG}" \
+            --export-planning-context "${VIRTUAL_PLANNING_CONTEXT}"
+        run_edgs "${SCRIPT_DIR}/plan_virtual_views.py" \
+            --context "${VIRTUAL_PLANNING_CONTEXT}" \
+            --config "${VIRTUAL_VIEW_CONFIG}" \
+            --model-path "${WORK_MODEL_ROOT}" \
+            --edgs-model-path "${EDGS_MODEL_ROOT}" \
+            --bridge-manifest "${BRIDGE_MANIFEST}" \
+            --semantic-manifest "${BASE_SEMANTIC_MANIFEST}" \
+            --removal-config "${REMOVAL_CONFIG}" \
+            --target-id "${TARGET_IDS}" \
+            --iteration "${DISTILL_ITERATION}" \
+            --count "${VIRTUAL_CAMERA_COUNT}" \
+            --backend "${VIRTUAL_RENDERER}" \
+            --output "${VIRTUAL_CAMERA_MANIFEST}"
+    else
+        run_inpaint tools/virtual_pose.py \
         --source_path "${SCENE_ROOT}" \
         --model_path "${WORK_MODEL_ROOT}" \
         --iteration "${DISTILL_ITERATION}" \
@@ -1805,6 +1845,7 @@ if should_run 4; then
         --camera-count "${VIRTUAL_CAMERA_COUNT}" \
         --hemisphere-max-elevation-deg "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" \
         --poses-only
+    fi
     virtual_render
     validate_tracker_archive
     begin_tracking_session
