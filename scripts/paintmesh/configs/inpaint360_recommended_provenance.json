@@ -1,0 +1,281 @@
+{
+  "created_at": "2026-10-25T10:28:28.063870+08:00",
+  "selection_rule": "Best observed bag FID with near-best masked PSNR and 10000-step cost; not a unique winner of seven metrics.",
+  "completed_bag_runs": 35,
+  "development_scene": "bag",
+  "frames": 58,
+  "protocol": {
+    "masked_definition": "zero_outside_mask_then_full_image_metric",
+    "mask_threshold": 127,
+    "lpips": "Inpaint360GS.lpipsPyTorch.vgg.v0.1.inputs_0_1",
+    "fid": "pytorch_fid.inception_2048.full_images",
+    "crop": 1.0,
+    "resize": 1.0,
+    "evaluation_resolution": 4
+  },
+  "configs": {
+    "balanced": {
+      "path": "scripts/paintmesh/configs/inpaint360_balanced_10000.yaml",
+      "sha256": "099e9991a4208b4f024f1328e40dc532731e5d320587eb45d42a625020bc99d9",
+      "historical_run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000",
+      "resolved_source_sha256": "6756bc8c7e5052dbecd98e901738970749e94ffd93d891e251c4db9baa65983f",
+      "historical_profile_sha256": "e3d90be3c6c1701b2f31fec5e3ea17adbc57b4a67e05208ac2db228d4cbcd1c7"
+    },
+    "depth_anchor": {
+      "path": "scripts/paintmesh/configs/inpaint360_depth_anchor_10000.yaml",
+      "sha256": "be6986655524db480d8121ffe1ebc6f020b02fc76ae93853fc39a64b6c1fb065",
+      "historical_run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_10000",
+      "resolved_source_sha256": "326bd70b92e3615595d3cbe3ef03bca6b9df16147952c13cbf4407e35e836faa"
+    }
+  },
+  "camera_config": {
+    "path": "scripts/paintmesh/configs/inpaint360_adaptive180.json",
+    "sha256": "91e4147e6dc8bf43052f282057161f6046b07000a271709b431f05e3cfeb6c10",
+    "source_manifest": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/tracker/virtual_cameras.json",
+    "source_sha256": "bc927fc38f746537a5dbf6e9b628a5ac3c76038eb346991aa312ac7a318d4c98",
+    "algorithm_revision": 3,
+    "frames": 180
+  },
+  "selected_runs": {
+    "balanced": {
+      "run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000",
+      "metrics": {
+        "PSNR": 27.49640389146476,
+        "masked_PSNR": 35.46474341688485,
+        "SSIM": 0.867987846506053,
+        "masked_SSIM": 0.9875256686375059,
+        "LPIPS": 0.1082470473544351,
+        "masked_LPIPS": 0.0065925023879791645,
+        "FID": 16.757742370868982
+      },
+      "iteration": 10000,
+      "model": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000/inpainted_3dgs/point_cloud/iteration_10000/point_cloud.ply",
+        "sha256": "ef42cbf1a063dd762e459e34458a43f5a97d77a8d00e5144563387f8c2dcef87"
+      },
+      "joint_manifest": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000/manifests/edgs_joint_manifest.json",
+        "sha256": "fb8b90115bf6dfb6b8830a2a18adafd1d99c3cb10ed1b08ca9b2b03d0322fa62"
+      },
+      "initialization": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/edgs_init_manifest.json",
+        "sha256": "20436931396e4149b50507624763caaf2d7f25e06f700382505a253474372fbc",
+        "size_bytes": 301887
+      },
+      "camera": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/tracker/virtual_cameras.json",
+        "sha256": "bc927fc38f746537a5dbf6e9b628a5ac3c76038eb346991aa312ac7a318d4c98",
+        "size_bytes": 1408558
+      },
+      "lama": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/lama_completion_manifest.json",
+        "sha256": "84adea983e6e0abd220404b28e2c9fba41c9cb75d0183c498fa871ae772c46e2",
+        "size_bytes": 399990
+      },
+      "local_selection": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/local_selection_manifest.json",
+        "sha256": "d8653b5546955ee2f5e0ca848a8ef09abe9de2359ca8ebdb55ac2f352f60742f",
+        "size_bytes": 7231
+      }
+    },
+    "depth_anchor": {
+      "run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_10000",
+      "metrics": {
+        "PSNR": 27.498866673173577,
+        "masked_PSNR": 35.44373107778615,
+        "SSIM": 0.8691189032176445,
+        "masked_SSIM": 0.9879816678063623,
+        "LPIPS": 0.10878418835586515,
+        "masked_LPIPS": 0.0073168425146361874,
+        "FID": 17.458593531610944
+      },
+      "iteration": 10000,
+      "model": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_10000/inpainted_3dgs/point_cloud/iteration_10000/point_cloud.ply",
+        "sha256": "04f3cde4538c48c02fe0eba6789fccb087b7ca0ef21e935e63377e79557e7c5c"
+      },
+      "joint_manifest": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_10000/manifests/edgs_joint_manifest.json",
+        "sha256": "50b903376666fca4fdf9a25b6b87d737db95f4b53939c3685dfd0b053911420d"
+      },
+      "initialization": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_init_20261022_215217/depth_anchor/manifests/edgs_init_manifest.json",
+        "sha256": "bedd005a204b217fc6a2268e5cf8e34bbf1edae44a4405823f81d0356c5050c6",
+        "size_bytes": 428110
+      },
+      "camera": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/tracker/virtual_cameras.json",
+        "sha256": "bc927fc38f746537a5dbf6e9b628a5ac3c76038eb346991aa312ac7a318d4c98",
+        "size_bytes": 1408558
+      },
+      "lama": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/lama_completion_manifest.json",
+        "sha256": "84adea983e6e0abd220404b28e2c9fba41c9cb75d0183c498fa871ae772c46e2",
+        "size_bytes": 399990
+      },
+      "local_selection": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_init_20261022_215217/depth_anchor/manifests/local_selection_manifest.json",
+        "sha256": "83df70ccae3c2f7cf45338200059b65de25047d47441234b0ac7ed09dc3c4ec9",
+        "size_bytes": 8572
+      }
+    },
+    "masked_psnr_max": {
+      "run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_20000",
+      "metrics": {
+        "PSNR": 27.49499561046732,
+        "masked_PSNR": 35.5485346235078,
+        "SSIM": 0.8668343301477104,
+        "masked_SSIM": 0.9873200644706858,
+        "LPIPS": 0.10840607588661128,
+        "masked_LPIPS": 0.006352017577416424,
+        "FID": 17.213124657566368
+      },
+      "iteration": 20000,
+      "model": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_20000/inpainted_3dgs/point_cloud/iteration_20000/point_cloud.ply",
+        "sha256": "abdfae8e0b604bf79a6df3bfd48e99d42d11aeca12b4f86cecddcd05bcbc03fa"
+      },
+      "joint_manifest": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_20000/manifests/edgs_joint_manifest.json",
+        "sha256": "6c18175154f79fce17fa0e3fada59affc93e8e070231f16c6a634f2fa916b866"
+      },
+      "initialization": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/edgs_init_manifest.json",
+        "sha256": "20436931396e4149b50507624763caaf2d7f25e06f700382505a253474372fbc",
+        "size_bytes": 301887
+      },
+      "camera": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/tracker/virtual_cameras.json",
+        "sha256": "bc927fc38f746537a5dbf6e9b628a5ac3c76038eb346991aa312ac7a318d4c98",
+        "size_bytes": 1408558
+      },
+      "lama": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/lama_completion_manifest.json",
+        "sha256": "84adea983e6e0abd220404b28e2c9fba41c9cb75d0183c498fa871ae772c46e2",
+        "size_bytes": 399990
+      },
+      "local_selection": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/local_selection_manifest.json",
+        "sha256": "d8653b5546955ee2f5e0ca848a8ef09abe9de2359ca8ebdb55ac2f352f60742f",
+        "size_bytes": 7231
+      }
+    },
+    "baseline_5000": {
+      "run": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual",
+      "metrics": {
+        "PSNR": 27.48500557603507,
+        "masked_PSNR": 35.41583455842117,
+        "SSIM": 0.8689386361631853,
+        "masked_SSIM": 0.9876879515319035,
+        "LPIPS": 0.10868402454873612,
+        "masked_LPIPS": 0.007162512520906226,
+        "FID": 17.414528948242832
+      },
+      "iteration": 5000,
+      "model": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/inpainted_3dgs/point_cloud/iteration_5000/point_cloud.ply",
+        "sha256": "39000a729cc6f6d773bd3796b47ff200e5444bddafd181e3045fd8c5a808fe0c"
+      },
+      "joint_manifest": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/edgs_joint_manifest.json",
+        "sha256": "bf439941470d50b7d5f93b6075e1168695ed147dfdaaccd57f1c4adcf9916222"
+      },
+      "initialization": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/edgs_init_manifest.json",
+        "sha256": "20436931396e4149b50507624763caaf2d7f25e06f700382505a253474372fbc",
+        "size_bytes": 301887
+      },
+      "camera": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/tracker/virtual_cameras.json",
+        "sha256": "bc927fc38f746537a5dbf6e9b628a5ac3c76038eb346991aa312ac7a318d4c98",
+        "size_bytes": 1408558
+      },
+      "lama": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/lama_completion_manifest.json",
+        "sha256": "84adea983e6e0abd220404b28e2c9fba41c9cb75d0183c498fa871ae772c46e2",
+        "size_bytes": 399990
+      },
+      "local_selection": {
+        "path": "/home/member/wyc/gsagent/output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual/manifests/local_selection_manifest.json",
+        "sha256": "d8653b5546955ee2f5e0ca848a8ef09abe9de2359ca8ebdb55ac2f352f60742f",
+        "size_bytes": 7231
+      }
+    }
+  },
+  "per_metric_winners": {
+    "PSNR": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_20000/inpainted_3dgs",
+      "value": 27.510875142853834
+    },
+    "masked_PSNR": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_20000/inpainted_3dgs",
+      "value": 35.5485346235078
+    },
+    "SSIM": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_depth_anchor_iterations_20261022_223229/iter_02000/inpainted_3dgs",
+      "value": 0.8706078868487785
+    },
+    "masked_SSIM": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_plane_init_20261022_170828/local_plane/inpainted_3dgs",
+      "value": 0.9882091910674654
+    },
+    "LPIPS": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual_rgbhole02/inpainted_3dgs",
+      "value": 0.10748400063864116
+    },
+    "masked_LPIPS": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_20000/inpainted_3dgs",
+      "value": 0.006352017577416424
+    },
+    "FID": {
+      "name": "removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000/inpainted_3dgs",
+      "value": 16.757742370868982
+    }
+  },
+  "implementation_changes_since_selected_run": {
+    "scripts/paintmesh/configs/edgs_inpaint.yaml": {
+      "historical": "8c57afd91f86667de357899b5f0175e7208dccdceebbb024faf0a9f27f662c34",
+      "current": "5278e9a92e8a5a5d39aba4ab59eb7325996f40bafb1cb3826b411a6246f1fcda"
+    },
+    "scripts/paintmesh/edgs_inpaint_io.py": {
+      "historical": "f67b982efc2adaa0ca7c6434f871f80adf65816f7883938a31c8351b33e4cd34",
+      "current": "7231ee4800493897ae524ee1503f6ab56aeb61bacebd5a9e03a10e09468fd83b"
+    },
+    "submodules/EDGS/source/paintmesh_edgs_init.py": {
+      "historical": "2d0bc8cae93978aa38b968268820a96909aa6d190a612f1b8138e14bb8fd6bb0",
+      "current": "7d11560b5603af0108e88b3cfbd723642a8e4ea274f457deafe3bae96db59ec5"
+    },
+    "submodules/EDGS/source/paintmesh_joint_data.py": {
+      "historical": "61dd3fdee530305f48d8f45d7289c407c91b10077423d8e9b311f7030c3ad60e",
+      "current": "5a66601c8abdd1620b8e05c5132de154cda7fee5fb68f8af506b88643c3c1e61"
+    },
+    "submodules/EDGS/source/paintmesh_joint_losses.py": {
+      "historical": "ba21715618336eb6ed3e813034fd8d38238994b1d385cdb1b5d91703865fe563",
+      "current": "b8851f27ffd0bb49b875547437e96f2a732a6f7df2c8cba9039954c2a811fded"
+    },
+    "submodules/EDGS/tools/initialize_paintmesh_edgs.py": {
+      "historical": "4217e1b75c6a2215bbb4d189780990dc2c30bbb1b3e6d89026c32f0da64cb6f5",
+      "current": "8d419713a1e360d450ca74c335fea67096b961dfd58e23f7fae6e3c69fafd3e1"
+    },
+    "submodules/EDGS/tools/train_paintmesh_pgsr.py": {
+      "historical": "80dfefd55d7f76bd3e47828a1e7539d7d927bdb885c2a583c62128b4f47100b8",
+      "current": "db561c5da34be8a782c1fc9ad061b2c65440a5ad7fad36aeaa79d71e577ba0e3"
+    }
+  },
+  "limitations": [
+    "Bag test-camera scores were used to select this recipe; this is a development-scene selection, not unseen-test validation.",
+    "No 11-scene optimum or RGB-versus-mesh optimum has been established.",
+    "Historical ablations reused initialization, LaMa, cameras and local old-row selection. Fresh full-pipeline runs with current source are recipe replications, not guaranteed bitwise repeats.",
+    "Depth-anchor and planar initialization did not dominate mixed initialization in the measured RGB metrics. Plane initialization was removed from the current code.",
+    "Geometry losses and a different initialization cannot erase residual old background Gaussians by themselves."
+  ],
+  "resource_limit_update": {
+    "changed_at": "2026-10-25T13:36:04.443719+08:00",
+    "reason": "用户要求取消初始化总点数上限",
+    "setting": "init.max_points",
+    "before": 500000,
+    "after": null,
+    "associated_pool_caps_disabled": true,
+    "revision_record": "/home/member/wyc/gsagent/logs/paintmesh_full_r4_gpu1_20261025_105925/revisions/unlimited_init_20261025_132928/change.json"
+  }
+}

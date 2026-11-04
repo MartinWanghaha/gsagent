@@ -1,8 +1,49 @@
 # Inpaint360GS 表 1 的实验与评估
 
+基于已有bag的35组完整评估整理的当前推荐配方、可选depth-anchor配置及完整运行命令，见 [INPAINT360_RECOMMENDED.zh-CN.md](INPAINT360_RECOMMENDED.zh-CN.md)。推荐仅代表已验证的bag综合RGB表现与成本选择，不宣称十一场景或mesh全局最优。
+
 论文及补充材料：https://arxiv.org/html/2511.06457v1
 
 官方指标实现：https://github.com/dfki-av/Inpaint360GS/blob/main/tools/metrics_fid_masked.py
+
+## Bag：开启自适应密度控制的几何损失消融
+
+```bash
+cd /home/member/wyc/gsagent
+GPU=1 bash scripts/paintmesh/run_geometry_adc_ablation.sh
+```
+
+该脚本脱离终端，在指定 GPU 后台串行运行五组：官方式外观、加深度、再加法线、再加深度—法线一致性、再加多视图几何。每组使用同一初始点云、depth 反投影、LaMa 和 180 帧 adaptive 相机，从头训练 5000 步；几何权重依次为 0.1、0.05、0.01、0.01。覆盖损失统一为零。外观保持上一轮 mask 外 L1=0.2、全图 SSIM=0.8、原生包围框四块 LPIPS=0.0005。
+
+全部开启新增高斯的克隆、分裂及原有不透明度剪枝；局部旧高斯继续优化/剪枝，远处旧高斯严格冻结。默认第 600 步开始每 100 步增密，梯度阈值 0.0002，新增点上限 50 万。具体规则见 [INPAINT_PRUNING.zh-CN.md](INPAINT_PRUNING.zh-CN.md)。这是我们的流水线上的损失/密度控制消融，不等同于复现官方完整训练流程。
+
+新实验放在 `inpaint/official_geometry_adc_ablation_<时间>/`，保留上一轮输出。日志、PID、断点恢复信息在 `logs/official_geometry_adc_ablation_gpu1_<时间>/`，最新位置记录在 `logs/official_geometry_adc_ablation_gpu1.latest.json`。每组完成后自动发布 3DGS、计算相同 58 个测试视角的七项指标，并更新原 `edgs_depth_local_prune_perceptual/comparison_paper_bag/comparison.md`，加入与上一轮相同损失的只剪枝结果逐组对照。未额外运行 TSDF mesh 后处理。
+
+## 原始监督的训练步数消融
+
+```bash
+cd /home/member/wyc/gsagent
+PYTHONNOUSERSITE=1 /home/member/.conda/envs/paintmesh/bin/python \
+  scripts/paintmesh/run_iteration_ablation.py --gpu 1 --detach
+```
+
+以 bag 的 `table1_adaptive180_sweep/inpaint/edgs_depth_local_prune_perceptual` 为基线，后台串行运行 8000、10000、15000、20000 步。四组均从同一初始点云重新开始，保持原始 `appearance.mode=masked` 的全部外观、覆盖及四项几何监督、depth 初始化、局部旧高斯更新和远处背景冻结。配置唯一变化是 `iterations`；不采用官方式外观，不改损失权重，不拉伸学习率/几何渐增窗口。原基线只有不透明度剪枝，因此本组保持 `adaptive_density.enabled=false`，`pruning.until_iter=15000` 固定，20000 步组最后 5001 步不再剪枝。
+
+输出为 `inpaint/original_supervision_iteration_ablation_<时间>/iter_08000` 等目录；日志、PID 和 `configuration_diff.json` 在 `logs/original_supervision_iteration_ablation_gpu1_<时间>/`，最新位置为 `logs/original_supervision_iteration_ablation_gpu1.latest.json`。每组完成后用各自最终迭代模型计算同一 58 张测试图的七项指标，更新原 `comparison_paper_bag/comparison.md` 及实验目录的 `comparison.md`、`summary.json/csv`。通过 `--resume 日志目录 --detach` 恢复已有任务；此时各组只恢复自己的 checkpoint。
+
+## 官方式外观＋保留几何：尺度扁平化消融
+
+```bash
+cd /home/member/wyc/gsagent
+PYTHONNOUSERSITE=1 /home/member/.conda/envs/paintmesh/bin/python \
+  scripts/paintmesh/run_appearance_scale_ablation.py --gpu 1 --detach
+```
+
+后台串行运行 `00_scale_off` 与 `01_scale_on`，两组均从原始初始化独立训练 5000 步。统一改用 Inpaint360GS 官方公开代码风格的外观监督：RGB 目标为 LaMa，洞内 L1=0、洞外 LaMa L1=0.2、全图 SSIM=0.8、原生 mask 包围框 2×2 LPIPS=0.0005。保留覆盖=0.1、深度=0.1、法线=0.05、深度—法线一致性=0.01、多视图几何=0.01，以及原来的几何渐增、混合 depth 初始化、局部旧点更新、远处背景冻结和只剪枝策略。
+
+两组唯一差异为 `loss.scale_flatten=0/100`。该项与 PGSR 的定义一致，对全部可见高斯的最小激活尺度取均值，从第一步按权重 100 加入，不乘 geometry ramp；冻结背景贡献常数，不会被更新。此损失仅接入 inpaint，默认 0，不改 seg 的损失或训练器。可用 `--iterations 10000` 同时改变两组步数，`--scale-weight` 改变开启组权重。
+
+结果位于 `inpaint/official_appearance_scale_ablation_<时间>/`，日志、PID、配置差异和恢复信息位于 `logs/official_appearance_scale_ablation_gpu1_<时间>/`，最新路径见 `logs/official_appearance_scale_ablation_gpu1.latest.json`。每组结束自动发布并评估相同 58 张 test 图，更新原 `comparison_paper_bag/comparison.md` 和实验目录的 `comparison.md`、`summary.json/csv`，显示开启−关闭的七项指标差值；未额外执行 TSDF mesh 后处理。恢复命令为同一脚本加 `--resume 日志目录 --detach`。
 
 ## 协议
 
@@ -121,6 +162,16 @@ PYTHONNOUSERSITE=1 conda run --no-capture-output -n paintmesh \
 ```
 
 该入口依次评估各场景的 `removal/table1_hemi90/inpaint/edgs_rgbdn_joint_woDP/inpainted_3dgs`，使用 iteration 5000、评估分辨率 4。每场景输出仍位于模型的 `evaluation/inpaint360_r4/`。逐场景日志写入 `logs/eval_inpaint360_gpu0_<时间>_<PID>/`；全部完成后，汇总的 `summary.json`、`summary.csv`、`summary.md` 写入 `output/evaluation/inpaint360_table1_hemi90_edgs_rgbdn_joint_woDP_r4_8scenes/`。`--dry-run` 只检查输入并显示计划。
+
+重新训练或改变 mask 扩张参数后，可指定独立汇总目录保留旧报告：
+
+```bash
+PYTHONNOUSERSITE=1 conda run --no-capture-output -n paintmesh \
+  python scripts/paintmesh/eval_inpaint360_batch.py --gpu 0 \
+  --report-root output/evaluation/inpaint360_table1_adaptive_mask_r4_8scenes_20261019
+```
+
+汇总同时记录各场景实际 `MASK_DILATION`。逐场景渲染清单核对新模型、配置和 GT 文件的哈希，不会将旧模型的参考渲染当作新结果；输入不同会报错并要求新输出目录。覆盖重训会清除模型目录内的旧评估输出，从而重新渲染。
 
 八场景汇总明确记录未包含 `fruits`、`garden_toys`、`toys`，不能当作完整的 11 场景表 1。实际训练划分会从模型配置读取并记录；分辨率 4、`EVAL=false` 的训练结果应标注其与论文 7/8 划分的差异。
 

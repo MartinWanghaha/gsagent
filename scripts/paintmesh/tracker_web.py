@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import argparse
 import copy
+import getpass
 import io
+import ipaddress
 import json
 import os
 from pathlib import Path
 import secrets
+import socket
 import sys
 import tempfile
 import threading
@@ -20,6 +23,58 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from virtual_render_io import sha256, verify_tracking_render, read_camera_manifest
+
+
+def request_host(authority):
+    """Parse a Host header without tying a browser's port to the bind port."""
+    try:
+        url = urlsplit("//" + authority)
+        if (not url.hostname or url.username is not None or url.password is not None
+                or url.path or url.query or url.fragment
+                or (url.port is not None and not 1 <= url.port <= 65535)):
+            return None
+        return url.hostname.lower()
+    except (TypeError, ValueError):
+        return None
+
+
+def public_host(bind_host):
+    """Find an address for this server, preferring the SSH connection address."""
+    if bind_host not in {"0.0.0.0", ""}:
+        return bind_host
+    connection = os.environ.get("SSH_CONNECTION", "").split()
+    if len(connection) == 4:
+        try:
+            address = ipaddress.ip_address(connection[2])
+            if address.version == 4 and not address.is_unspecified:
+                return str(address)
+        except ValueError:
+            pass
+    try:
+        # UDP connect chooses an interface; it sends no packets.
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as route:
+            route.connect(("192.0.2.1", 9))
+            return route.getsockname()[0]
+    except OSError:
+        return "127.0.0.1"
+
+
+def print_access(server, host):
+    address, port = server.public_host, server.server_port
+    suffix = f"/?token={server.access_token}" if server.require_page_token else "/"
+    print(f"PaintMesh masks listening: {host}:{port}", flush=True)
+    print(f"浏览器打开 / Browser URL: http://{address}:{port}{suffix}", flush=True)
+    print("请使用上面的完整链接；点击「完成并返回流水线」后页面服务会退出。", flush=True)
+    connection = os.environ.get("SSH_CONNECTION", "").split()
+    if len(connection) == 4 and connection[3].isdigit():
+        target = connection[2]
+        user = os.environ.get("SUDO_USER") or getpass.getuser()
+        local_port = 18760 if port == 7860 else port
+        print("若服务器网页端口不可直连，在 Windows PowerShell 建立 SSH 转发：", flush=True)
+        print(f"ssh -p {int(connection[3])} -N -o ExitOnForwardFailure=yes "
+              f"-L {local_port}:127.0.0.1:{port} {user}@{target}", flush=True)
+        print(f"然后打开: http://127.0.0.1:{local_port}{suffix}", flush=True)
+
 
 def png(array):
     stream = io.BytesIO()
@@ -72,7 +127,8 @@ class Models:
 
 
 class Workspace:
-    def __init__(self, archive, results, models=None):
+    def __init__(self, archive, results, models=None, *, allow_empty_masks=False):
+        self.allow_empty_masks = allow_empty_masks
         self.archive = Path(archive).resolve(strict=True)
         self.run = self.archive.parent
         self.session_path = self.run / "tracking_session.json"
@@ -216,7 +272,7 @@ class Workspace:
                     if mask.shape != self.frames[index].shape[:2] or not np.isfinite(mask).all():
                         raise ValueError(f"invalid tracker mask at frame {index}")
                     mask = (mask != 0).astype(np.uint8)
-                    if not mask.any() or mask.all():
+                    if (not mask.any() and not self.allow_empty_masks) or mask.all():
                         raise ValueError(f"frame {index:05d} mask is empty/full; adjust first-frame prompts and retry")
                     Image.fromarray(mask, mode="L").save(staged / self.names[index])
                     with self.lock:
@@ -242,9 +298,14 @@ class Workspace:
             self.busy.release()
 
 
-def make_server(workspace, host="127.0.0.1", port=7860):
+def make_server(workspace, host="127.0.0.1", port=7860, advertised_host=None):
     token = secrets.token_urlsafe(32)
     page = Path(__file__).with_name("tracker_web.html").read_text().replace("__TOKEN__", token).encode()
+    address = advertised_host or public_host(host)
+    if request_host(address) != address.lower() or ":" in address:
+        raise ValueError("TRACKER_PUBLIC_HOST must be a hostname or IPv4 address without a port")
+    allowed_hosts = {"127.0.0.1", "localhost", "::1", host.lower(), address.lower()}
+    require_page_token = host not in {"127.0.0.1", "localhost"}
 
     class Handler(BaseHTTPRequestHandler):
         def reply(self, status, data, content_type="application/json"):
@@ -256,18 +317,24 @@ def make_server(workspace, host="127.0.0.1", port=7860):
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Referrer-Policy", "no-referrer")
             self.end_headers()
-            self.wfile.write(data)
+            if self.command != "HEAD":
+                self.wfile.write(data)
 
         def authorized(self):
-            return secrets.compare_digest(self.headers.get("X-PaintMesh-Token", ""), token)
+            return secrets.compare_digest(self.headers.get("X-PaintMesh-Token", "").encode(), token.encode())
 
         def do_GET(self):
-            # Reject DNS rebinding; loopback-only binding is the default.
-            if self.headers.get("Host") not in {f"{host}:{self.server.server_port}", f"localhost:{self.server.server_port}"}:
+            # Keep DNS rebinding protection while allowing arbitrary SSH local ports.
+            if request_host(self.headers.get("Host", "")) not in allowed_hosts:
                 return self.reply(403, {"error": "invalid host"})
             url = urlsplit(self.path)
             if url.path == "/":
+                supplied = parse_qs(url.query).get("token", [""])[0]
+                if require_page_token and not (self.authorized() or secrets.compare_digest(supplied.encode(), token.encode())):
+                    return self.reply(403, "请打开启动日志中包含 ?token= 的完整 Browser URL。".encode(),
+                                      "text/plain; charset=utf-8")
                 return self.reply(200, page, "text/html; charset=utf-8")
             if not self.authorized():
                 return self.reply(403, {"error": "invalid session token"})
@@ -281,7 +348,11 @@ def make_server(workspace, host="127.0.0.1", port=7860):
             except (ValueError, OSError) as exc:
                 self.reply(400, {"error": str(exc)})
 
+        do_HEAD = do_GET
+
         def do_POST(self):
+            if request_host(self.headers.get("Host", "")) not in allowed_hosts:
+                return self.reply(403, {"error": "invalid host"})
             if not self.authorized():
                 return self.reply(403, {"error": "invalid session token"})
             try:
@@ -313,6 +384,9 @@ def make_server(workspace, host="127.0.0.1", port=7860):
 
     server = ThreadingHTTPServer((host, port), Handler)
     server.daemon_threads = True
+    server.access_token = token
+    server.public_host = address
+    server.require_page_token = require_page_token
     return server
 
 
@@ -320,6 +394,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--archive", type=Path, default=os.environ.get("TRACKER_IMAGE_SEQUENCE"))
     parser.add_argument("--results", type=Path, default=os.environ.get("TRACKING_RESULTS_ROOT"))
+    parser.add_argument("--host", default=os.environ.get("GRADIO_SERVER_NAME", "0.0.0.0"))
+    parser.add_argument("--port", type=int, default=os.environ.get("GRADIO_SERVER_PORT", "18760"))
+    parser.add_argument("--public-host", default=os.environ.get("TRACKER_PUBLIC_HOST"))
     args = parser.parse_args()
     if args.archive is None or args.results is None:
         parser.error("launch from run_remove.sh Stage 5, or provide --archive and --results")
@@ -327,11 +404,15 @@ def main():
     sys.path.insert(0, str(tracker_root))
     os.chdir(tracker_root)  # Upstream checkpoint and AOT config paths are relative.
     workspace = Workspace(args.archive, args.results)
-    host = os.environ.get("GRADIO_SERVER_NAME", "127.0.0.1")
-    if host not in {"127.0.0.1", "localhost"}:
-        raise ValueError("PaintMesh UI is loopback-only; use SSH port forwarding for remote access")
-    server = make_server(workspace, host, int(os.environ.get("GRADIO_SERVER_PORT", "7860")))
-    print(f"PaintMesh masks: http://{host}:{server.server_port} — {workspace.run.parent.name}", flush=True)
+    if not 1 <= args.port <= 65535:
+        parser.error("port must be in 1..65535")
+    try:
+        server = make_server(workspace, args.host, args.port, args.public_host)
+    except OSError as exc:
+        parser.exit(1, f"Cannot listen on {args.host}:{args.port}: {exc}\n"
+                    "Choose another port with GRADIO_SERVER_PORT (or --port).\n")
+    print(f"PaintMesh run: {workspace.run.parent.name}", flush=True)
+    print_access(server, args.host)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

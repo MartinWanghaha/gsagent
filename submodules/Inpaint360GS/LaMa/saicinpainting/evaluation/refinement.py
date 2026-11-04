@@ -80,9 +80,11 @@ def _l1_loss(
     image : torch.Tensor, on_pred : bool=True
     ): # (pred, pred_downscaled, ref_lower_res, mask, mask_downscaled, image, on_pred=True)
     """l1 loss on src pixels, and downscaled predictions if on_pred=True"""
-    loss = torch.mean(torch.abs(pred[mask<1e-8] - image[mask<1e-8]))
-    if on_pred: 
-        loss += torch.mean(torch.abs(pred_downscaled[mask_downscaled>=1e-8] - ref[mask_downscaled>=1e-8]))                
+    known = mask < 1e-8
+    loss = torch.mean(torch.abs(pred[known] - image[known])) if known.any() else pred[..., :0].sum()
+    if on_pred and (mask_downscaled >= 1e-8).any():
+        selected = mask_downscaled >= 1e-8
+        loss += torch.mean(torch.abs(pred_downscaled[selected] - ref[selected]))
     return loss
 
 def _infer(

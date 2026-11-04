@@ -1,0 +1,112 @@
+{
+  "bag": {
+    "target_ids": [
+      36
+    ],
+    "mask_dilation": 30,
+    "object": "camouflage backpack"
+  },
+  "car": {
+    "target_ids": [
+      7
+    ],
+    "mask_dilation": 30,
+    "object": "car"
+  },
+  "cone_red": {
+    "target_ids": [
+      24
+    ],
+    "mask_dilation": 30,
+    "object": "red traffic cone",
+    "adaptive_options": {
+      "inclination_range_deg": [
+        10.0,
+        30.0
+      ]
+    }
+  },
+  "cone_yellow": {
+    "target_ids": [
+      8
+    ],
+    "mask_dilation": 30,
+    "object": "yellow traffic cone; PaintMesh ID, not another method's ID"
+  },
+  "cube": {
+    "target_ids": [
+      25
+    ],
+    "mask_dilation": 20,
+    "object": "wooden activity cube"
+  },
+  "doppelherz": {
+    "target_ids": [
+      18
+    ],
+    "mask_dilation": 10,
+    "object": "Doppelherz medicine package",
+    "adaptive_options": {
+      "inclination_range_deg": [
+        10.0,
+        30.0
+      ]
+    }
+  },
+  "fruits": {
+    "target_ids": [
+      44
+    ],
+    "mask_dilation": 10,
+    "object": "strawberry tray and contents; not red pepper",
+    "adaptive_options": {
+      "inclination_range_deg": [
+        5.0,
+        25.0
+      ]
+    }
+  },
+  "garden_toys": {
+    "target_ids": [
+      14
+    ],
+    "mask_dilation": 20,
+    "object": "yellow plush on top of stump",
+    "adaptive_options": {
+      "inclination_range_deg": [
+        10.0,
+        30.0
+      ],
+      "min_context_support": 0.3
+    }
+  },
+  "redbull": {
+    "target_ids": [
+      8
+    ],
+    "mask_dilation": 10,
+    "object": "metal bull sculpture; not beverage can",
+    "adaptive_options": {
+      "inclination_range_deg": [
+        5.0,
+        25.0
+      ]
+    }
+  },
+  "toys": {
+    "target_ids": [
+      22,
+      23,
+      24
+    ],
+    "mask_dilation": 20,
+    "object": "all three plush toys"
+  },
+  "truck": {
+    "target_ids": [
+      50
+    ],
+    "mask_dilation": 10,
+    "object": "wooden toy truck"
+  }
+}

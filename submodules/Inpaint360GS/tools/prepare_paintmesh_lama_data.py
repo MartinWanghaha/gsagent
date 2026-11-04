@@ -176,11 +176,14 @@ def _read_index_mask(path: Path) -> np.ndarray:
     return labels != 0
 
 
-def _clean_mask(mask: np.ndarray, min_area: int, dilation: int) -> np.ndarray:
+def _clean_mask(mask: np.ndarray, min_area: int, dilation: int,
+                dilation_shape: str = "ellipse", allow_empty: bool = False) -> np.ndarray:
     if min_area <= 0:
         raise LamaDataError("min_area must be a positive integer")
     if dilation < 0:
         raise LamaDataError("dilation must be a non-negative integer")
+    if dilation_shape not in ("ellipse", "square"):
+        raise LamaDataError("dilation_shape must be ellipse or square")
     binary = mask.astype(np.uint8)
     labels_count, labels, stats, _ = cv2.connectedComponentsWithStats(
         binary, connectivity=8
@@ -195,14 +198,16 @@ def _clean_mask(mask: np.ndarray, min_area: int, dilation: int) -> np.ndarray:
     # Preserve the legacy behavior for a real but very small target: keep its
     # largest component rather than silently turning it into an empty mask.
     if not cleaned.any() and eligible:
-        _, largest = max(eligible)
+        # PIL/official preprocessing chooses the first label on tied areas.
+        _, largest = max(eligible, key=lambda item: (item[0], -item[1])) if dilation_shape == "square" else max(eligible)
         cleaned[labels == largest] = 1
     if dilation:
         size = 2 * dilation + 1
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (size, size))
+        shape = cv2.MORPH_RECT if dilation_shape == "square" else cv2.MORPH_ELLIPSE
+        kernel = cv2.getStructuringElement(shape, (size, size))
         cleaned = cv2.dilate(cleaned, kernel, iterations=1)
     foreground = int(cleaned.sum())
-    if foreground == 0:
+    if foreground == 0 and not allow_empty:
         raise LamaDataError("mask has no foreground pixels")
     if foreground == cleaned.size:
         raise LamaDataError("mask covers the entire frame")
@@ -383,6 +388,8 @@ def prepare_lama_inputs(
     frames: int = 30,
     min_area: int = 50,
     dilation: int = 10,
+    dilation_shape: str = "ellipse",
+    allow_empty_masks: bool = False,
     camera_manifest: Path | None = None,
 ) -> dict[str, Any]:
     stems = _expected_stems(frames)
@@ -428,7 +435,7 @@ def prepare_lama_inputs(
     for stem in stems:
         rgb = _read_rgb(rgbs[stem], "removed RGB")
         raw_mask = _read_index_mask(masks[stem])
-        mask = _clean_mask(raw_mask, min_area, dilation)
+        mask = _clean_mask(raw_mask, min_area, dilation, dilation_shape, allow_empty_masks)
         hole_depth = _read_depth(removed_depths[stem], "removed depth")
         full_depth = _read_depth(reference_depths[stem], "reference depth")
         shape = tuple(rgb.shape[:2])
@@ -484,6 +491,12 @@ def prepare_lama_inputs(
         "dilation": dilation,
         "mask_rule": "original_index_nonzero",
     }
+    # Preserve identities of legacy ellipse/nonempty runs. New policies must
+    # participate in the receipt so they cannot reuse incompatible LaMa inputs.
+    if dilation_shape != "ellipse":
+        parameters["dilation_shape"] = dilation_shape
+    if allow_empty_masks:
+        parameters["allow_empty_masks"] = True
     if normal_sources:
         parameters.update(required_modalities=["rgb", "depth", "normal"], normal=normal_sources["metadata"])
     artifact_id = _identity(
@@ -727,7 +740,7 @@ def validate_lama_outputs(
                 raise LamaDataError("completed normal shape does not match RGB")
             if not np.array_equal(normal[outside], source[outside]) or not np.array_equal(valid[outside], source_valid[outside]):
                 raise LamaDataError(f"completed normal changed values outside the mask for frame {stem}")
-            if not (valid & mask).any():
+            if mask.any() and not (valid & mask).any():
                 raise LamaDataError(f"no valid completed normals inside the hole: {stem}")
             rays = normals.camera_rays(cameras[stem], shape)
             if np.any(np.sum(normal * rays, axis=-1)[valid & mask] > 1e-5):
@@ -747,7 +760,7 @@ def validate_lama_outputs(
             "outputs": outputs,
         }
         if normal_enabled:
-            frame_records[stem]["normal_hole_valid_fraction"] = float(valid[mask].mean())
+            frame_records[stem]["normal_hole_valid_fraction"] = float(valid[mask].mean()) if mask.any() else None
         output_identity[stem] = {
             name: record["sha256"] for name, record in outputs.items()
         }
@@ -834,6 +847,8 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument("--frames", type=_positive_int, default=30)
     prepare.add_argument("--min-area", type=_positive_int, default=50)
     prepare.add_argument("--dilation", type=_non_negative_int, default=10)
+    prepare.add_argument("--dilation-shape", choices=("ellipse", "square"), default="ellipse")
+    prepare.add_argument("--allow-empty-masks", action="store_true")
     prepare.add_argument("--camera-manifest", type=Path)
 
     validate = subparsers.add_parser(
@@ -866,6 +881,8 @@ def main() -> None:
                 frames=args.frames,
                 min_area=args.min_area,
                 dilation=args.dilation,
+                dilation_shape=args.dilation_shape,
+                allow_empty_masks=args.allow_empty_masks,
                 camera_manifest=args.camera_manifest,
             )
         else:

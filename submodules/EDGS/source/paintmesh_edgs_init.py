@@ -14,7 +14,10 @@ def camera(view):
     w2c = view.world_view_transform.detach().cpu().numpy().T.astype(np.float64)
     c2w = np.linalg.inv(w2c)
     k = camera_intrinsics(view, device="cpu", dtype=torch.float64).numpy()
-    return dict(w2c=w2c, c2w=c2w, k=k, h=view.image_height, w=view.image_width)
+    result = dict(w2c=w2c, c2w=c2w, k=k, h=view.image_height, w=view.image_width)
+    if hasattr(view, "paintmesh_geometry_neighbors"):
+        result["planned_neighbors"] = view.paintmesh_geometry_neighbors
+    return result
 
 
 def project(xyz, cam):
@@ -37,6 +40,19 @@ def sample(array, uv, order=1):
 
 def select_pairs(cameras, neighbors):
     """Spatial + viewing-direction neighbors, independent of spiral frame order."""
+    if any("planned_neighbors" in c for c in cameras):
+        if not all("planned_neighbors" in c for c in cameras):
+            raise ValueError("cannot mix adaptive and legacy camera pairing")
+        pairs = set()
+        for i, c in enumerate(cameras):
+            ranked = sorted(c["planned_neighbors"], key=lambda p: (-p[1], p[0]))
+            for j, score in ranked[:neighbors]:
+                if type(j) is not int or not 0 <= j < len(cameras) or i == j or not np.isfinite(score) or score <= 0:
+                    raise ValueError("invalid adaptive camera neighbor")
+                pairs.add(tuple(sorted((i, j))))
+        if not pairs:
+            raise ValueError("no usable adaptive surface-overlap camera pairs")
+        return sorted(pairs)
     centers = np.array([c["c2w"][:3, 3] for c in cameras])
     axes = np.array([c["c2w"][:3, 2] for c in cameras])
     axes /= np.linalg.norm(axes, axis=1, keepdims=True)
@@ -209,10 +225,13 @@ def spacing(points, background):
     return float(np.median(values))
 
 
-def initialize_candidates(views, targets, background, cfg, matcher):
+def initialize_candidates(views, targets, background, cfg, matcher, *, rgb_pairs=None):
     """Returns world candidates and auditable source observations (no hidden targets)."""
     cameras = [camera(v) for v in views]
     pairs = select_pairs(cameras, cfg["init"]["neighbors"])
+    if rgb_pairs is not None:
+        from source.paintmesh_surface_init import close_camera_pair_graph
+        pairs = close_camera_pair_graph(pairs, cameras)
     rng = np.random.default_rng(cfg["seed"])
     init = cfg["init"]
     batches, pair_stats = [], []
@@ -221,6 +240,11 @@ def initialize_candidates(views, targets, background, cfg, matcher):
         matcher_returned = len(confidence)
         confident = np.isfinite(confidence) & (confidence > 0) & (confidence <= 1) & (confidence >= init["confidence_min"])
         uv, other, confidence = uv[confident], other[confident], confidence[confident]
+        if rgb_pairs is not None:
+            # For RGB-only anchors retain observations BEFORE any depth-dependent filtering.
+            rgb_pairs.append((i, j, uv.copy(), other.copy(), confidence.copy()))
+            if init["max_points"] is not None and sum(len(pair[2]) for pair in rgb_pairs) > init["max_points"] * 8:
+                raise ValueError("raw RGB track pool exceeds 8 * max_points")
         xyz, valid = triangulate(cameras[i], cameras[j], uv, other, confidence, init)
         xyz, uv, other, confidence = xyz[valid], uv[valid], other[valid], confidence[valid]
         if init["use_depth"] and len(xyz):
@@ -234,7 +258,7 @@ def initialize_candidates(views, targets, background, cfg, matcher):
         xyz, uv, other, confidence = xyz[accepted], uv[accepted], other[accepted], confidence[accepted]
         if len(xyz):
             batches.append((xyz, uv, other, np.full(len(xyz), i), np.full(len(xyz), j), confidence, np.zeros(len(xyz), np.int8)))
-        if sum(len(b[0]) for b in batches) > init["max_points"] * 8:
+        if init["max_points"] is not None and sum(len(b[0]) for b in batches) > init["max_points"] * 8:
             raise ValueError("RGB candidate pool exceeds 8 * max_points resource limit")
         match_stats = dict(getattr(matcher, "last_diagnostics", {}))
         pair_stats.append(dict(source=i, target=j, matcher_returned=matcher_returned, matched=len(valid),
@@ -265,7 +289,7 @@ def initialize_candidates(views, targets, background, cfg, matcher):
             # hand-tuned density ratio or surface-coverage acceptance gate.
             area = area / np.maximum(1, area / np.median(area)) ** .5
             count = max(1, int(np.rint(area.sum() / gap ** 2)))
-            if count > init["max_points"]:
+            if init["max_points"] is not None and count > init["max_points"]:
                 raise ValueError(f"depth quota {count} exceeds max_points resource limit")
             indices = rng.choice(len(uv), count, replace=True, p=area / area.sum())
             sampled = uv[indices] + rng.uniform(-.5, .5, (count, 2))
@@ -289,7 +313,7 @@ def initialize_candidates(views, targets, background, cfg, matcher):
             scores = .25 / (1 + observations) * (1 + evidence)
             batches.append((xyz, sampled, sampled, np.full(count, i), np.full(count, -1),
                             scores, np.ones(count, np.int8)))
-            if sum(len(b[0]) for b in batches) > init["max_points"] * 8:
+            if init["max_points"] is not None and sum(len(b[0]) for b in batches) > init["max_points"] * 8:
                 raise ValueError("candidate pool exceeds 8 * max_points resource limit; use fewer views or raise resource budget")
     if not batches:
         raise ValueError("no valid initialization candidates")
@@ -303,8 +327,10 @@ def initialize_candidates(views, targets, background, cfg, matcher):
     # Retained background already owns its neighborhoods.
     distance, _ = cKDTree(background).query(xyz[chosen])
     chosen = chosen[distance >= gap * .5]
-    if not len(chosen) or len(chosen) > init["max_points"]:
-        raise ValueError(f"initialization has {len(chosen)} points; empty or exceeds max_points")
+    if not len(chosen):
+        raise ValueError("initialization has 0 points after geometric filtering")
+    if init["max_points"] is not None and len(chosen) > init["max_points"]:
+        raise ValueError(f"initialization has {len(chosen)} points; exceeds max_points={init['max_points']}")
     xyz, uv, uv2, frames, frames2, confidence, kind = [a[chosen] for a in (xyz, uv, uv2, frames, frames2, confidence, kind)]
     rgb, normals = np.zeros((len(xyz), 3)), np.zeros((len(xyz), 3))
     for i, (cam, target) in enumerate(zip(cameras, targets)):

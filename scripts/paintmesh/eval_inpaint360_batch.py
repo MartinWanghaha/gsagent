@@ -52,9 +52,13 @@ def preflight():
 
 def publish(paths, report_root, training_policy):
     summary = aggregate_results(paths)
-    summary.update(experiment=EXPERIMENT, training_policy=training_policy,
+    mask_dilations = {
+        scene: json.loads((model_path(scene).parent / "manifests/lama_input_manifest.json").read_text())["parameters"]["dilation"]
+        for scene in SCENES
+    }
+    summary.update(experiment=report_root.name, training_policy=training_policy,
                    evaluated_scenes=list(SCENES), not_evaluated_scenes=list(OTHER_SCENES),
-                   model_iteration=5000)
+                   model_iteration=5000, mask_dilation_by_scene=mask_dilations)
     if summary["scene_count"] != len(SCENES):
         raise ValueError("batch scene count mismatch")
     write_json(report_root / "summary.json", summary)
@@ -71,6 +75,7 @@ def publish(paths, report_root, training_policy):
     lines = ["# Inpaint360GS: eight-scene evaluation", "",
              f"Scenes: {summary['scene_count']}; object-free reference views: {summary['frame_count']}.", "",
              f"Training policy: `{json.dumps(training_policy, sort_keys=True)}`. Evaluation resolution: 4.", "",
+             f"Mask dilation by scene: `{json.dumps(mask_dilations, sort_keys=True)}`.", "",
              "This is an eight-scene subset; fruits, garden_toys and toys are not included.", "",
              "| Scene | Views | PSNR ↑ | masked PSNR ↑ | SSIM ↑ | masked SSIM ↑ | LPIPS ↓ | masked LPIPS ↓ | FID ↓ |",
              "|---|---:|---:|---:|---:|---:|---:|---:|---:|"]
@@ -86,6 +91,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gpu", default="0")
     parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--report-root", type=Path,
+                        help="Separate summary directory; per-scene results stay beside each model")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     if args.batch_size <= 0 or not args.gpu.isdigit():
@@ -93,7 +100,7 @@ def main():
     training_policy = preflight()
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     log_root = REPO / "logs" / f"eval_inpaint360_gpu{args.gpu}_{stamp}_{os.getpid()}"
-    report_root = REPO / "output/evaluation" / EXPERIMENT
+    report_root = (args.report_root or REPO / "output/evaluation" / EXPERIMENT).expanduser().resolve()
     paths = []
     environment = dict(os.environ, CUDA_VISIBLE_DEVICES=args.gpu, PYTHONNOUSERSITE="1",
                        PYTHONUNBUFFERED="1", OMP_NUM_THREADS="4", OPENBLAS_NUM_THREADS="4", MKL_NUM_THREADS="4")

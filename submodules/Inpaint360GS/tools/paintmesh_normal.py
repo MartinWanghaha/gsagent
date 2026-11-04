@@ -83,8 +83,10 @@ def camera_rays(camera, shape):
 
 
 def inference_mask(hole, valid):
-    if hole.shape != valid.shape or not hole.any() or hole.all():
-        raise ValueError("normal hole mask must match dimensions and be nonempty/nonfull")
+    if hole.shape != valid.shape or hole.all():
+        raise ValueError("normal hole mask must match dimensions and must not cover the full image")
+    if not hole.any():
+        return ~valid
     if not (valid & ~hole).any():
         raise ValueError("normal completion has no valid context outside the hole")
     return hole | ~valid
@@ -96,6 +98,8 @@ def compose_normal(source, valid, hole, prediction, camera):
     prediction = np.asarray(prediction, dtype=np.float32)
     if prediction.shape != source.shape:
         raise ValueError("LaMa normal prediction dimensions differ from input")
+    if not hole.any():
+        return source.copy(), valid.copy()
     finite = np.isfinite(prediction).all(-1)
     vector = 2 * np.clip(np.where(finite[..., None], prediction, 0.5), 0, 1) - 1
     length = np.linalg.norm(vector, axis=-1)

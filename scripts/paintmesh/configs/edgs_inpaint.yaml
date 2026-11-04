@@ -15,6 +15,25 @@ init:
   depth_weight: 0.25
   normal_thickness: 0.25
   opacity: 0.1
+# Inpaint initialization only: RGB-anchored nonplanar depth correction.
+# Scales, rotation, opacity and source-image color sampling retain init settings.
+surface_init:
+  mode: none
+  # depth_anchor requires init.use_depth=true and init.use_normal=false.
+  track_join_pixels: 1.0
+  anchor_min_angle_deg: 5.0
+  anchor_max_sigma_spacing: 5.0
+  min_anchor_observations: 3
+  grid_pixels: 32
+  anchor_radius_pixels: 64
+  depth_edge_relative: 0.05
+  smooth_weight: 0.3
+  ridge_weight: 0.001
+  candidate_pixel_step: 3
+  min_cross_depth_views: 2
+  cross_depth_spacing: 2.0
+  min_cross_depth_fraction: 0.6
+  sampling_distance_factor: 0.75
 matcher:
   model: outdoor
   resolution: 560
@@ -24,6 +43,21 @@ supervision:
   use_depth: null
   use_normal: null
 iterations: 5000
+# Opt-in ablation only. Never changes run_seg or the shared Gaussian model.
+freeze_background: true
+# Opt-in: optimize all rows, then restore old background outside the official
+# first-view projection AND seed-distance gate. Inpaint-only, disabled by default.
+background_writeback:
+  enabled: false
+  mask_area_factor: 1.10
+  seed_std_factor: 3.0
+# Optional fixed local ownership mask. Far old rows remain bitwise unchanged.
+local_background:
+  enabled: false
+  mask_dilation: 10
+  min_views: 2
+  support_distance_factor: 3.0
+  gaussian_radius_cap_factor: 6.0
 geometry_from_iter: 100
 geometry_ramp_iters: 2000
 seed: 0
@@ -35,7 +69,29 @@ optimizer:
   rotation_lr: 0.001
   feature_lr: 0.0025
   opacity_lr: 0.05
+# EDGS no_densify policy: prune after each update, never clone/split.
+# Frozen mode prunes new rows only; unfrozen mode trains/prunes all rows.
+pruning:
+  enabled: true
+  min_opacity: 0.005
+  until_iter: 15000
+# Opt-in inpaint-only ADC. Initial new rows and their descendants can grow;
+# local old rows keep the same update/pruning policy, far rows stay immutable.
+adaptive_density:
+  enabled: false
+  from_iter: 500
+  until_iter: 5000
+  interval: 100
+  grad_threshold: 0.0002
+  percent_dense: 0.01
+  max_new_points: 500000
 loss:
+  # Opt-in PGSR min-axis flattening over visible Gaussians; no geometry ramp.
+  # Frozen background contributes a constant and cannot receive gradients.
+  scale_flatten: 0.0
+  # Opt-in appearance supervision; existing runs keep their original objective.
+  ssim: 0.0
+  lpips: 0.0
   rgb_hole: 1.0
   rgb_known_preserve: 1.0
   alpha_preserve: 0.1
@@ -43,6 +99,16 @@ loss:
   lama_normal: 0.05
   depth_normal_consistency: 0.01
   multiview: 0.01
+appearance:
+  # masked: existing hole RGB + removed-background preservation / masked LPIPS.
+  # inpaint360gs: LaMa L1 outside the hole / full SSIM / native bbox 2x2 LPIPS.
+  # Select weights explicitly in a run-specific config; geometry is independent.
+  mode: masked
+  # continuity preserves historical per-image gradient weights; uniform gives
+  # each hole RGB pixel equal weight. Geometry/SSIM/LPIPS are unchanged.
+  rgb_weight_mode: continuity
+  lpips_padding: 16
+  lpips_max_side: 512
 validity:
   render_alpha_min: 0.01
   coverage_alpha_floor: 0.5

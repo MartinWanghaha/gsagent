@@ -67,6 +67,7 @@ Important environment overrides:
   EDGS_INPAINT_CONFIG=scripts/paintmesh/configs/edgs_inpaint.yaml
   EDGS_INIT_USE_DEPTH=false
   EDGS_INIT_USE_NORMAL=false
+  EDGS_SURFACE_INIT_MODE=none  # depth_anchor requires depth=true, normal=false
   EDGS_MATCH_CONFIDENCE_MIN=0.5        # minimum of BOTH raw RoMa directions; higher is stricter
   EDGS_MATCH_CYCLE_PIXELS=3.0          # maximum round-trip pixel error; lower is stricter
   EDGS_MATCH_REPROJECTION_PIXELS=2.0   # maximum triangulation pixel error; lower is stricter
@@ -77,6 +78,8 @@ Important environment overrides:
   EDGS_GEOMETRY_RAMP_ITERS=2000
   MASK_MIN_AREA=50
   MASK_DILATION=10
+  MASK_DILATION_SHAPE=ellipse          # square matches official PIL MaxFilter
+  ALLOW_EMPTY_MASKS=false             # true for fully occluded circle frames
   RECURSIVE_GUIDE=false
   RENDER_INPAINT_VIDEO=false
   RENDER_INPAINT_TRAIN=false
@@ -268,6 +271,12 @@ if [[ "${SUPPORT_DENSITY_MODE}" != legacy ]]; then require_file "${SUPPORT_DENSI
 
 MASK_MIN_AREA="${MASK_MIN_AREA:-50}"
 MASK_DILATION="${MASK_DILATION:-10}"
+MASK_DILATION_SHAPE="${MASK_DILATION_SHAPE:-ellipse}"
+ALLOW_EMPTY_MASKS="${ALLOW_EMPTY_MASKS:-false}"
+case "${MASK_DILATION_SHAPE}" in ellipse|square) ;; *) fail "MASK_DILATION_SHAPE must be ellipse or square" ;; esac
+require_boolean "${ALLOW_EMPTY_MASKS}"
+lama_mask_args=(--dilation-shape "${MASK_DILATION_SHAPE}")
+if [[ "${ALLOW_EMPTY_MASKS}" == true ]]; then lama_mask_args+=(--allow-empty-masks); fi
 [[ "${MASK_MIN_AREA}" =~ ^[1-9][0-9]*$ ]] || fail "MASK_MIN_AREA must be positive"
 [[ "${MASK_DILATION}" =~ ^[0-9]+$ ]] || fail "MASK_DILATION must be non-negative"
 
@@ -643,11 +652,12 @@ validate_numeric_settings
 edgs_inpaint_overrides=()
 if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
     EDGS_INPAINT_CONFIG="$(resolve_from_invocation "${EDGS_INPAINT_CONFIG:-${SCRIPT_DIR}/configs/edgs_inpaint.yaml}")"
-    for setting in EDGS_INIT_USE_DEPTH EDGS_INIT_USE_NORMAL EDGS_TRAIN_USE_DEPTH EDGS_TRAIN_USE_NORMAL EDGS_INPAINT_ITERATIONS EDGS_GEOMETRY_FROM_ITER EDGS_GEOMETRY_RAMP_ITERS EDGS_MATCH_CONFIDENCE_MIN EDGS_MATCH_CYCLE_PIXELS EDGS_MATCH_REPROJECTION_PIXELS; do
+    for setting in EDGS_INIT_USE_DEPTH EDGS_INIT_USE_NORMAL EDGS_SURFACE_INIT_MODE EDGS_TRAIN_USE_DEPTH EDGS_TRAIN_USE_NORMAL EDGS_INPAINT_ITERATIONS EDGS_GEOMETRY_FROM_ITER EDGS_GEOMETRY_RAMP_ITERS EDGS_MATCH_CONFIDENCE_MIN EDGS_MATCH_CYCLE_PIXELS EDGS_MATCH_REPROJECTION_PIXELS; do
         if [[ -n "${!setting:-}" ]]; then
             case "${setting}" in
                 EDGS_INIT_USE_DEPTH) option=--init-depth ;;
                 EDGS_INIT_USE_NORMAL) option=--init-normal ;;
+                EDGS_SURFACE_INIT_MODE) option=--surface-init-mode ;;
                 EDGS_TRAIN_USE_DEPTH) option=--train-depth ;;
                 EDGS_TRAIN_USE_NORMAL) option=--train-normal ;;
                 EDGS_INPAINT_ITERATIONS) option=--iterations ;;
@@ -744,7 +754,7 @@ run_inpaint tools/prepare_paintmesh_lama_data.py prepare \
     --manifest "${LAMA_INPUT_MANIFEST}" \
     --frames "${VIRTUAL_FRAME_COUNT}" \
     --min-area "${MASK_MIN_AREA}" \
-    --dilation "${MASK_DILATION}"
+    --dilation "${MASK_DILATION}" "${lama_mask_args[@]}"
 require_manifest_kind "${LAMA_INPUT_MANIFEST}" "paintmesh-lama-inputs"
 fi
 
@@ -811,11 +821,41 @@ if [[ "${INPAINT_PIPELINE}" == edgs-pgsr ]]; then
     fi
     if (( END_STAGE >= 5 )); then
         echo "[5/8] Independent PGSR joint RGB/geometry training"
+        edgs_local_arguments=()
+        edgs_local_enabled="$(run_inpaint - "${SCRIPT_DIR}" "${EDGS_INPAINT_CONFIG}" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+from edgs_inpaint_io import load_config
+print("true" if load_config(sys.argv[2])["local_background"]["enabled"] else "false")
+PY
+)"
+        if is_true "${edgs_local_enabled}"; then
+            echo "      Selecting local old Gaussians; far background remains frozen"
+            edgs_target_arguments=()
+            IFS=',' read -r -a edgs_target_ids <<< "${TARGET_IDS}"
+            for target_id in "${edgs_target_ids[@]}"; do
+                target_ply="${REMOVAL_WORK_MODEL}/point_cloud_object_removal/iteration_${DISTILL_ITERATION}/point_cloud_${target_id}.ply"
+                require_file "${target_ply}"
+                edgs_target_arguments+=(--target-ply "${target_ply}")
+            done
+            EDGS_LOCAL_SELECTION_MANIFEST="${MANIFEST_ROOT}/local_selection_manifest.json"
+            run_edgs tools/select_paintmesh_local_background.py \
+                --initialization "${EDGS_INIT_MANIFEST}" --lama "${LAMA_COMPLETION_MANIFEST}" \
+                --camera "${VIRTUAL_CAMERA_MANIFEST}" "${edgs_target_arguments[@]}" \
+                --output-root "${INPAINT_RUN_ROOT}/local_selection" \
+                --manifest "${EDGS_LOCAL_SELECTION_MANIFEST}" \
+                --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}"
+            edgs_local_arguments+=(--local-selection "${EDGS_LOCAL_SELECTION_MANIFEST}")
+        fi
         edgs_joint_arguments=(tools/train_paintmesh_pgsr.py
             --initialization "${EDGS_INIT_MANIFEST}" --lama "${LAMA_COMPLETION_MANIFEST}"
             --camera "${VIRTUAL_CAMERA_MANIFEST}" --edgs-config "${EDGS_CONFIG}"
             --output-root "${INPAINT_RUN_ROOT}/edgs_joint" --manifest "${EDGS_JOINT_MANIFEST}"
-            --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}")
+            --config "${EDGS_INPAINT_CONFIG}" "${edgs_inpaint_overrides[@]}" "${edgs_local_arguments[@]}")
+        if [[ -n "${EDGS_JOINT_SAVE_ITERATIONS:-}" ]]; then
+            IFS=',' read -r -a edgs_joint_saves <<< "${EDGS_JOINT_SAVE_ITERATIONS}"
+            edgs_joint_arguments+=(--save-iterations "${edgs_joint_saves[@]}")
+        fi
         if ! should_run 5; then edgs_joint_arguments+=(--validate-only); fi
         run_edgs "${edgs_joint_arguments[@]}"
     fi

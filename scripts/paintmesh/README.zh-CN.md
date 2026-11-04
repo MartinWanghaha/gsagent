@@ -2,6 +2,8 @@
 
 [English](README.md) | **简体中文** | [实现原理](PRINCIPLES.zh-CN.md)
 
+Inpaint360GS 全场景实验的当前推荐配方、bag 的35组实测依据和可选 depth-anchor 配置见 [推荐运行配置](INPAINT360_RECOMMENDED.zh-CN.md)。
+
 本目录提供三个稳定入口，把修改后的 EDGS-PGSR 与 Inpaint360GS 串成一条可恢复、带产物契约的流水线：
 
 ```text
@@ -327,14 +329,16 @@ END_STAGE=6 \
 | `RENDER_REMOVAL_TEST` | `false` | Stage 2 test 诊断渲染 |
 | `RENDER_EDGS_TEST` | `false` | Stage 3 是否渲染 EDGS test views |
 | `VIRTUAL_RENDERER` | `inpaint360gs` | Stage 4 虚拟渲染后端：`inpaint360gs` 或 `edgs-pgsr`；不改变训练或 mesh 后端 |
-| `VIRTUAL_CAMERA_PATH` | `circle` | 同级轨迹：`circle` 单圈或 `hemisphere` 连续上升的半球螺旋 |
-| `VIRTUAL_CAMERA_COUNT` | `30` | 总相机数 N（整数且至少 2），不是每圈数量；实际覆盖需检查 |
+| `VIRTUAL_CAMERA_PATH` | `circle` | 同级模式：`circle` 单圈、`hemisphere` 半球螺旋、`adaptive` 修复面双圈缓变倾角开放轨迹；详见 [PRINCIPLES 3.3](PRINCIPLES.zh-CN.md#33-模块-b生成严格一致的虚拟相机默认-30-个) |
+| `VIRTUAL_CAMERA_COUNT` | circle/hemisphere `30`；adaptive `180` | 总相机数 N；adaptive 为6..512，但必须满足连续性门限；不是每圈数量 |
 | `VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG` | `85` | 半球末端仰角，有限且在 `(0,90)` 内；圆环忽略 |
+| `VIRTUAL_ADAPTIVE_CONFIG` | `SCRIPT_DIR/configs/adaptive_cameras.json` | 仅adaptive使用的JSON；默认双圈、倾角30°→50°，必需保留mesh用于遮挡/碰撞检查。无旧策略生成或降级入口；修改参数需新removal run |
 | `NORMAL_ALPHA_MIN` | `0.01` | PGSR 虚拟法线有效性阈值；depth 与 alpha 原始数组仍独立保存 |
 | `WRITE_DEBUG_PLY` | `false` | Stage 2 上游大体积诊断 PLY |
 | `LAUNCH_REFINER` | `true` | Stage 5 是否启动 PaintMesh 简化标注页 |
-| `GRADIO_SERVER_NAME` | `127.0.0.1` | Stage 5 监听地址 |
-| `GRADIO_SERVER_PORT` | `7860` | Stage 5 监听端口 |
+| `GRADIO_SERVER_NAME` | `0.0.0.0` | Stage 5 默认允许直接访问服务器地址；设为 `127.0.0.1` 可仅通过 SSH 转发访问 |
+| `GRADIO_SERVER_PORT` | `18760` | Stage 5 监听端口，启动后打印实际浏览器链接 |
+| `TRACKER_PUBLIC_HOST` | 自动识别 | 浏览器使用的服务器 IP/域名，不含协议和端口；默认优先读取 SSH 连接中的服务器 IP |
 | `GRADIO_SHARE` | — | 简化页面不使用此旧 Gradio 配置，不创建公网分享链接 |
 
 ### 4.4 `run_inpaint` 专用
@@ -935,8 +939,8 @@ bash scripts/paintmesh/run_remove.sh mip-nerf/360_v2 kitchen 8 14 none 5
     "TRACKER_IMAGE_SEQUENCE=$TRACKER_ROOT/images.zip" \
     "TRACKER_ASSETS_ROOT=$TRACKER_ROOT/assets" \
     "TRACKING_RESULTS_ROOT=$TRACKER_ROOT/results" \
-    GRADIO_SERVER_NAME=127.0.0.1 \
-    GRADIO_SERVER_PORT=7860 \
+    GRADIO_SERVER_NAME=0.0.0.0 \
+    GRADIO_SERVER_PORT=18760 \
     PYTHONUNBUFFERED=1 \
     "CUDA_VISIBLE_DEVICES=$GPU" \
     "$CONDA_BIN" run --no-capture-output \
@@ -954,7 +958,7 @@ tracker/tracking_session.json             # 校验后为 complete
 
 在浏览器中：
 
-1. 打开终端打印的 `http://127.0.0.1:7860`。
+1. 打开终端打印的完整 **Browser URL**，例如 `http://10.193.25.175:18760/?token=<当前会话访问码>`；直接使用服务器 IP，无需先创建 SSH 隧道。不要把监听地址 `0.0.0.0` 当作浏览器地址。
 2. 首帧自动显示，不需要上传、extract 或初始化 tracker。
 3. 使用“＋ 补全区域”点击需要补全的位置；使用“－ 排除区域”修正过大的分割。绿色覆盖为当前 mask，可撤销上一点或清空。
 4. 检查首帧分割后点击 **Start Tracking · N 帧**（数量自动读取），等待进度完成。只传播人工指定的补全区域，不自动发现其他物体。
@@ -962,7 +966,17 @@ tracker/tracking_session.json             # 校验后为 complete
 
 新页面按固定相机尺寸生成二值 label masks（0=背景，1=补全区域），所有 N 帧成功后才一次性发布目录。中途失败可以调整首帧再试，不会把半成品当作完成结果；已有 masks 不会被覆盖。关闭页面不会停止服务，可以重新打开；如需中断服务仍可在终端 Ctrl+C，但未完成的序列不会通过校验。
 
-页面仅绑定 `127.0.0.1` / `localhost`，沿用 `GRADIO_SERVER_PORT`（默认 7860）指定端口；远程机器使用 SSH 端口转发，不提供公网分享。若当前 run 已有完成且匹配的 masks，Stage 5 会复用它们而不打开页面；想重新标注请使用新的 removal run，从 Stage 1..4 生成对应虚拟序列，不要删除或篡改旧 tracking session。
+页面默认监听 `0.0.0.0:18760`，启动时自动识别服务器地址并打印带当前会话访问码的链接；也可用 `TRACKER_PUBLIC_HOST` 指定可达的 IP 或域名。网络访问需要完整的 `?token=` 链接，接口仍校验会话访问码；保持完整链接可直接刷新或重新打开页面。每次重启都会生成新访问码，请使用最新日志里的链接。
+
+如果只能通过 SSH 访问服务器，运行时设置 `GRADIO_SERVER_NAME=127.0.0.1`；启动日志会根据 SSH 连接打印转发命令。本地端口和服务器端口可以不同，例如 Windows 本地 7860 无法绑定时：
+
+```powershell
+ssh -p 1021 -N -o ExitOnForwardFailure=yes -L 18761:127.0.0.1:18760 member@10.193.25.175
+```
+
+随后访问 `http://127.0.0.1:18761/`；若服务监听 `0.0.0.0`，需加上日志中的同一 `?token=`。SSH 窗口需要保持打开。直接访问要求 Windows 到服务器网页端口可达；只有 SSH 端口可达时仍需转发。
+
+点击“完成并返回流水线”后，该会话的网页服务会正常退出。若当前 run 已有完成且匹配的 masks，Stage 5 会复用它们而不打开页面；想重新标注请使用新的 removal run，从 Stage 1..4 生成对应虚拟序列，不要删除或篡改旧 tracking session。
 
 若界面已经导出全部 mask、但上次在提交 session 前中断，可执行：
 

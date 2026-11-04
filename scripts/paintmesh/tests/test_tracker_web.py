@@ -1,4 +1,5 @@
 import io
+from contextlib import redirect_stdout
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,7 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 from urllib.error import HTTPError
 from urllib.request import Request, build_opener, ProxyHandler
 import zipfile
@@ -16,7 +18,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from tracker_web import Workspace, make_server, png
+from tracker_web import Workspace, make_server, png, print_access, public_host, request_host
 from virtual_render_io import sha256
 from virtual_render_io import camera_contract
 from types import SimpleNamespace
@@ -62,6 +64,23 @@ def wait_done(workspace):
 
 
 class TrackerWebTests(unittest.TestCase):
+    def test_browser_addresses_and_ssh_hint(self):
+        with patch.dict(os.environ, {"SSH_CONNECTION":"10.192.54.248 55307 10.193.25.175 1021"}, clear=True):
+            self.assertEqual(public_host("0.0.0.0"), "10.193.25.175")
+            self.assertEqual(public_host("127.0.0.1"), "127.0.0.1")
+            server = SimpleNamespace(public_host="10.193.25.175", server_port=7860,
+                                     require_page_token=True, access_token="example-session-key")
+            output = io.StringIO()
+            with patch("tracker_web.getpass.getuser", return_value="member"), redirect_stdout(output):
+                print_access(server, "0.0.0.0")
+            self.assertIn("http://10.193.25.175:7860/?token=example-session-key", output.getvalue())
+            self.assertIn("-L 18760:127.0.0.1:7860 member@10.193.25.175", output.getvalue())
+            self.assertIn("http://127.0.0.1:18760/?token=example-session-key", output.getvalue())
+        for value in ("localhost:18760", "127.0.0.1:18761", "[::1]:18762"):
+            self.assertIsNotNone(request_host(value))
+        for value in ("", "user@localhost:18760", "localhost/path", "localhost:bad", "localhost:65536"):
+            self.assertIsNone(request_host(value))
+
     def test_non30_sequence(self):
         with tempfile.TemporaryDirectory() as tmp:
             w = fixture(Path(tmp), count=7)
@@ -130,9 +149,17 @@ class TrackerWebTests(unittest.TestCase):
                 page = opener.open(url).read().decode()
                 self.assertIn("Start Tracking", page)
                 token = re.search("const token='([^']+)'", page)[1]
+                # SSH may forward a different local port from the server's bind port.
+                forwarded = {"Host":"localhost:18761", "X-PaintMesh-Token":token}
+                self.assertEqual(opener.open(Request(url, headers=forwarded)).status, 200)
+                self.assertEqual(json.loads(opener.open(Request(url + "/state", headers=forwarded)).read())["total"], 30)
+                self.assertEqual(opener.open(Request(url, headers=forwarded, method="HEAD")).read(), b"")
+                with self.assertRaises(HTTPError) as rejected:
+                    opener.open(Request(url, headers={"Host":"untrusted.example:18761"}))
+                self.assertEqual(rejected.exception.code, 403)
                 with self.assertRaises(HTTPError): opener.open(url + "/state")
                 def action(name, point=None):
-                    req = Request(url + "/action", data=json.dumps(dict(action=name, point=point)).encode(), headers={"X-PaintMesh-Token":token})
+                    req = Request(url + "/action", data=json.dumps(dict(action=name, point=point)).encode(), headers=forwarded)
                     return json.loads(opener.open(req).read())
                 with self.assertRaises(HTTPError): action("finish")
                 action("point", [2, 3, 1]); action("track")
@@ -142,6 +169,44 @@ class TrackerWebTests(unittest.TestCase):
                 action("finish"); worker.join(3); self.assertFalse(worker.is_alive())
             finally:
                 server.shutdown(); server.server_close()
+
+    def test_direct_server_access_requires_session_link(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            w = fixture(Path(tmp), count=7)
+            server = make_server(w, host="0.0.0.0", port=0, advertised_host="10.193.25.175")
+            worker = threading.Thread(target=server.serve_forever, daemon=True)
+            worker.start()
+            opener = build_opener(ProxyHandler({}))
+            url = f"http://127.0.0.1:{server.server_port}"
+            browser = {"Host":f"10.193.25.175:{server.server_port}"}
+            try:
+                for path in ("/", "/?token=wrong", "/?token=%E9%94%99", "/state", "/preview?frame=0"):
+                    with self.subTest(path=path), self.assertRaises(HTTPError) as rejected:
+                        opener.open(Request(url + path, headers=browser))
+                    self.assertEqual(rejected.exception.code, 403)
+                with opener.open(Request(url + "/?token=" + server.access_token, headers=browser)) as response:
+                    self.assertEqual(response.headers["Referrer-Policy"], "no-referrer")
+                    self.assertIn("Start Tracking", response.read().decode())
+                authenticated = {**browser, "X-PaintMesh-Token":server.access_token}
+                for host in ("10.193.25.175:18760", "127.0.0.1:18761"):
+                    headers = {**authenticated, "Host":host}
+                    state = json.loads(opener.open(Request(url + "/state", headers=headers)).read())
+                    self.assertEqual(state["total"], 7)
+                with self.assertRaises(HTTPError) as rejected:
+                    opener.open(Request(url + "/action", data=b'{"action":"clear"}', headers=browser))
+                self.assertEqual(rejected.exception.code, 403)
+                request = Request(url + "/action", data=b'{"action":"point","point":[2,3,1]}', headers=authenticated)
+                self.assertTrue(json.loads(opener.open(request).read())["can_track"])
+                preview = opener.open(Request(url + "/preview?frame=0", headers=authenticated)).read()
+                self.assertEqual(Image.open(io.BytesIO(preview)).size, (32,24))
+                for path in ("/", "/action"):
+                    request = Request(url + path, data=b'{}' if path == "/action" else None,
+                                      headers={**authenticated, "Host":"untrusted.example"})
+                    with self.assertRaises(HTTPError) as rejected:
+                        opener.open(request)
+                    self.assertEqual(rejected.exception.code, 403)
+            finally:
+                server.shutdown(); server.server_close(); worker.join(3)
 
 
 if __name__ == "__main__": unittest.main()

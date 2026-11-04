@@ -80,9 +80,25 @@ def read_targets(lama, inputs, views, *, use_depth=False, use_normal=False):
 
 
 class JointGaussians(LocalGaussians):
-    """Only new rows acquire Adam state, including color and opacity."""
-    def __init__(self, ply_path, editable, device="cuda"):
-        super().__init__(ply_path, editable, device)
+    """Default: frozen background. Opt-in: optimize/prune all original rows."""
+    parameter_names = (*LocalGaussians.groups, "features", "opacity")
+
+    def __init__(self, ply_path, editable, device="cuda", *, freeze_background=True, trainable_mask=None):
+        if type(freeze_background) is not bool:
+            raise ValueError("freeze_background must be boolean")
+        # Keep initialization ownership separate from optimization eligibility.
+        # Never rewrite the initializer's editable_mask.npy to unfreeze rows.
+        self.new_mask = np.asarray(editable).copy()
+        self.freeze_background = freeze_background
+        trainable = editable if freeze_background else np.ones_like(editable)
+        if trainable_mask is not None:
+            trainable = np.asarray(trainable_mask)
+            if (not freeze_background or trainable.dtype != np.bool_ or trainable.shape != self.new_mask.shape
+                    or np.any(self.new_mask & ~trainable)):
+                raise ValueError("invalid local trainable ownership mask")
+        super().__init__(ply_path, trainable, device)
+        if self.new_mask.dtype != np.bool_ or self.new_mask.shape != self.editable.shape or not self.new_mask.any():
+            raise ValueError("invalid initialization ownership mask")
         features = self.features.detach().clone()
         del self.features
         self.register_buffer("features_base", features)
@@ -92,6 +108,17 @@ class JointGaussians(LocalGaussians):
         del self.opacity
         self.register_buffer("opacity_base", opacity)
         self.opacity = nn.Parameter(opacity[self.indices].clone())
+        self.register_buffer("retained_rows", torch.arange(len(editable), device=device))
+
+    def assembled(self, key):
+        values = getattr(self, key + "_base").index_copy(0, self.indices, getattr(self, key))
+        return values[self.retained_rows]
+
+    def _set_indices(self, indices):
+        self.indices = indices
+        keep = torch.as_tensor(~self.editable, device=indices.device).clone()
+        keep[indices] = True
+        self.retained_rows = torch.nonzero(keep, as_tuple=False).flatten()
 
     @property
     def get_features(self):
@@ -108,32 +135,80 @@ class JointGaussians(LocalGaussians):
                                  for k, v in keys.items()], eps=1e-15)
 
     def local_state(self):
-        return {k: getattr(self, k).detach().clone() for k in (*self.groups, "features", "opacity")}
+        return {k: getattr(self, k).detach().clone() for k in (*self.parameter_names, "indices")}
 
     @torch.no_grad()
     def restore_local(self, state):
-        if set(state) != set(self.local_state()):
+        """Restore ownership before constructing/loading the Adam optimizer."""
+        # Older, unpruned checkpoints did not carry row indices.
+        if set(state) not in (set(self.parameter_names), {*self.parameter_names, "indices"}):
             raise ValueError("invalid joint checkpoint fields")
-        for key, value in state.items():
+        indices = state.get("indices", torch.as_tensor(np.flatnonzero(self.editable)))
+        if (not isinstance(indices, torch.Tensor) or indices.dtype != torch.int64 or indices.ndim != 1
+                or not len(indices) or (indices < 0).any() or (indices >= len(self.editable)).any()
+                or (indices[1:] <= indices[:-1]).any()
+                or not self.editable[indices.cpu().numpy()].all()):
+            raise ValueError("invalid joint checkpoint row ownership")
+        for key in self.parameter_names:
+            value = state[key]
             parameter = getattr(self, key)
-            if parameter.shape != value.shape or not torch.isfinite(value).all():
+            if (not isinstance(value, torch.Tensor) or value.shape != (len(indices), *parameter.shape[1:])
+                    or value.dtype != parameter.dtype or not torch.isfinite(value).all()):
                 raise ValueError("invalid joint checkpoint parameters")
-            parameter.copy_(value.to(parameter))
+        for key in self.parameter_names:
+            parameter = getattr(self, key)
+            setattr(self, key, nn.Parameter(state[key].to(parameter).clone()))
+        self._set_indices(indices.to(device=self.indices.device).clone())
+
+    @torch.no_grad()
+    def prune(self, optimizer, min_opacity=0.005, *, preserve_old=False):
+        """EDGS opacity pruning, with Adam moments sliced by the same row mask."""
+        keep = self.opacity.sigmoid().squeeze(1) >= min_opacity
+        if preserve_old:
+            # Post-training background restoration requires every old identity.
+            keep |= ~torch.as_tensor(self.new_mask, device=self.indices.device)[self.indices]
+        removed = int((~keep).sum())
+        if not removed:
+            return 0
+        if not keep.any():
+            scope = "new" if np.array_equal(self.editable, self.new_mask) else "trainable"
+            raise ValueError(f"opacity pruning would remove all {scope} Gaussians; joint completion failed")
+        for key in self.parameter_names:
+            old = getattr(self, key)
+            group = next(g for g in optimizer.param_groups if g["name"] == key)
+            if len(group["params"]) != 1 or group["params"][0] is not old:
+                raise ValueError("joint optimizer row ownership mismatch")
+            new = nn.Parameter(old[keep].clone())
+            state = optimizer.state.pop(old, None)
+            if state is not None:
+                optimizer.state[new] = {
+                    k: v[keep].clone() if isinstance(v, torch.Tensor) and v.shape == old.shape else v
+                    for k, v in state.items()
+                }
+            group["params"] = [new]
+            setattr(self, key, new)
+        self._set_indices(self.indices[keep])
+        return removed
 
     @torch.no_grad()
     def save(self, path):
         from edgs_inpaint_io import atomic_write, check_preserved
+        from plyfile import PlyData, PlyElement
         vertex = self.ply["vertex"].data
+        indices = self.indices.cpu().numpy()
+        rows = self.retained_rows.cpu().numpy()
         for key, fields in self.groups.items():
             values = getattr(self, key).cpu().numpy()
             for i, field in enumerate(fields):
-                vertex[field][self.editable] = values[:, i]
+                vertex[field][indices] = values[:, i]
         features = self.features.cpu().numpy()
         for i in range(3):
-            vertex[f"f_dc_{i}"][self.editable] = features[:, 0, i]
+            vertex[f"f_dc_{i}"][indices] = features[:, 0, i]
         rest = features[:, 1:].transpose(0, 2, 1).reshape(len(features), -1)
         for i in range(rest.shape[1]):
-            vertex[f"f_rest_{i}"][self.editable] = rest[:, i]
-        vertex["opacity"][self.editable] = self.opacity[:, 0].cpu().numpy()
-        atomic_write(Path(path), lambda f: self.ply.write(f))
-        check_preserved(self.ply_path, path, self.editable)
+            vertex[f"f_rest_{i}"][indices] = rest[:, i]
+        vertex["opacity"][indices] = self.opacity[:, 0].cpu().numpy()
+        result = PlyData([PlyElement.describe(vertex[rows], "vertex")])
+        atomic_write(Path(path), lambda f: result.write(f))
+        check_preserved(self.ply_path, path, self.new_mask, retained_rows=rows,
+                        freeze_background=self.freeze_background, trainable_mask=self.editable)

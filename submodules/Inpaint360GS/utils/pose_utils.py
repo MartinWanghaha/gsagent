@@ -225,9 +225,10 @@ def generate_ellipse_path(views, n_frames=240, const_speed=True, z_variation=0.,
     return render_poses
 
 
-def generate_virtual_path(views, n_frames=30, path_type="circle", circle_radius=1.0,
-                          max_elevation_deg=85.0):
-    """Peer circular/hemispherical paths, preserving the legacy PCA similarity.
+def generate_virtual_path(views, n_frames=None, path_type="circle", circle_radius=1.0,
+                          max_elevation_deg=85.0, *, adaptive_options=None,
+                          adaptive_geometry=None):
+    """Peer circle/hemisphere/adaptive paths, preserving the PCA similarity.
 
     Returns world-to-camera matrices and generation provenance. Default circle
     calls the untouched legacy implementation, including its speed sampling.
@@ -236,10 +237,12 @@ def generate_virtual_path(views, n_frames=30, path_type="circle", circle_radius=
     import json
     from utils.virtual_camera_manifest import (
         check_camera_request, hemisphere_spiral_layout,
-        HEMISPHERE_ALGORITHM_REVISION,
+        HEMISPHERE_ALGORITHM_REVISION, adaptive_policy,
     )
 
-    check_camera_request(None, path_type, n_frames, max_elevation_deg)
+    if n_frames is None:
+        n_frames = 180 if path_type == "adaptive" else 30
+    check_camera_request(None, path_type, n_frames, max_elevation_deg, adaptive_options)
     if not np.isfinite(circle_radius) or circle_radius <= 0:
         raise ValueError("circle radius ratio must be finite and positive")
     poses = []
@@ -254,6 +257,45 @@ def generate_virtual_path(views, n_frames=30, path_type="circle", circle_radius=
     if len(poses) < 3 or not np.isfinite(poses).all():
         raise ValueError("virtual path requires at least three finite training poses")
     pca, transform = transform_poses_pca(np.stack(poses))
+    if path_type == "adaptive":
+        from pathlib import Path
+        if adaptive_geometry is None:
+            raise ValueError("adaptive cameras require target and retained-background geometry")
+        policy = adaptive_policy()
+        up = np.eye(3)[np.argmax(np.abs(pca[:, :3, 1].mean(0)))]
+        up *= np.sign(pca[:, :3, 1].mean(0) @ up)
+        def points(key):
+            xyz = np.asarray(adaptive_geometry[key], dtype=np.float64)
+            if xyz.ndim != 2 or xyz.shape[1] != 3 or not len(xyz) or not np.isfinite(xyz).all():
+                raise ValueError(f"invalid adaptive {key}")
+            return xyz @ transform[:3, :3].T + transform[:3, 3]
+        if "target_object_radius" not in adaptive_geometry:
+            raise ValueError("adaptive circle reference requires target_object_radius from the removal configuration")
+        reference_ratio = generate_virtual_radius(views, adaptive_geometry["target_object_radius"])
+        reference, _ = generate_virtual_path(views, 90, "circle", reference_ratio)
+        reference = np.asarray([transform @ np.linalg.inv(p) for p in reference])[:, :3, 3]
+        if "mesh_path" in adaptive_geometry:
+            mesh_geometry = dict(path=adaptive_geometry["mesh_path"], world_to_pca=transform)
+        elif "mesh_vertices" in adaptive_geometry and "mesh_triangles" in adaptive_geometry:
+            mesh_geometry = dict(vertices=points("mesh_vertices"), triangles=adaptive_geometry["mesh_triangles"])
+        else:
+            raise ValueError("adaptive requires a retained triangle mesh; no point-cloud fallback")
+        selected, info = policy.plan(pca, points("target_xyz"), points("background_xyz"), up,
+            [views[0].FoVx, views[0].FoVy], n_frames, adaptive_options, circle_radius,
+            reference_circle=reference, mesh_geometry=mesh_geometry)
+        first_delta = selected[0][:2, 3] - info["center_pca"][:2]
+        info.update(type="adaptive", algorithm_revision=policy.ALGORITHM_REVISION,
+            frame_count=n_frames, world_to_pca=transform.tolist(), up_axis="+z_pca",
+            start_azimuth_rad=float(np.arctan2(first_delta[1], first_delta[0])),
+            geometry_inputs=adaptive_geometry.get("inputs", []),
+            planner_sha256=hashlib.sha256(Path(policy.__file__).read_bytes()).hexdigest(),
+            source_cameras_sha256=hashlib.sha256(json.dumps(source, sort_keys=True, separators=(",", ":")).encode()).hexdigest())
+        result = []
+        for pose in selected:
+            c2w = np.linalg.inv(transform) @ pose
+            c2w[:3, 1:3] *= -1
+            result.append(np.linalg.inv(c2w))
+        return result, info
     focus = focus_point_fn(pca)
     center = np.array([focus[0], focus[1], 0.])
     radius = np.max(np.percentile(np.abs(pca[:, :3, 3] - center), 90, axis=0)) * circle_radius

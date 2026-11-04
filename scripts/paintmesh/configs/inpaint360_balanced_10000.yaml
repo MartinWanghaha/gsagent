@@ -1,0 +1,98 @@
+# Inpaint-only preset copied from an evaluated bag experiment.
+# Selection and limits: ../INPAINT360_RECOMMENDED.zh-CN.md
+# Historical source: output/paintmesh/Inpaint360GS/inpaint360/bag/removal/table1_adaptive180_sweep/inpaint/original_supervision_iteration_ablation_20261021_230348/iter_10000
+init:
+  use_depth: true
+  use_normal: false
+  neighbors: 4
+  samples_per_pair: 8192
+  max_points: null  # No global point-count/resource-pool cap; keep geometric filtering.
+  confidence_min: 0.7
+  reprojection_pixels: 2.0
+  cycle_pixels: 3.0
+  min_angle_deg: 0.5
+  depth_weight: 0.25
+  normal_thickness: 0.25
+  opacity: 0.1
+surface_init:
+  mode: none
+  track_join_pixels: 1.0
+  anchor_min_angle_deg: 5.0
+  anchor_max_sigma_spacing: 5.0
+  min_anchor_observations: 3
+  grid_pixels: 32
+  anchor_radius_pixels: 64
+  depth_edge_relative: 0.05
+  smooth_weight: 0.3
+  ridge_weight: 0.001
+  candidate_pixel_step: 3
+  min_cross_depth_views: 2
+  cross_depth_spacing: 2.0
+  min_cross_depth_fraction: 0.6
+  sampling_distance_factor: 0.75
+matcher:
+  model: outdoor
+  resolution: 560
+  weights: null
+  dinov2_weights: null
+supervision:
+  use_depth: true
+  use_normal: true
+iterations: 10000
+freeze_background: true
+background_writeback:
+  enabled: false
+  mask_area_factor: 1.1
+  seed_std_factor: 3.0
+local_background:
+  enabled: true
+  mask_dilation: 10
+  min_views: 2
+  support_distance_factor: 3.0
+  gaussian_radius_cap_factor: 6.0
+geometry_from_iter: 100
+geometry_ramp_iters: 2000
+seed: 0
+checkpoint_interval: 100
+diagnostic_interval: 100
+optimizer:
+  position_lr: 0.00016
+  scaling_lr: 0.005
+  rotation_lr: 0.001
+  feature_lr: 0.0025
+  opacity_lr: 0.05
+pruning:
+  enabled: true
+  min_opacity: 0.005
+  until_iter: 15000
+adaptive_density:
+  enabled: false
+  from_iter: 500
+  until_iter: 5000
+  interval: 100
+  grad_threshold: 0.0002
+  percent_dense: 0.01
+  max_new_points: 500000
+loss:
+  scale_flatten: 0.0
+  ssim: 0.2
+  lpips: 0.005
+  rgb_hole: 1.0
+  rgb_known_preserve: 1.0
+  alpha_preserve: 0.1
+  depth: 0.1
+  lama_normal: 0.05
+  depth_normal_consistency: 0.01
+  multiview: 0.01
+appearance:
+  mode: masked
+  lpips_padding: 16
+  lpips_max_side: 512
+validity:
+  render_alpha_min: 0.01
+  coverage_alpha_floor: 0.5
+  depth_jump_relative: 0.05
+debug:
+  enabled: true
+  interval: 100
+  view_index: 0

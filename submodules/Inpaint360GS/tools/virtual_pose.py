@@ -153,16 +153,47 @@ def  virtual(dataset : ModelParams, iteration : int, pipeline : PipelineParams):
         is_circle=True
 
         # here we calculate virtual camera pose circle radius
-        if args.circle_radius != -1:
+        if args.camera_path == "adaptive" and args.circle_radius == -1:
+            # Adaptive distances come from the repair footprint/capture range;
+            # do not inherit the circle's offset center or radius heuristic.
+            args.circle_radius = 1.0
+        elif args.circle_radius != -1:
             pass
         else:
             args.circle_radius = generate_virtual_radius(views, 
                                     target_object_radius=target_object_physical_radius)
 
         from utils.pose_utils import generate_virtual_path
+        geometry = None
+        if args.camera_path == "adaptive":
+            from utils.virtual_camera_manifest import adaptive_policy
+            geometry = adaptive_policy().load_geometry(dataset.model_path, scene.loaded_iter,
+                                                        args.target_ids, args.adaptive_options)
+            geometry["target_object_radius"] = args.target_object_radius
         poses, trajectory = generate_virtual_path(
             views, n_frames=args.camera_count, path_type=args.camera_path,
-            circle_radius=args.circle_radius, max_elevation_deg=args.hemisphere_max_elevation_deg)
+            circle_radius=args.circle_radius, max_elevation_deg=args.hemisphere_max_elevation_deg,
+            adaptive_options=args.adaptive_options, adaptive_geometry=geometry)
+        if args.camera_path == "adaptive":
+            fit, stats = trajectory["surface_fit"], trajectory["planner"]
+            layout = f"{stats['sweep_views']} open double-sweep views"
+            print(f"Adaptive cameras: {layout}; fit={fit['kind']} "
+                  f"inliers={fit['inlier_fraction']:.3f}; "
+                  f"pairs={len(trajectory['geometry_pairs'])}; "
+                  f"isolated={stats['isolated_geometry_views']}")
+            transitions = trajectory["tracking_edges"]
+            print(f"Adaptive ROI stereo coverage={stats['roi_coverage']['geometry_pair_fraction']:.3f}; "
+                  f"max tracking view/rotation step="
+                  f"{max(e['angle_deg'] for e in transitions):.1f}/"
+                  f"{max(e['rotation_deg'] for e in transitions):.1f} deg")
+            if "continuous_path" in trajectory:
+                path = trajectory["continuous_path"]
+                print(f"Open sweep inclination={path['inclination_range_deg']} deg; "
+                      f"max ROI scale ratio={max(e['scale_ratio'] for e in transitions):.4f}; "
+                      f"max projected motion={max(e['motion_fraction'] for e in transitions):.4f} diagonal "
+                      "(sequential edges only, no loop closure)")
+            if fit["kind"] == "target_proxy":
+                print("Adaptive planning uses a target proxy: no reliable local support plane was fitted.")
         
         virtual_pose_list = []
         for idx, pose in enumerate(tqdm(poses, desc="Prepare virtual camera pose")):
@@ -212,6 +243,8 @@ def  virtual(dataset : ModelParams, iteration : int, pipeline : PipelineParams):
                 scene_info["virtual_camera_count"] = args.camera_count
                 if args.camera_path == "hemisphere":
                     scene_info["virtual_hemisphere_max_elevation_deg"] = args.hemisphere_max_elevation_deg
+                if args.camera_path == "adaptive":
+                    scene_info["virtual_adaptive_options"] = args.adaptive_options
             json_str = json.dumps(scene_info, indent=4, ensure_ascii=False)
             
             import re
@@ -253,10 +286,12 @@ if __name__ == "__main__":
     pipeline = PipelineParams(parser)
     parser.add_argument("--iteration", default=-1, type=int)
     parser.add_argument("--quiet", action="store_true")
-    parser.add_argument("--camera-path", choices=("circle", "hemisphere"), default="circle")
-    parser.add_argument("--camera-count", type=int, default=30,
-                        help="Total frames for either path (default 30, minimum 2)")
+    parser.add_argument("--camera-path", choices=("circle", "hemisphere", "adaptive"), default="circle")
+    parser.add_argument("--camera-count", type=int, default=None,
+                        help="Total frames (adaptive default 180, other paths 30; adaptive range 6..512)")
     parser.add_argument("--hemisphere-max-elevation-deg", type=float, default=85.0)
+    parser.add_argument("--adaptive-config", type=Path,
+                        help="Optional JSON camera-planning overrides; used only for adaptive")
     parser.add_argument("--poses-only", action="store_true", help="Write exact cameras without rendering or packaging tracker images")
     parser.add_argument("--skip_ellipse_video", action="store_true")
     parser.add_argument("--is_circle", action="store_false")
@@ -279,12 +314,15 @@ if __name__ == "__main__":
     )
 
     args = get_combined_args(parser)  
+    if args.camera_count is None:
+        args.camera_count = 180 if args.camera_path == "adaptive" else 30
 
-    from utils.virtual_camera_manifest import check_camera_request, load_virtual_camera_manifest
+    from utils.virtual_camera_manifest import check_camera_request, load_virtual_camera_manifest, adaptive_policy
+    args.adaptive_options = adaptive_policy().load_options(getattr(args, "adaptive_config", None)) if args.camera_path == "adaptive" else None
     check_camera_request(
         load_virtual_camera_manifest(args.camera_manifest)
         if args.camera_manifest and Path(args.camera_manifest).exists() else None,
-        args.camera_path, args.camera_count, args.hemisphere_max_elevation_deg)
+        args.camera_path, args.camera_count, args.hemisphere_max_elevation_deg, args.adaptive_options)
     if (args.camera_path != "circle" or args.camera_count != 30) and not args.camera_manifest:
         parser.error("nondefault virtual cameras require --camera_manifest")
 
@@ -293,6 +331,7 @@ if __name__ == "__main__":
 
     args.select_obj_id = config.get("select_obj_id")
     args.surrounding_ids = config.get("surrounding_ids")
+    args.target_ids = config.get("target_id") or [i for i in args.select_obj_id if i not in (args.surrounding_ids or [])]
     args.target_object_radius = config.get("target_object_radius")
 
     # Initialize system state (RNG)

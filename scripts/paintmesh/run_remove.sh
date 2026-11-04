@@ -73,9 +73,10 @@ Important environment overrides:
   END_STAGE=5
   DISTILL_ITERATION=2000
   VIRTUAL_RENDERER=inpaint360gs  # or edgs-pgsr
-  VIRTUAL_CAMERA_PATH=circle    # circle | hemisphere (independent of renderer)
-  VIRTUAL_CAMERA_COUNT=30       # total cameras, integer >= 2; both paths default to 30
+  VIRTUAL_CAMERA_PATH=circle    # circle | hemisphere | adaptive (independent of renderer)
+  VIRTUAL_CAMERA_COUNT=30       # adaptive defaults to 180; circle/hemisphere to 30
   VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG=85
+  VIRTUAL_ADAPTIVE_CONFIG=scripts/paintmesh/configs/adaptive_cameras.json
   NORMAL_ALPHA_MIN=0.01
   REMOVAL_THRESHOLD=0.7
   RENDER_VIDEO=false
@@ -85,6 +86,9 @@ Important environment overrides:
   RENDER_EDGS_TEST=false
   WRITE_DEBUG_PLY=false
   LAUNCH_REFINER=true
+  GRADIO_SERVER_NAME=0.0.0.0     # 127.0.0.1 for SSH-only access
+  GRADIO_SERVER_PORT=18760
+  TRACKER_PUBLIC_HOST=10.193.25.175  # optional browser address; auto-detected by default
   WRITE_COLORED_MESH=true
   RUN_NAME=target_14_t080
   REMOVAL_ROOT=/absolute/output/path
@@ -282,8 +286,13 @@ fi
 DISTILL_ITERATION="${DISTILL_ITERATION:-2000}"
 VIRTUAL_RENDERER="${VIRTUAL_RENDERER:-inpaint360gs}"
 VIRTUAL_CAMERA_PATH="${VIRTUAL_CAMERA_PATH:-circle}"
-VIRTUAL_CAMERA_COUNT="${VIRTUAL_CAMERA_COUNT:-30}"
+if [[ "${VIRTUAL_CAMERA_PATH}" == "adaptive" ]]; then
+    VIRTUAL_CAMERA_COUNT="${VIRTUAL_CAMERA_COUNT:-180}"
+else
+    VIRTUAL_CAMERA_COUNT="${VIRTUAL_CAMERA_COUNT:-30}"
+fi
 VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG="${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG:-85}"
+VIRTUAL_ADAPTIVE_CONFIG="$(resolve_from_invocation "${VIRTUAL_ADAPTIVE_CONFIG:-${SCRIPT_DIR}/configs/adaptive_cameras.json}")"
 NORMAL_ALPHA_MIN="${NORMAL_ALPHA_MIN:-0.01}"
 case "${VIRTUAL_RENDERER}" in
     inpaint360gs|edgs-pgsr) ;;
@@ -1522,8 +1531,9 @@ run_tracker() {
         "TRACKER_IMAGE_SEQUENCE=${TRACKER_ARCHIVE}"
         "TRACKER_ASSETS_ROOT=${TRACKER_ASSETS_ROOT}"
         "TRACKING_RESULTS_ROOT=${TRACKING_RESULTS_ROOT}"
-        "GRADIO_SERVER_NAME=${GRADIO_SERVER_NAME:-127.0.0.1}"
-        "GRADIO_SERVER_PORT=${GRADIO_SERVER_PORT:-7860}"
+        "GRADIO_SERVER_NAME=${GRADIO_SERVER_NAME:-0.0.0.0}"
+        "GRADIO_SERVER_PORT=${GRADIO_SERVER_PORT:-18760}"
+        "TRACKER_PUBLIC_HOST=${TRACKER_PUBLIC_HOST:-}"
         "PYTHONUNBUFFERED=1"
     )
     if [[ -n "${GPU}" ]]; then
@@ -1601,16 +1611,17 @@ run_inpaint -c \
 run_edgs -c \
     'import diff_plane_rasterization, omegaconf, open3d, torch; print("paintmesh EDGS imports: OK")'
 validate_numeric_configuration
-run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${VIRTUAL_CAMERA_PATH}" "${VIRTUAL_CAMERA_COUNT}" "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" <<'PY'
+run_inpaint - "${VIRTUAL_CAMERA_MANIFEST}" "${VIRTUAL_CAMERA_PATH}" "${VIRTUAL_CAMERA_COUNT}" "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" "${VIRTUAL_ADAPTIVE_CONFIG}" <<'PY'
 import sys
 from pathlib import Path
 from virtual_render_io import camera_contract, read_camera_manifest
-path, kind, count, elevation = sys.argv[1:]
+path, kind, count, elevation, adaptive_config = sys.argv[1:]
 if not count.isdecimal() or str(int(count)) != count:
     raise ValueError("VIRTUAL_CAMERA_COUNT must be a canonical integer")
 camera_contract().check_camera_request(
     read_camera_manifest(path) if Path(path).exists() else None,
-    kind, int(count), elevation)
+    kind, int(count), elevation,
+    camera_contract().adaptive_policy().load_options(adaptive_config) if kind == "adaptive" else None)
 PY
 validate_input_contract
 if (( END_STAGE >= 4 )); then
@@ -1793,6 +1804,10 @@ if should_run 4; then
     invalidate_manifest \
         "${TRACKING_SESSION_MANIFEST}" \
         "paintmesh-tracking-session"
+    adaptive_camera_arguments=()
+    if [[ "${VIRTUAL_CAMERA_PATH}" == "adaptive" ]]; then
+        adaptive_camera_arguments+=(--adaptive-config "${VIRTUAL_ADAPTIVE_CONFIG}")
+    fi
     run_inpaint tools/virtual_pose.py \
         --source_path "${SCENE_ROOT}" \
         --model_path "${WORK_MODEL_ROOT}" \
@@ -1804,6 +1819,7 @@ if should_run 4; then
         --camera-path "${VIRTUAL_CAMERA_PATH}" \
         --camera-count "${VIRTUAL_CAMERA_COUNT}" \
         --hemisphere-max-elevation-deg "${VIRTUAL_HEMISPHERE_MAX_ELEVATION_DEG}" \
+        "${adaptive_camera_arguments[@]}" \
         --poses-only
     virtual_render
     validate_tracker_archive
@@ -1835,7 +1851,8 @@ if should_run 5; then
             else
                 echo "      Resuming the archive-matched tracking session"
             fi
-            echo "      Local interface: http://${GRADIO_SERVER_NAME:-127.0.0.1}:${GRADIO_SERVER_PORT:-7860}"
+            echo "      Bind address: ${GRADIO_SERVER_NAME:-0.0.0.0}:${GRADIO_SERVER_PORT:-18760}"
+            echo "      Open the complete Browser URL printed when the tracker is ready."
             echo "      Mark the first frame, click Start Tracking, then Finish in the PaintMesh page."
             tracker_status=0
             run_tracker || tracker_status=$?

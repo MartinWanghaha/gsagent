@@ -1,0 +1,30 @@
+{
+  "background_samples": 60000,
+  "distance_ratio_bounds": [
+    0.2,
+    2.0
+  ],
+  "inclination_range_deg": [
+    30.0,
+    50.0
+  ],
+  "max_incidence_deg": 55.0,
+  "max_roi_fraction": 0.4,
+  "min_context_support": 0.4,
+  "min_roi_fraction": 0.005,
+  "min_visible_fraction": 0.65,
+  "pair_max_angle_deg": 35.0,
+  "pair_min_angle_deg": 3.0,
+  "pair_min_overlap": 0.55,
+  "pair_target_angle_deg": 12.0,
+  "plane_min_inlier_fraction": 0.35,
+  "roi_samples": 128,
+  "seed": 0,
+  "target_roi_fraction": 0.08,
+  "target_samples": 4096,
+  "tracking_max_motion_fraction": 0.02,
+  "tracking_max_rotation_deg": 5.0,
+  "tracking_max_scale_ratio": 1.03,
+  "tracking_min_overlap": 0.85,
+  "use_view_weights": true
+}

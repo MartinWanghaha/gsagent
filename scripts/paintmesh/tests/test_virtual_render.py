@@ -134,12 +134,13 @@ class GeometryContract(unittest.TestCase):
     "set PAINTMESH_GPU_SMOKE_MODEL to an existing removal work_model",
 )
 class GPUModelSmoke(unittest.TestCase):
-    def assert_upright_hemisphere(self, generated, baseline):
+    def assert_upright_trajectory(self, generated, baseline):
         trajectory = generated.get("trajectory", {})
-        if trajectory.get("type") != "hemisphere":
+        if trajectory.get("type") not in ("hemisphere", "adaptive"):
             return
         self.assertEqual(trajectory["orientation"], "scene_up")
-        self.assertEqual(generated["cameras"][0], baseline["cameras"][0])
+        if trajectory["type"] == "hemisphere":
+            self.assertEqual(generated["cameras"][0], baseline["cameras"][0])
         transform = np.asarray(trajectory["world_to_pca"])
         for c in generated["cameras"]:
             w2c = np.eye(4)
@@ -160,6 +161,9 @@ class GPUModelSmoke(unittest.TestCase):
             model.mkdir()
             for name in ("cfg_args", "point_cloud"):
                 (model / name).symlink_to(source / name)
+            if os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH") == "adaptive":
+                (model / "point_cloud_object_removal").symlink_to(source / "point_cloud_object_removal")
+                (root / "removed_mesh").symlink_to(source.parent / "removed_mesh")
             configs = root / "config"
             shutil.copytree(source.parent / "config", configs)
             removal_config = next((configs / "object_removal").rglob("*.json"))
@@ -185,20 +189,20 @@ class GPUModelSmoke(unittest.TestCase):
                     str(root / "images.zip"),
                     "--poses-only",
                     "--camera-path", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH", "circle"),
-                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30"),
+                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "180" if os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH") == "adaptive" else "30"),
                 ],
                 cwd=project,
                 env=dict(os.environ, PYTHONPATH=str(project)),
                 check=True,
             )
             generated = read_json(camera_path)
-            self.assert_upright_hemisphere(generated, cameras)
-            self.assertEqual(generated["frame_count"], int(os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30")))
+            self.assert_upright_trajectory(generated, cameras)
+            self.assertEqual(generated["frame_count"], int(os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "180" if os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH") == "adaptive" else "30")))
             self.assertTrue(generated["complete"])
             self.assertFalse((root / "images.zip").exists())
             self.assertFalse((model / "virtual").exists())
             self.assertTrue((root / "camera_trajectory.svg").is_file())
-            if generated.get("trajectory", {}).get("type") == "hemisphere":
+            if generated.get("trajectory", {}).get("type") in ("hemisphere", "adaptive"):
                 stats = read_json(root / "camera_trajectory.json")
                 self.assertLess(stats["scene_up_roll"]["max_abs_deg"], 1e-8)
                 self.assertEqual(stats["scene_up_roll"]["undefined_frames"], 0)
@@ -218,6 +222,9 @@ class GPUModelSmoke(unittest.TestCase):
                 work.mkdir()
                 for name in ("cfg_args", "point_cloud"):
                     (work / name).symlink_to(source / name)
+                if os.environ["PAINTMESH_GPU_SMOKE_CAMERA_PATH"] == "adaptive":
+                    (work / "point_cloud_object_removal").symlink_to(source / "point_cloud_object_removal")
+                    (root / "removed_mesh").symlink_to(source.parent / "removed_mesh")
                 shutil.copytree(source.parent / "config", root / "config")
                 config = next((root / "config/object_removal").rglob("*.json"))
                 project = SCRIPTS.parents[1] / "submodules/Inpaint360GS"
@@ -227,10 +234,10 @@ class GPUModelSmoke(unittest.TestCase):
                     "--resolution", resolution, "--config_file", str(config),
                     "--camera_manifest", str(camera_path), "--poses-only",
                     "--camera-path", os.environ["PAINTMESH_GPU_SMOKE_CAMERA_PATH"],
-                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "30")],
+                    "--camera-count", os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_COUNT", "180" if os.environ.get("PAINTMESH_GPU_SMOKE_CAMERA_PATH") == "adaptive" else "30")],
                     cwd=project, env=dict(os.environ, PYTHONPATH=str(project)), check=True)
                 generated = read_json(camera_path)
-                self.assert_upright_hemisphere(generated, cameras)
+                self.assert_upright_trajectory(generated, cameras)
                 cameras = generated
             for backend in ("inpaint360gs", "edgs-pgsr"):
                 with self.subTest(backend=backend):
@@ -282,6 +289,12 @@ class GPUModelSmoke(unittest.TestCase):
                     )
                     value = validate_render(removed, backend)
                     self.assertEqual(len(value["frames"]), cameras["frame_count"])
+                    if os.environ.get("PAINTMESH_GPU_SMOKE_ARTIFACTS"):
+                        destination = Path(os.environ["PAINTMESH_GPU_SMOKE_ARTIFACTS"]) / backend
+                        destination.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(camera_path, destination / "virtual_cameras.json")
+                        for name in value["frames"]:
+                            shutil.copy2(removed / "renders" / f"{name}.png", destination / f"{name}.png")
                     if backend == "edgs-pgsr":
                         for index in sorted({0, min(10, cameras["frame_count"]-1),
                                              min(23, cameras["frame_count"]-1), cameras["frame_count"]-1}):

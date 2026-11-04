@@ -14,6 +14,8 @@ import json
 import math
 import os
 import tempfile
+import importlib.util
+from functools import lru_cache
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -24,6 +26,17 @@ SCHEMA_VERSION = 1
 ROTATION_TOLERANCE = 1e-5
 MIN_LINEAR_SCALE = 1e-12
 HEMISPHERE_ALGORITHM_REVISION = 3
+
+
+@lru_cache(maxsize=1)
+def adaptive_policy():
+    # This contract is also imported by filename in EDGS and LaMa processes;
+    # their unrelated packages named utils must not control this import.
+    path = Path(__file__).with_name("adaptive_camera.py")
+    spec = importlib.util.spec_from_file_location("paintmesh_adaptive_camera", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def hemisphere_spiral_layout(count, max_elevation_deg=85.0):
@@ -306,7 +319,7 @@ def validate_virtual_camera_manifest(
     }
     if payload["schema_version"] == 2:
         trajectory = payload.get("trajectory")
-        validate_trajectory(trajectory, frame_count)
+        validate_trajectory(trajectory, frame_count, normalized_records)
         result["trajectory"] = copy.deepcopy(trajectory)
     elif "trajectory" in payload:
         raise ValueError("legacy camera schema cannot declare a trajectory")
@@ -349,11 +362,13 @@ def load_virtual_camera_manifest(
     return normalized
 
 
-def validate_trajectory(value, count):
-    if not isinstance(value, dict) or value.get("type") not in ("circle", "hemisphere"):
+def validate_trajectory(value, count, cameras=None):
+    if not isinstance(value, dict) or value.get("type") not in ("circle", "hemisphere", "adaptive"):
         raise ValueError("unknown/missing camera trajectory")
-    revision = HEMISPHERE_ALGORITHM_REVISION if value["type"] == "hemisphere" else 1
-    if value.get("algorithm_revision") != revision or value.get("frame_count") != count:
+    revision = (HEMISPHERE_ALGORITHM_REVISION if value["type"] == "hemisphere" else
+                adaptive_policy().ALGORITHM_REVISION if value["type"] == "adaptive" else 1)
+    revisions = adaptive_policy().SUPPORTED_REVISIONS if value["type"] == "adaptive" else (revision,)
+    if value.get("algorithm_revision") not in revisions or value.get("frame_count") != count:
         raise ValueError("camera trajectory revision/count mismatch; regenerate with a new RUN_NAME")
     for key in ("center_pca", "focus_pca"):
         _array(value.get(key), (3,), key)
@@ -381,21 +396,34 @@ def validate_trajectory(value, count):
         up = _array(value.get("scene_up_pca"), (3,), "scene_up_pca")
         if not (np.count_nonzero(up) == 1 and np.max(np.abs(up)) == 1.):
             raise ValueError("invalid hemisphere scene up")
+    elif value["type"] == "adaptive":
+        adaptive_policy().validate_metadata(value, count, cameras)
     elif value.get("sampling") != "legacy_circle" or value.get("orientation") != "legacy_up":
         raise ValueError("invalid circle sampling policy")
 
 
-def check_camera_request(payload, path_type, count, max_elevation=85.0):
+def check_camera_request(payload, path_type, count, max_elevation=85.0, adaptive_options=None, *, require_current=True):
     """Check a requested generation policy before reusing any downstream data."""
-    if path_type not in ("circle", "hemisphere") or type(count) is not int or count < 2:
-        raise ValueError("camera path must be circle/hemisphere and count an integer >= 2")
+    if path_type not in ("circle", "hemisphere", "adaptive") or type(count) is not int or count < 2:
+        raise ValueError("camera path must be circle/hemisphere/adaptive and count an integer >= 2")
     if path_type == "hemisphere":
         hemisphere_spiral_layout(count, max_elevation)
+    if path_type == "adaptive":
+        if not 6 <= count <= 512:
+            raise ValueError("adaptive total camera count must be in [6,512]")
+        revision = adaptive_policy().ALGORITHM_REVISION
+        if not require_current and payload is not None:
+            revision = payload.get("trajectory", {}).get("algorithm_revision", revision)
+        adaptive_options = adaptive_policy().options(adaptive_options, revision=revision)
     if payload is None:
         return
     trajectory = payload.get("trajectory", {"type": "circle"})
     if path_type == "hemisphere" and trajectory.get("algorithm_revision") != HEMISPHERE_ALGORITHM_REVISION:
         raise ValueError("virtual camera algorithm changed; choose a new RUN_NAME/removal workspace")
+    if path_type == "adaptive" and trajectory.get("type") == "adaptive":
+        if ((require_current and trajectory.get("algorithm_revision") != adaptive_policy().ALGORITHM_REVISION) or
+                trajectory.get("options") != adaptive_options):
+            raise ValueError("adaptive camera policy changed; choose a new RUN_NAME/removal workspace")
     if (payload["frame_count"] != count or trajectory["type"] != path_type or
             (path_type == "hemisphere" and trajectory["max_elevation_deg"] != float(max_elevation))):
         raise ValueError("virtual camera trajectory/count changed; choose a new RUN_NAME/removal workspace")
@@ -410,7 +438,8 @@ def require_declared_camera_manifest(config, path):
     if path:
         payload = load_virtual_camera_manifest(path)
         if "virtual_camera_path" in config or "virtual_camera_count" in config:
-            check_camera_request(payload, mode, count, config.get("virtual_hemisphere_max_elevation_deg", 85.))
+            check_camera_request(payload, mode, count, config.get("virtual_hemisphere_max_elevation_deg", 85.),
+                                 config.get("virtual_adaptive_options"), require_current=False)
 
 
 def trajectory_diagnostics(views, trajectory):
@@ -426,6 +455,10 @@ def trajectory_diagnostics(views, trajectory):
     rotations = matrices[:, :3, :3]
     rotations /= np.linalg.norm(rotations, axis=1, keepdims=True)
     unit = (positions - trajectory["center_pca"]) / trajectory["radius_pca"]
+    if trajectory["type"] == "adaptive":
+        # Adaptive distances vary; angles must use unit directions, not a sphere
+        # radius inherited from a different path.
+        unit /= np.linalg.norm(unit, axis=1, keepdims=True)
     elevation = np.degrees(np.arcsin(np.clip(unit[:, 2], -1, 1)))
     nearest = []
     for start in range(0, len(unit), 256):
@@ -467,6 +500,13 @@ def trajectory_diagnostics(views, trajectory):
     rolls = [abs(f["scene_up_roll_deg"]) for f in frames if f["scene_up_roll_deg"] is not None]
     result["scene_up_roll"] = dict(max_abs_deg=max(rolls) if rolls else None,
                                     undefined_frames=len(frames)-len(rolls))
+    if trajectory["type"] == "adaptive":
+        result["adaptive_planning"] = dict(surface_fit=trajectory["surface_fit"],
+            planner=trajectory["planner"], frames=trajectory["frames"],
+            geometry_pairs=trajectory["geometry_pairs"])
+        for frame, planned in zip(frames, trajectory["frames"]):
+            frame.update(role=planned["role"], weight=planned["weight"],
+                         incidence_deg=planned["incidence_deg"])
     if trajectory["type"] == "hemisphere":
         # Equal-solid-angle probes over the sampled belt, not just the curve.
         h, theta = np.meshgrid((np.arange(64)+.5)/64 * math.sin(math.radians(
@@ -491,6 +531,9 @@ def trajectory_svg(diagnostics):
     positions = np.array([f["center_pca"] for f in diagnostics["frames"]])
     info = diagnostics["trajectory"]
     positions = (positions - info["center_pca"]) / info["radius_pca"]
+    if info["type"] == "adaptive":
+        # Native-radius and framed candidates need not lie on a unit sphere.
+        positions /= max(1., float(np.max(np.abs(positions))))
     parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="540" viewBox="0 0 1000 540">',
              '<rect width="1000" height="540" fill="white"/>']
     for panel, (a, b, title) in enumerate(((0, 1, "PCA XY (top)"), (0, 2, "PCA XZ (front)"))):
@@ -561,5 +604,16 @@ def virtual_views_from_manifest(
             .squeeze(0)
         )
         view.camera_center = view.world_view_transform.inverse()[3, :3]
+        for name in ("paintmesh_view_weight", "paintmesh_geometry_neighbors"):
+            if hasattr(view, name):
+                delattr(view, name)
+        trajectory = payload.get("trajectory", {})
+        if trajectory.get("type") == "adaptive":
+            view.paintmesh_view_weight = trajectory["frames"][index]["weight"]
+            view.paintmesh_geometry_neighbors = []
+            for pair in trajectory["geometry_pairs"]:
+                if index in (pair["i"], pair["j"]):
+                    other = pair["j"] if index == pair["i"] else pair["i"]
+                    view.paintmesh_geometry_neighbors.append((other, pair["score"]))
         views.append(view)
     return views

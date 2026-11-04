@@ -92,7 +92,7 @@ inpainted 3DGS ──PGSR + TSDF──> inpainted mesh
          ├─ target-only（恢复 surrounding）→ 发布 removed 3DGS
          │     └─ 3 PGSR/TSDF → removed mesh → 重新附加语义
          └─ all-selected（target+surrounding 均删除）
-               ↓ 4 circle / hemisphere 生成唯一 N 帧相机 manifest
+               ↓ 4 circle / hemisphere / adaptive 生成唯一 N 帧相机 manifest
            full 与 all-selected 在同相机、同后端渲染
                ├─ native：RGB / native depth / alpha / objects
                └─ PGSR：RGB / plane z-depth / normal / alpha
@@ -177,7 +177,7 @@ PGSR `plane_depth` 是相机 z 分量，不是欧氏射线距离；“metric”�
 | 虚拟 PGSR/最终 mesh 渲染 | EDGS `GaussianModel` / PGSR | 只读加载外观几何，忽略语义字段做渲染 | 无 |
 | 原 Stage 5a | Inpaint360GS `GaussianModel` / 原生 renderer | 整体拼接参数参与 RGB 优化，最终背景快照+gate 提交 | `RGB_FINETUNE_DENSIFY` 默认 true；最终 gate 仍可减点 |
 | 原 Stage 5b | `LocalGaussians` / PGSR | editable 行 XYZ、scale、rotation；SH/opacity/语义冻结 | 固定点数、行序；越 gate 回退 |
-| 新路径 Stage 4→5 | 直接构造带语义 PLY → `JointGaussians` / PGSR | 仅新增行 XYZ、scale、rotation、SH、opacity；背景与语义冻结 | 固定点数；没有原 seed gate 或 clone/split/prune |
+| 新路径 Stage 4→5 | 直接构造带语义 PLY → `JointGaussians` / PGSR | 新增行可训练；旧背景由 `freeze_background/local_background` 配置控制，语义冻结 | `pruning` 控制仅剪枝；不 clone/split，不使用原 seed gate，详见 [INPAINT_PRUNING.zh-CN.md](INPAINT_PRUNING.zh-CN.md) |
 
 两个 Python 项目均有 `scene`、`utils` 等同名包，shell 以独立工作目录/子进程调度。共享 CPU 契约读取 JSON/NumPy，不能通过把两个项目同时随意加入导入路径来替代后端适配。
 
@@ -1079,7 +1079,7 @@ removed_3dgs/point_cloud/iteration_<T_sem>/point_cloud.ply
 
 实现位于 [`virtual_pose.py`](../../submodules/Inpaint360GS/tools/virtual_pose.py)、[`pose_utils.py`](../../submodules/Inpaint360GS/utils/pose_utils.py) 和 [`virtual_camera_manifest.py`](../../submodules/Inpaint360GS/utils/virtual_camera_manifest.py)。
 
-已实现同级圆环/半球生成器与可配置总帧数。B1 保留原圆环算法，B2 说明半球螺旋；新方式不改变 normal completion。所有下游统一读取 camera manifest 的帧表，30 为默认值；后续章节出现的 30 帧及 `00029` 均按默认配置理解。
+已实现同级 `circle / hemisphere / adaptive` 生成器与可配置总帧数。B1 保留原圆环算法，B2 说明半球螺旋，B3 说明修复面自适应双圈开放轨迹。默认仍为 `circle + 30`，已有两种模式的矩阵与身份保持兼容；新模式不改变 normal completion。所有下游统一读取 camera manifest 的帧表；后续章节出现的 30 帧及 `00029` 均按默认配置理解。
 
 #### 输入
 
@@ -1105,7 +1105,7 @@ N 帧沿一圈近似等弧长分布，全部看向 $F$。需要区分**圆环几
 
 ##### B2. 新增半球：hemisphere（已实现）
 
-新增独立轨迹选择 `VIRTUAL_CAMERA_PATH=circle|hemisphere`，默认 `circle` 保持现有行为；`VIRTUAL_CAMERA_COUNT=N` 配置两种模式的相机总数，默认 30，不是每圈数量。它们与 `VIRTUAL_RENDERER=inpaint360gs|edgs-pgsr` 正交：轨迹决定相机序列，renderer 决定渲染后端。以下接口已接入 `run_remove.sh`：
+独立轨迹选择 `VIRTUAL_CAMERA_PATH=circle|hemisphere|adaptive`，默认 `circle` 保持现有行为；`VIRTUAL_CAMERA_COUNT=N` 配置相机总数，默认 30，不是每圈数量。circle/hemisphere 要求 N≥2，adaptive 要求 6≤N≤512。它们与 `VIRTUAL_RENDERER=inpaint360gs|edgs-pgsr` 正交：轨迹决定相机序列，renderer 决定渲染后端。以下接口已接入 `run_remove.sh`：
 
 ```bash
 VIRTUAL_CAMERA_PATH=hemisphere
@@ -1176,9 +1176,74 @@ $(r_i,u_i,b_i)$ 是右手系的 right/up/backward；按现有轴翻转、PCA 逆
 
 同样的 30 帧要覆盖更多高度，每圈会比原单圈稀疏；可以显式增大 $N$，但渲染、LaMa 与 tracker 工作量也随之增加。空间连续不等于画面一定重叠，必须检查 tracker 传播、目标遮挡及高处空洞；相机中心均匀也不代表表面观测、图像分辨率或补全质量均匀。默认 `FUSION_SEED_FRAME=4` 仍表示第 5 帧，要求 `0 <= seed < N`，越界报错、不静默换帧；切换轨迹或帧数后应重新检查 seed 覆盖，不复用旧 masks、LaMa 或 fusion 产物。
 
-##### B3. 精确相机复用与渲染
+##### B3. 自适应观察：adaptive（双圈开放轨迹，revision 3）
 
-以下为现有的共同下游契约，新增半球模式也必须遵守。新生成器只运行在 `run_remove.sh` Stage 4；不影响 `run_seg.sh` 全局训练，不让各个 depth/normal 模块独立生成相机。
+入口仍为 `VIRTUAL_CAMERA_PATH=adaptive`，与 circle、hemisphere 同级。adaptive 现在只生成**围绕修复区域、倾角缓慢变化的双圈开放轨迹**，不保留旧散点或固定倾角单圈的生成入口，不自动降级为其他轨迹。实现位于 [`adaptive_camera.py`](../../submodules/Inpaint360GS/utils/adaptive_camera.py)。其目标是在保持跟踪连续性的同时，增加修复区域的观察倾角覆盖；最终 RGB/mesh 质量仍须通过实验验证。
+
+```bash
+VIRTUAL_CAMERA_PATH=adaptive
+VIRTUAL_CAMERA_COUNT=180
+VIRTUAL_ADAPTIVE_CONFIG="$PWD/scripts/paintmesh/configs/adaptive_cameras.json"
+```
+
+`run_remove.sh` 和 `virtual_pose.py` 在 adaptive 下默认180帧；circle、hemisphere 继续默认30帧。显式设置 N 时输出恰好 N 帧，接口范围为6..512；小 N 不能通过连续性门限时直接报错，不复制帧、不偷偷增加 N。`VIRTUAL_ADAPTIVE_CONFIG` 可省略，默认读取 [`adaptive_cameras.json`](configs/adaptive_cameras.json)；未知键、非法数值报错。旧 `path_strategy`、`ring_angles_deg`、`train_fraction` 等参数已移除，不能用于新生成。
+
+**修复区域与输入几何。** 从 `work_model/point_cloud_object_removal/iteration_<T_sem>/point_cloud_<target_id>.ply` 读取删除目标，从同目录 `point_cloud.ply` 读取公共渲染使用的 all-selected 保留背景。有限、opacity>0.01 的点用于目标范围和局部支撑面估计；主平面拟合不足时在几何元数据中明确标记 `target_proxy`，表示未知修复区域的估计范围，不伪称真实隐藏表面。这只是修复 ROI 的几何代理，不是另一种相机策略，也不生成训练GT。
+
+**保留mesh是必需输入。** 默认读取 removal workspace 的 `removed_mesh/geometry.ply` 及 `semantic_manifest.json`，校验mesh所绑定的Gaussian PLY正是上述all-selected保留模型。mesh缺失、全局空网格、来源不匹配均直接报错，不退回纯点云规划。存在surrounding IDs时，target-only/restored-surrounding mesh不能替代all-selected mesh；需提供对应保留模型的mesh。mesh和其来源manifest的SHA256一并进入相机身份。
+
+为控制资源占用，mesh按覆盖完整相机路径、ROI和上下文的AABB筛选相交三角形；按三角形AABB相交筛选，不能仅保留顶点落在框内的三角形。查询网格不简化、不抽样。使用Open3D CPU `RaycastingScene` 检查相机到已知表面的距离、相邻相机之间线段是否穿过表面，以及ROI/背景上下文是否被mesh遮挡。仍保留点云z-buffer补充检查，避免mesh缺失小结构时完全忽略原Gaussians。原始mesh非空但查询体积内没有三角形时，严格表示该范围内没有已知mesh遮挡，不伪造三角形。未命中mesh不代表隐藏区域已被真实观察；另外检查相机是否过于接近保留Gaussians。
+
+**以circle为观察基准。** 用相同训练相机和removal配置的 `target_object_radius` 计算原circle半径，再生成90个参考circle位置；它们仅确定可靠观察的参考倾角和起始方位，不作为失败回退。最终注视点固定为修复ROI中心，up固定为场景up。新视图仍复用首台训练相机的FoV、尺寸和坐标约定，不读取test图像、GT或LaMa结果。
+
+**双圈缓变倾角。** 对归一化路径参数 t∈[0,1]，方位为 `phi0 + 4*pi*t`，倾角为 `theta_start + (theta_end-theta_start)*(3*t^2-2*t^3)`；倾角相对修复面法线，默认30°→50°。N=180时方位步长约4.02°。轨迹开放，末帧与首帧不同，不把两端强行连接，也不对平滑倾角序列循环移位或做离散重排。
+
+观察距离按 `r(t)=r_ref*sqrt(cos(theta(t))/cos(theta_ref))` 缓慢调整，降低倾角变化导致的目标面积变化。参考距离通过实际ROI投影与FoV二分标定，默认参考ROI占比0.08，并限制在真实采集距离中位数的配置范围内。直接调用时 `--circle_radius` 在adaptive下仍是显式距离倍率，自动值-1转换为1；该倍率不改变圈数和倾角规律。
+
+**严格检查给定采样。** 全 N 帧都检查ROI构图、可见率、背景上下文和mesh安全距离。全部 N-1 条顺序边检查完整姿态旋转≤5°、相邻ROI线性尺度比≤1.03、共同可见ROI比例≥0.85、ROI投影位移90分位数≤图像对角线2%。投影位移是几何代理，不是真实RGB光流。任一帧或边失败直接报错；可显式修改配置或增加N，不能删掉坏帧后跳过缺口，也没有自动降级路径。真实渲染中的Gaussian拉伸、模糊仍应结合预览检查。
+
+**训练配对与轨迹顺序分开。** tracker按顺序传播；训练保留随机无放回视图采样。几何图根据共同ROI可见比例和同一三维点的三角化角，连接包括非相邻帧在内的合格视图；默认重叠≥0.55、夹角3°–35°、偏好12°。EDGS初始化与联合训练按score选至多 `init.neighbors` 个邻居再取无向边并集，不为无邻居视角伪造最近邻。无有效几何边则拒绝生成。
+
+每帧质量由可见率、背景支持和构图组成；新策略移除了单纯奖励更正对表面的入射角因子，避免系统性压低大倾角视图权重。默认将 `max(0.1,q)` 归一化至均值1后乘到该步loss，`use_view_weights=false` 可关闭。该权重不包含LaMa跨视角颜色一致性检测，不改变 `RECURSIVE_GUIDE=false`、初始化模态、剪枝、旧高斯所有权或训练迭代数。
+
+| JSON参数 | 默认值 | 含义 |
+|---|---|---|
+| `inclination_range_deg` | `[30,50]` | 相对修复面法线的起止夹角，必须严格递增 |
+| `target_roi_fraction` | `0.08` | 参考倾角处的投影ROI面积占比 |
+| `min_roi_fraction / max_roi_fraction` | `0.005 / 0.40` | 全序列ROI构图允许范围 |
+| `min_visible_fraction / min_context_support` | `0.65 / 0.40` | 修复ROI与背景环代理最低可见率 |
+| `max_incidence_deg` | `55` | 表面观察夹角上限，须大于终止倾角 |
+| `distance_ratio_bounds` | `[0.20,2.0]` | 自动标定距离范围，相对真实训练相机距离中位数 |
+| `tracking_max_rotation_deg` | `5` | 顺序帧完整姿态转角上限 |
+| `tracking_max_scale_ratio` | `1.03` | 相邻ROI线性尺度比的对称上限 |
+| `tracking_min_overlap` | `0.85` | 相邻共同可见ROI比例下限 |
+| `tracking_max_motion_fraction` | `0.02` | ROI投影位移90分位数/图像对角线的上限 |
+| `pair_min_overlap` | `0.55` | 几何配对共同ROI比例下限 |
+| `pair_min/target/max_angle_deg` | `3 / 12 / 35` | 几何配对三角化角门限与偏好 |
+| `background_samples / target_samples / roi_samples` | `60000 / 4096 / 128` | 点云及修复面探针预算，不用于简化mesh |
+| `plane_min_inlier_fraction` | `0.35` | 主支撑面可靠性判断，另需至少32内点 |
+| `use_view_weights / seed` | `true / 0` | EDGS视图权重与确定性规划种子 |
+
+示例（复用seg，新建removal workspace）：
+
+```bash
+PAINTMESH_ENV=paintmesh GPU=1 \
+  VIRTUAL_RENDERER=edgs-pgsr \
+  VIRTUAL_CAMERA_PATH=adaptive VIRTUAL_CAMERA_COUNT=180 \
+  RUN_NAME=table1_adaptive180_sweep END_STAGE=5 \
+  bash scripts/paintmesh/run_remove.sh \
+  Inpaint360GS/inpaint360 bag 4 36 none 1
+```
+
+跟踪完成后，`run_inpaint.sh` 的 `REMOVAL_ROOT` 指向 `.../bag/removal/table1_adaptive180_sweep`，公共RGB/depth/normal补全、初始化、联合训练和最终渲染统一消费同一份精确相机。必须重新标注/跟踪，不能复用旧轨迹的masks或LaMa结果。
+
+**相机身份与历史读取。** 新相机声明adaptive revision3、`sampling=repair_surface_open_sweep`、开放双圈的规律/参考circle、逐帧参数、N-1条跟踪边、几何图和mesh来源摘要。CPU reader验证实际相机符合声明的倾角/距离规律、scene up、FoV、投影尺度、顺序边和三角化角，读取时不导入torch或Open3D。历史revision1/2仅保留原格式读取与消费兼容；没有历史算法生成入口。重新生成必须用revision3和新RUN_NAME，旧参数直接拒绝。
+
+本变更仅接入remove Stage4及下游精确相机契约，不修改 `run_seg.sh`、全局EDGS Trainer或语义蒸馏。论文参考：[G4Splat](https://arxiv.org/html/2510.12099v2)的几何引导覆盖、[DeAOT](https://arxiv.org/html/2210.09782v3)的连续逐帧传播、[PAInpainter](https://arxiv.org/html/2510.10993v1)的跨视角一致性；本实现不复现这些论文的完整训练方法，也不声明通用最优。
+
+##### B4. 精确相机复用与渲染
+
+以下为三种模式的共同下游契约。生成器只运行在 `run_remove.sh` Stage 4；不影响 `run_seg.sh` 全局训练，不让各个 depth/normal 模块独立生成相机。
 
 同一组相机分别渲染：
 
@@ -1213,6 +1278,8 @@ work_model/virtual/ours_object_removal/iteration_<T_sem>/...  # all_selected rem
 ### 3.4 模块 C：交互式 SAM-Track 得到跨虚拟视角 mask
 
 PaintMesh 使用专用简化页面 [`tracker_web.py`](tracker_web.py) / [`tracker_web.html`](tracker_web.html)。页面自动载入当前 run 的序列，用户在首帧添加正/负点、预览分割后点击 Start Tracking；无需上传、解压或手动初始化。SAM 点选与 DeAOT 传播复用原 tracker 的模型接口，不加载 GroundingDINO，也不执行周期性 segment-everything / 新对象发现，以避免把无关物体加入补全 mask。
+
+页面默认监听 `0.0.0.0:18760`，启动时打印服务器 IP 对应的完整 Browser URL，远程浏览器可直接访问。服务器地址优先从 `SSH_CONNECTION` 识别，可用 `TRACKER_PUBLIC_HOST` 覆盖；`GRADIO_SERVER_NAME` / `GRADIO_SERVER_PORT` 控制监听地址和端口。网络页面需使用日志中的当前会话访问码，接口继续验证访问码和 Host，不允许随意域名访问。需要 SSH 转发时可设置 `GRADIO_SERVER_NAME=127.0.0.1`；本地端口允许与服务器端口不同。完成跟踪并提交后网页服务正常退出，端口不再监听。
 
 #### 输入
 
@@ -1831,6 +1898,8 @@ $$
 **Gaussian 参数化与输出。** `compose()` 原样保留背景行，在末尾追加新行。颜色取来源 RGB 并转 SH DC，高阶 SH 为零；实际 opacity 默认 0.1；无 normal 时尺度为 $(g,g,g)$、单位 quaternion。有有效 normal 时令尺度为 $(g,g,0.25g)$，以归一化 quaternion $(1+n_z,-n_y,n_x,0)$ 把局部 z 轴转到该方向；反向退化情况使用 $(0,1,0,0)$。PLY 存 log-scale 和 opacity logit，而不是实际尺度/透明度。`obj_*` 字段由保留背景的 **1-NN** 复制，不是原路径的 5-NN 均值。
 
 输出为 `edgs_init/point_cloud.ply`、行对齐的 `editable_mask.npy`、`support.npz`（XYZ/RGB/normal、frame/pixel、other_frame/other_uv、source_kind、confidence、spacing）、`diagnostics.json`、解析配置和 `manifests/edgs_init_manifest.json`。sidecar 保存获选候选的来源，不保存完整多视图轨迹或所有被合并候选的历史映射。
+
+显式设置 `surface_init.mode=depth_anchor` 可替代原平面初始化：对 RGB 三视角闭环仅做像素三角化，得到带条件协方差的锚点；沿相机射线拟合连续的深度校正量，再按锚点支持域和跨视角深度一致性采样。正则作用于校正量而非场景表面；不假设单平面、不把 RGB 离群点拼回、不将无锚点区域强行补满。要求 depth 开启、normal 关闭，尺度、opacity、单位旋转及源图 RGB 采样规则保持原样。默认 `none` 保留原混合流程。新点使用 `source_kind=2`，另记录原始/校正深度、支持视角、校正场及锚点；`surface_model.json`、`surface_evidence.npz` 与 manifest 一起校验。锚点不足时保存诊断并停止，无平面或原始深度回退。这里的 confidence 是条件一致性，不代表隐藏背景的真实精度；训练伪目标不随初始化更改。历史平面结果只允许读取校验。配置与局限见 [表面初始化说明](SURFACE_INITIALIZATION.zh-CN.md)。
 
 #### PGSR 联合训练
 

@@ -77,12 +77,16 @@ def predict(args):
     # Match the depth predictor's refinement policy. Refinement needs gradients
     # with respect to intermediate features; do not wrap it in no_grad().
     for index, stem in enumerate(stems):
-        batch = default_collate([dataset[index]])
-        result = refine_predict(batch, network, **config.refiner)
-        prediction = result[0].permute(1, 2, 0).detach().cpu().numpy()
         source, valid = normals.read_normal(root / f"{stem}.npy", root / "valid" / f"{stem}.png")
         hole = normals.read_mask(root / f"{stem}_mask.png")
-        completed, completed_valid = normals.compose_normal(source, valid, hole, prediction, cameras[stem])
+        if hole.any():
+            batch = default_collate([dataset[index]])
+            result = refine_predict(batch, network, **config.refiner)
+            prediction = result[0].permute(1, 2, 0).detach().cpu().numpy()
+            completed, completed_valid = normals.compose_normal(source, valid, hole, prediction, cameras[stem])
+        else:
+            # Full occlusion: preserve every source normal/validity bit.
+            completed, completed_valid = source.copy(), valid.copy()
         _atomic_npy(output / f"{stem}.npy", completed)
         _atomic_png(output / "valid" / f"{stem}.png", completed_valid.astype(np.uint8) * 255, "L")
         _atomic_png(output / "vis" / f"{stem}.png", normals.normal_preview(completed, completed_valid), "RGB")
@@ -91,7 +95,8 @@ def predict(args):
             "normal_valid": _artifact(output / "valid" / f"{stem}.png"),
             "normal_vis": _artifact(output / "vis" / f"{stem}.png"),
         }
-        print(f"normal {index + 1}/{len(stems)} {stem}: hole valid={completed_valid[hole].mean():.4f}", flush=True)
+        fraction = f"{completed_valid[hole].mean():.4f}" if hole.any() else "N/A (empty hole, unchanged)"
+        print(f"normal {index + 1}/{len(stems)} {stem}: hole valid={fraction}", flush=True)
     verify_normal_inputs(input_manifest)
     if receipt["input_sha256"] != _sha256(input_manifest_path):
         raise ValueError("normal input manifest changed during inference")
