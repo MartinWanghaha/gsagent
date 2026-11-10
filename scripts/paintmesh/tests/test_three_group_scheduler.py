@@ -56,3 +56,24 @@ def test_atomic_peak_reservations_do_not_double_count_used_memory(monkeypatch):
     snap=dict(free_mib=21000,processes=[dict(pid=12,memory_mib=3000)])
     assert scheduler.remaining_capacity(snap,[dict(budget_mib=6000,child_pid=12)])==16464
     assert scheduler.remaining_capacity(dict(free_mib=24000,processes=[]),[dict(budget_mib=16000,child_pid=None)])<12000
+
+
+def test_measured_redbull_peak_cannot_overlap_lama():
+    peak=scheduler.budget('inpaint_5_5','best_results','redbull')
+    capacity=scheduler.remaining_capacity(dict(free_mib=24249,processes=[]),[dict(budget_mib=peak,child_pid=None)])
+    assert capacity<scheduler.budget('official_color')
+    assert scheduler.budget('inpaint_5_5','fit','redbull')==16000
+
+
+def test_mesh_waits_for_ram_before_starting_any_gpu_stage(tmp_path,monkeypatch):
+    class WaitObserved(Exception):pass
+    monkeypatch.setattr(scheduler,'JOB',tmp_path)
+    monkeypatch.setattr(scheduler,'available_host_gib',lambda:70)
+    monkeypatch.setattr(scheduler.guard,'report',lambda root:None)
+    def sleep(_):raise WaitObserved
+    monkeypatch.setattr(scheduler.time,'sleep',sleep)
+    worker=object.__new__(scheduler.Scheduling);worker.root=tmp_path;worker.case=tmp_path/'scene'
+    states=[];worker.save=lambda **kw:states.append(kw);worker.release=lambda:None
+    with pytest.raises(WaitObserved):worker.execute('mesh_render',[],tmp_path,[],gpu=True)
+    assert states[-1]['state']=='waiting_for_host_memory'
+    assert states[-1]['available_host_gib']==70

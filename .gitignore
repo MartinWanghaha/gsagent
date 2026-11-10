@@ -37,3 +37,6 @@ logs/
 data_processed/ 
 # Conda package cache
 .conda-pkgs/
+
+# Generated scratch arrays, debug renders and temporary experiment files
+/tmp/

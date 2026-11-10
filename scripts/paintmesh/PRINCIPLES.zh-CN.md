@@ -2113,7 +2113,15 @@ manifest 是整条 remove → virtual views → tracker → LaMa → 所选重�
 12. 新路径使用两视图 DLT、世界网格择优和近似 depth 面积预算，没有完整多视图轨迹 BA，也不复用 D0 的局部密度场/缺点质量守恒。不能把它描述成已经严格消除多层杂散点。
 13. 本次工作区 YAML 匹配置信门槛是 0.7，但 `run_inpaint.sh --help` 和部分测试仍写死 0.5；实际 loader 读取 YAML。此处按代码记录差异，不改用户配置；待同步项见 plan 核对表。
 
-## 6. 主要源码索引
+## 6. 补全后的生成物体重定位与组合
+
+独立入口 [`run_recompose.py`](run_recompose.py) 接收已经完成的背景 3DGS/mesh，并通过来源清单读取去除前的真实物体观测。具体配置、命令、产物和验证边界见 [物体重定位与组合](OBJECT_RECOMPOSITION.zh-CN.md)。
+
+当前唯一实现：3DGS 为 inpaint 背景高斯＋实际删除的原始物体高斯，按去除前/后模型的完整渲染属性做精确多重集合差，直接复制原始记录，不采样或训练新高斯。mesh 为 inpaint 背景 mesh＋官方 MV-SAM3D 生成 mesh，经多初值 Sim(3)、多视角观测及实际支撑面接触/碰撞配准。
+
+这里不把 LaMa 洞 mask 当物体轮廓，不用补全深度充当原物体几何真值，也不修改第一阶段或第三阶段训练。背景由用户指定的 fitlama / best_results / fit 结果选择；规范物体资产与世界位姿分开保存。mesh 初始位姿为 T0，当前位姿为 T；原始高斯保留世界坐标，使用 Δ=T×inverse(T0) 同步移动中心、协方差与 SH。初始 Δ=I，属性原样复制。所有高斯统一深度排序。3DGS 精确恢复与 mesh 验收分别记录；mesh 不通过仍输出 3DGS，并将 mesh 标记 needs_review。
+
+## 7. 主要源码索引
 
 | 环节 | 源码 |
 |---|---|

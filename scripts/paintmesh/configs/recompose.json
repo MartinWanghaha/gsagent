@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "output_root": "output/paintmesh/Inpaint360GS/recomposition",
+  "inputs_root": "output/paintmesh/Inpaint360GS",
+  "execution": {
+    "gpu_max_used_mib": 5120
+  },
+  "isolate_removed_targets": {
+    "doppelherz": true
+  },
+  "evidence": {
+    "seed": 42,
+    "semantic_min": 0.5,
+    "roi_margin": 0.3,
+    "observation_max_size": 768,
+    "generation_views": 8,
+    "validation_views": 3,
+    "min_mask_pixels": 150,
+    "min_depth_coverage": 0.65,
+    "proxy_faces": 200000,
+    "points_per_view": 2000,
+    "anchor_points": 5000,
+    "minimum_views": 2,
+    "minimum_anchor_points": 100,
+    "depth_agreement_fraction": 0.02,
+    "support_match_fraction": 0.01,
+    "completed_support_weight": 0.15
+  },
+  "pose": {
+    "seed": 42,
+    "surface_samples": 8000,
+    "rays_per_view": 2500,
+    "anchor_iterations": 40,
+    "refine_candidates": 4,
+    "pose_iterations": 30,
+    "physics_iterations": 20,
+    "anchor_weight": 20.0,
+    "depth_weight": 2.0,
+    "color_weight": 0.15,
+    "occlusion_tolerance": 0.01,
+    "contact_weight": 30.0,
+    "collision_weight": 100.0,
+    "pose_anchor_weight": 2.0,
+    "contact_quantile": 0.05,
+    "contact_tolerance": 0.003,
+    "physics_translation_bound": 0.03,
+    "physics_rotation_bound": 0.08,
+    "max_observation_degradation": 0.02,
+    "minimum_iou": 0.75,
+    "maximum_contact_gap": 0.015,
+    "maximum_penetration": 0.02,
+    "minimum_up_confidence": 0.6,
+    "ambiguity_score_gap": 0.02
+  },
+  "generator": {
+    "repository": "/home/member/wyc/MV-SAM3D",
+    "python": "/home/member/.conda/envs/mvsam3d/bin/python",
+    "model_tag": "hf",
+    "seed": 42,
+    "revision": "abb04b5e8af5bc33b0265bdf19937e76bbb6bcdd"
+  },
+  "gaussian_source": "exact_deleted_original"
+}

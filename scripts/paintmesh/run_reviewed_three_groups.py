@@ -93,7 +93,11 @@ def health(index):
         write(path,value);return value
 
 
-def budget(stage):
+def budget(stage, group=None, scene=None):
+    if group=='best_results' and scene=='redbull' and stage=='inpaint_5_5':
+        # Observed ~19.7 GiB during local selection/training; leave no slot
+        # for concurrent LaMa on this card instead of changing the model.
+        return 22000
     if stage in ('official_color','official_depth','normal','inpaint_3_3'):return 6000
     if stage in ('initialize','inpaint_4_4'):return 12000
     if stage in ('train_5000','inpaint_5_5'):return 16000
@@ -104,6 +108,12 @@ def budget(stage):
 def alive(pid):
     try:return bool(Path(f'/proc/{pid}/cmdline').read_bytes())
     except OSError:return False
+
+
+def available_host_gib():
+    fields={line.split(':',1)[0]:line.split(':',1)[1].strip().split()[0]
+            for line in Path('/proc/meminfo').read_text().splitlines()}
+    return int(fields['MemAvailable'])/1024**2
 
 
 def remaining_capacity(snap, reservations):
@@ -158,7 +168,7 @@ class Scheduling:
             fcntl.flock(lock,fcntl.LOCK_EX);d=self.locked_entries();d.pop(self.slot,None);write(self.ledger(),d)
 
     def wait_gpu(self, stage):
-        need=budget(stage)
+        need=budget(stage,self.group,self.state.get('scene'))
         while True:
             h=health(self.gpu)
             if not h['healthy']:raise GPUUnavailable(h['reason'])
@@ -175,9 +185,28 @@ class Scheduling:
             guard.report(self.root);time.sleep(15)
 
     def execute(self,stage,cmd,cwd,expected,gpu=False):
-        try:return super().execute(stage,cmd,cwd,expected,gpu=gpu)
+        mesh_lock=None
+        try:
+            if stage in ('inpaint_7_8','mesh_render','mesh_semantics') and not (self.case/'receipts'/f'{stage}.json').exists():
+                # TSDF extraction/clustering is host-memory heavy (~65 GiB
+                # for cone_yellow). Different GPUs still share the same RAM.
+                mesh_lock=(JOB/'host_mesh.lock').open('a')
+                while True:
+                    acquired=False
+                    try:
+                        fcntl.flock(mesh_lock,fcntl.LOCK_EX|fcntl.LOCK_NB);acquired=True
+                    except BlockingIOError:pass
+                    free=available_host_gib()
+                    if acquired and free>=80:break
+                    if acquired:fcntl.flock(mesh_lock,fcntl.LOCK_UN)
+                    self.save(state='waiting_for_host_memory',stage=stage,
+                        reason='mesh_serialized_across_gpus; need_80_GiB_available',available_host_gib=free,child_pid=None)
+                    guard.report(self.root);time.sleep(15)
+            return super().execute(stage,cmd,cwd,expected,gpu=gpu)
         finally:
             if gpu:self.release()
+            if mesh_lock:
+                fcntl.flock(mesh_lock,fcntl.LOCK_UN);mesh_lock.close()
 
     def has_pending(self):
         for s in self.req['scenes']:

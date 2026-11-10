@@ -2,6 +2,8 @@
 
 English | [简体中文](README.zh-CN.md) | [中文原理说明](PRINCIPLES.zh-CN.md)
 
+For generated-object placement and movable mesh / Gaussian composition after inpainting, see [object recomposition](OBJECT_RECOMPOSITION.zh-CN.md) and `run_recompose.py`.
+
 `run_seg.sh` combines the modified EDGS-PGSR reconstruction with the
 Inpaint360GS object-feature distillation pipeline. It produces an object-aware
 3DGS checkpoint and lifts the same scene-local instance IDs onto the PGSR TSDF

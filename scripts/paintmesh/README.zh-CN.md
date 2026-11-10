@@ -2,6 +2,8 @@
 
 [English](README.md) | **简体中文** | [实现原理](PRINCIPLES.zh-CN.md)
 
+补全后的物体生成、原位重定位和可移动 3DGS / mesh 组合见 [物体重定位与组合](OBJECT_RECOMPOSITION.zh-CN.md)，独立入口为 `run_recompose.py`。
+
 Inpaint360GS 全场景实验的当前推荐配方、bag 的35组实测依据和可选 depth-anchor 配置见 [推荐运行配置](INPAINT360_RECOMMENDED.zh-CN.md)。
 
 本目录提供三个稳定入口，把修改后的 EDGS-PGSR 与 Inpaint360GS 串成一条可恢复、带产物契约的流水线：

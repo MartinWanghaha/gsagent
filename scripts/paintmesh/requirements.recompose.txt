@@ -1,0 +1,6 @@
+# Additional CPU geometry dependencies for the existing paintmesh environment.
+# Install with --no-deps to leave its CUDA/NumPy stack intact.
+pymeshlab==2023.12.post3
+python-fcl==0.7.0.8
+# Independent glTF round-trip verification (also used by the generator environment).
+trimesh==5.2.0
