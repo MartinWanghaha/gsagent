@@ -19,6 +19,17 @@ from recompose.io import read_json,write_json
 from recompose.report import write_status
 
 
+def claim_available_scene(jobs,gpu,used_limit,finished_preparing):
+    """A busy GPU must not hold a queued scene away from an available peer."""
+    from recompose.pipeline import wait_gpu
+    try:scene=jobs.get_nowait()
+    except queue.Empty:return None,not finished_preparing.is_set()
+    try:wait_gpu(gpu,maximum_used_mib=used_limit,timeout=0)
+    except RuntimeError:
+        jobs.put(scene);jobs.task_done();return None,True
+    return scene,True
+
+
 def array_hashes(path):
     with np.load(path) as data:
         return {k:hashlib.sha256(np.ascontiguousarray(data[k]).tobytes()).hexdigest() for k in data.files}
@@ -73,8 +84,9 @@ def main():
     snapshot_baseline(root)
     write_json(root/'active_jobs.json',dict(logs=str(logs),jobs=[dict(task='native RGB regeneration, 11 scenes / 13 objects',pid=os.getpid())]))
     prior=read_json(root/'native_regeneration_status.json') if a.resume and (root/'native_regeneration_status.json').exists() else {}
-    jobs=queue.Queue();stop=threading.Event();results=prior.get('scenes',{});mutex=threading.Lock()
+    jobs=queue.Queue();stop=threading.Event();prepared_all=threading.Event();results=prior.get('scenes',{});mutex=threading.Lock()
     used_limit=cfg['execution']['gpu_max_used_mib']
+    poll_interval=cfg['execution']['gpu_poll_interval_seconds']
     env=dict(os.environ,PYTHONUNBUFFERED='1',OMP_NUM_THREADS='4',OPENBLAS_NUM_THREADS='4',MKL_NUM_THREADS='4')
     command=[sys.executable,str(Path(__file__).with_name('run_recompose.py')),'--config',str(Path(a.config).resolve()),'run']
 
@@ -85,6 +97,7 @@ def main():
     def record(scene,**value):
         with mutex:
             results.setdefault(scene,{}).update(value)
+            if value.get('phase')!='failed':results[scene].pop('error',None)
             write_json(root/'native_regeneration_status.json',dict(pid=os.getpid(),updated_at=time.time(),logs=str(logs),scenes=results))
 
     def monitor():
@@ -112,8 +125,10 @@ def main():
 
     def gpu_worker(gpu):
         while True:
-            scene=jobs.get()
-            if scene is None:jobs.task_done();return
+            scene,keep_running=claim_available_scene(jobs,gpu,used_limit,prepared_all)
+            if not keep_running:return
+            if scene is None:
+                time.sleep(poll_interval if not jobs.empty() else 1);continue
             try:
                 record(scene,phase='generation_alignment_export',gpu=gpu)
                 code=execute(command+['--scenes',scene,'--gpus',str(gpu),'--single-worker'],f'{scene}.compose.log')
@@ -154,7 +169,7 @@ def main():
                 scene=futures[future];print(repr(error),flush=True)
                 write_json(root/scene/'status.json',dict(state='failed',stage='native_prepare',error=str(error)))
                 record(scene,phase='failed',error=str(error))
-    for _ in workers:jobs.put(None)
+    prepared_all.set()
     for thread in workers:thread.join()
     audit=execute([sys.executable,str(Path(__file__).with_name('audit_recomposition.py')),'--root',str(root)],'gaussian_audit.log')
     if read_json(root/'car/status.json').get('state')=='complete':

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Real mesh RGB/depth comparison figures: four baselines + two PaintMesh modes.
+"""Real mesh RGB/depth figures: four baselines, stage 1, two PaintMesh modes.
 
-No image generation, Gaussian renders, camera-dependent metric selection, or
-substitution of native texture for a missing shared-color-field render.
+All panels use completed triangle renders with their declared appearance.
+Views are selected from the GT mask area, independently of method scores.
 """
 from __future__ import annotations
 import argparse
@@ -24,7 +24,10 @@ FONT='/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
 BOLD='/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 COLS=[('GT',None,None),('2DGS','2dgs','recomposition'),('CoMe','come','recomposition'),
       ('GOF','gof','recomposition'),('Gaussian Wrapping','gaussian_wrapping','recomposition'),
+      ('PaintMesh: stage 1','paintmesh_stage1','recomposition'),
       ('PaintMesh: background','paintmesh','background'),('PaintMesh: composed','paintmesh','recomposition')]
+PAIRED_LABELS=[('2DGS','2dgs'),('CoMe','come'),('GOF','gof'),('Gaussian Wrapping','gaussian_wrapping'),
+               ('PaintMesh: stage 1','paintmesh_stage1'),('PaintMesh','paintmesh')]
 BG=(247,248,250);INK=(26,35,48);GREEN=(16,125,91);PINK=(226,64,130)
 
 def font(size,bold=False):return ImageFont.truetype(BOLD if bold else FONT,size)
@@ -79,6 +82,8 @@ def choose_view(root,scene):
 def sources(root,scene,label,method,state,camera):
     if method is None:
         return dict(label=label,method=None,state='GT',rgb=root/'common'/scene/'held_out'/(camera['stem']+'_gt.png'),metric=None,geometry=None,status='reference RGB')
+    if method in ['come','gof'] and read(root/'protocol.json').get('native_support_validation',{}).get('enabled'):
+        label+=' (support validated)'
     base=root/state/method/scene;cache=root/'cache'/method/scene/state
     mp=base/'metrics.json';gp=cache/'geometry_metrics.json';rgb=base/'renders'/(camera['stem']+'.png');dp=cache/'depth'/(camera['stem']+'.npy')
     metric=read(mp) if mp.exists() else None;geo=read(gp) if gp.exists() else None
@@ -134,7 +139,7 @@ def extra_depth(root,out,scene,record,camera):
     This does not change the evaluator's cohort, masks or reported scores.
     """
     method=record['method']
-    if not method or method=='paintmesh':return None
+    if not method or method in ['paintmesh','paintmesh_stage1']:return None
     marker=BASE/method/scene/'mesh_complete.json'
     if not marker.exists():return None
     mesh=read(marker)
@@ -183,7 +188,8 @@ def geometry_image(root,out,scene,record,camera,scale,reference_state='recomposi
     return image
 
 def scoring_mask(root,scene,state,camera):
-    p=root/'common'/scene/(state+'_support')/(camera['stem']+'.png')
+    native=root/'common'/scene/(state+'_native_support')/(camera['stem']+'.png')
+    p=native if native.exists() else root/'common'/scene/(state+'_support')/(camera['stem']+'.png')
     return np.asarray(Image.open(p))>127 if p.exists() else None
 
 def masked_image(image,mask):
@@ -191,10 +197,11 @@ def masked_image(image,mask):
     a=np.asarray(image).copy();a[~mask]=(a[~mask]*.12+np.array([208,211,216])*.88).astype('uint8')
     return Image.fromarray(a)
 
-def draw_scene(root,out,scene,camera,roi,records,scale,state=None,width=640):
+def draw_scene(root,out,scene,camera,roi,records,scale,state=None,width=None):
+    width=max(camera['width'],width or 0)
     columns=records if state is None else [sources(root,scene,'GT',None,None,camera)]+[
-             sources(root,scene,name,m,state,camera) for name,m in [('2DGS','2dgs'),('CoMe','come'),('GOF','gof'),('Gaussian Wrapping','gaussian_wrapping'),
-             ('PaintMesh: background' if state=='background' else 'PaintMesh: composed','paintmesh')]]
+             sources(root,scene,('PaintMesh: background' if state=='background' else 'PaintMesh: composed') if m=='paintmesh' else name,m,state,camera)
+             for name,m in PAIRED_LABELS]
     n=len(columns);full_h=round(width*2/3);zoom_h=width//2;top=148
     heights=[full_h+95,zoom_h+80,full_h+90]
     canvas=Image.new('RGB',(n*width,top+sum(heights)+45),BG);draw=ImageDraw.Draw(canvas)
@@ -229,7 +236,9 @@ def draw_scene(root,out,scene,camera,roi,records,scale,state=None,width=640):
         y=top+heights[0]+heights[1]+20
         text(draw,(x+10,y),'Sparse reference points' if record['method'] is None else 'Mesh surface: depth + lighting',size=20,bold=True);y+=32
         geom=geometry_image(root,out,scene,record,camera,scale,reference_state=state or 'recomposition')
-        if geom is not None and state is not None:geom=masked_image(geom,scoring_mask(root,scene,state,camera))
+        if geom is not None and state is not None:
+            support=root/'common'/scene/(state+'_support')/(camera['stem']+'.png')
+            geom=masked_image(geom,np.asarray(Image.open(support))>127 if support.exists() else None)
         canvas.paste(contained(geom,(width,full_h)) if geom else placeholder((width,full_h),'No completed mesh/depth'),(x,y))
         if record['method']:
             geo=record['geometry'] or {};coverage=view_metric(record,camera)
@@ -241,13 +250,12 @@ def draw_scene(root,out,scene,camera,roi,records,scale,state=None,width=640):
     text(draw,(16,canvas.height-32),'Geometry colors use one fixed depth range for this camera. Gray in score-matched figures = not evaluated.',size=18)
     return canvas
 
-def overview(root,out,scenes,selections,kind,width=480):
-    # Four overview figures: seven-column RGB and geometry, plus the two
-    # score-matched six-column reports.
-    paired=kind in ['background','recomposition'];n=6 if paired else 7
+def overview(root,out,scenes,selections,kind,width=None):
+    width=max(max(selections[s]['camera']['width'] for s in scenes),width or 0)
+    paired=kind in ['background','recomposition'];n=len(METHODS)+1 if paired else len(COLS)
     fh=round(width*2/3);row_h=fh+91;left=160;top=122
     canvas=Image.new('RGB',(left+n*width,top+len(scenes)*row_h+55),BG);draw=ImageDraw.Draw(canvas)
-    title={'rgb':'All scenes | mesh RGB | four baselines + both PaintMesh modes',
+    title={'rgb':'All scenes | mesh RGB | four baselines + stage 1 + both PaintMesh modes',
            'geometry':'All scenes | mesh surfaces | shared depth color scale per scene',
            'background':'All scenes | background mesh | common covered pixels, target mask excluded',
            'recomposition':'All scenes | composed mesh | common covered pixels'}[kind]
@@ -255,7 +263,7 @@ def overview(root,out,scenes,selections,kind,width=480):
     text(draw,(16,55),'Same camera within each scene. P/S/L = selected-view RGB metrics; CD/F1 = scene geometry.',size=21)
     for row,scene in enumerate(scenes):
         camera=selections[scene]['camera'];roi=selections[scene]['roi'];scale=selections[scene]['depth_range']
-        cols=COLS if not paired else [('GT',None,None)]+[(label,m,kind) for label,m in [('2DGS','2dgs'),('CoMe','come'),('GOF','gof'),('Gaussian Wrapping','gaussian_wrapping'),('PaintMesh','paintmesh')]]
+        cols=COLS if not paired else [('GT',None,None)]+[(label,m,kind) for label,m in PAIRED_LABELS]
         y=top+row*row_h
         pretty=scene.replace('_',' ').split(' ')
         for k,line in enumerate(pretty):text(draw,(10,y+fh//2+k*27),line,size=21,bold=True)
@@ -279,17 +287,20 @@ def overview(root,out,scenes,selections,kind,width=480):
                 v=view_metric(rec,camera)
                 if v:text(draw,(x+8,y+fh+57),f'scored pixels {v.get("common_coverage",0):.1%} | own {v["mesh_coverage"]:.1%}',size=16,color=(83,93,107))
         draw.line([(0,y+row_h-3),(canvas.width,y+row_h-3)],fill=(210,215,223),width=2)
-    text(draw,(16,canvas.height-36),'Unfinished sources are labeled. RGB is actual mesh rendering with the shared appearance field; no Gaussian render substitutions.',size=20)
+    native=read(root/'protocol.json').get('native_mesh_rgb',{}).get('enabled')
+    caption='RGB uses native colored triangle meshes and each project mesh backend; no appearance fitting or Gaussian image substitutions.' if native else 'Unfinished sources are labeled. RGB is actual mesh rendering with the shared appearance field; no Gaussian render substitutions.'
+    text(draw,(16,canvas.height-36),caption,size=20)
     return canvas
 
 def input_signature(root,scene,camera):
     paths=[root/'common'/scene/'complete.json',root/'common'/scene/'reference_points.npz',Path(__file__)]
     for state in ['background','recomposition']:
         paths.append(root/'common'/scene/(state+'_support')/(camera['stem']+'.png'))
+        paths.append(root/'common'/scene/(state+'_native_support')/(camera['stem']+'.png'))
         for method in METHODS:
             paths += [root/state/method/scene/'metrics.json',root/state/method/scene/'renders'/(camera['stem']+'.png'),
                       root/'cache'/method/scene/state/'depth'/(camera['stem']+'.npy'),root/'cache'/method/scene/state/'geometry_metrics.json']
-            if method!='paintmesh':paths.append(BASE/method/scene/'mesh_complete.json')
+            if method not in ['paintmesh','paintmesh_stage1']:paths.append(BASE/method/scene/'mesh_complete.json')
     return digest([identity(p) if p.exists() else dict(path=str(p),missing=True) for p in paths])
 
 def build(root,out,scenes):
@@ -340,11 +351,20 @@ def build(root,out,scenes):
     write(figure_bucket(out,'metadata')/'manifest.json',dict(updated=time.time(),scene_count=len(selected),completed_display_cells=ready,
               columns=[x[0] for x in COLS],source_protocol=str(root/'protocol.json'),source_cohorts=protocol.get('cohorts'),scenes=inventory))
     write_index(out,inventory)
+    if protocol.get('native_mesh_rgb',{}).get('enabled'):
+        path=out/'README.md';contents=path.read_text()
+        contents=contents.replace('RGB 采用本轮 mesh 评估实际输出的统一颜色场渲染；不混入高斯图像或用原生纹理冒充统一外观。',
+            'RGB 采用各项目网格后端与原生顶点色，不拟合统一颜色场，不使用高斯图片替代。')
+        path.write_text(contents)
+    if protocol.get('native_support_validation',{}).get('enabled'):
+        path=out/'README.md';contents=path.read_text()
+        contents+='\nCoMe / GOF 的当前网格经过同一源高斯有效支撑校验；保留原坐标和原生颜色，剔除无支撑长插值面。不是官方未处理原样输出，详见 [修复协议](../docs/OPACITY_MESH_REPAIR.md)。\n'
+        path.write_text(contents)
     return changed
 
 def write_index(out,inventory):
     lines=['# 全方法、全场景 mesh 对比图','',
-           '固定七列：GT、2DGS、CoMe、GOF、Gaussian Wrapping、PaintMesh 纯背景、PaintMesh + MV-SAM3D。','',
+           '固定八列：GT、2DGS、CoMe、GOF、Gaussian Wrapping、PaintMesh 第一阶段原始mesh、PaintMesh 纯背景、PaintMesh + MV-SAM3D。第一阶段保留原物体，两份同域报告分别按背景/组合mask评分。','',
            '## 全场景总览','',
            '- [RGB 总图](all_scenes_rgb.png) · [PDF](all_scenes_rgb.pdf)',
            '- [表面几何总图](all_scenes_geometry.png) · [PDF](all_scenes_geometry.pdf)',
@@ -354,14 +374,14 @@ def write_index(out,inventory):
            '- [纯背景详细图，多页 PDF](background_all_scenes.pdf)',
            '- [组合 mesh 详细图，多页 PDF](recomposition_all_scenes.pdf)','',
            '## 每个场景的完整画面、目标区域放大和表面图','',
-           '| 场景 | 相机 | 七列详细图 | 纯背景同域对比 | 组合 mesh 同域对比 |','|---|---|---|---|---|']
+           '| 场景 | 相机 | 八列详细图 | 纯背景同域对比 | 组合 mesh 同域对比 |','|---|---|---|---|---|']
     for row in inventory:
         s=row['scene'];lines.append(f'| {s} | {row["camera"]} | [PNG](scenes/{s}/all_methods.png) · [PDF](scenes/{s}/all_methods.pdf) | [PNG](scenes/{s}/background.png) | [PNG](scenes/{s}/recomposition.png) |')
     lines+=['','## 读图说明','',
        '- 每场景各列严格使用同一相机。选择有评分区域的留出相机中 GT 目标 mask 占比最大的一个；不按 PSNR 或其他方法分数选择。selected_views.json 记录原始文件名、相机、裁剪框、选择规则。',
        '- RGB 采用本轮 mesh 评估实际输出的统一颜色场渲染；不混入高斯图像或用原生纹理冒充统一外观。尚未完成外观的格子明确标为评估中；未完成 mesh 的格子保留缺失状态。',
-       '- 七列总览展示完整原始画面，便于观察缺失几何；粉色框为同一个放大区域。两份同域图则把不参与评分的像素显示成灰色。',
-       '- 纯背景与组合模式的评分范围不同。七列图中纯背景列的 P/S/L 使用背景支持域，其余重建方法与组合列使用组合支持域；不能跨这两种范围直接排名。公平数值对比请看单独的纯背景/组合图和原评估报告。',
+       '- 八列总览展示完整原始画面，便于观察缺失几何；粉色框为同一个放大区域。两份同域图则把不参与评分的像素显示成灰色。',
+       '- 纯背景与组合模式的评分范围不同。八列图中纯背景列的 P/S/L 使用背景支持域，其余重建方法与组合列使用组合支持域；不能跨这两种范围直接排名。公平数值对比请看单独的纯背景/组合图和原评估报告。',
        '- 图上 P/S/L 是所选相机的 PSNR(dB)/SSIM/LPIPS；CD 和 F1 是对应场景的几何汇总，不是该相机独立几何分数。F1 采用统一 1% 相机半径阈值。',
        '- 几何图来自真实 mesh 深度，并用深度梯度近似照明增强表面形状；不是额外生成的几何。每场景所有方法使用同一深度色标。参考列显示真实 COLMAP 稀疏点云投影（点大小3像素），没有伪造稠密 GT mesh。',
        '- 原始有物体留出 RGB 为本图 GT；不把无物体 test* 图像当组合 mesh 真值。已有 PaintMesh 结果可能使用过这些相机，当前为已有结果审计。',

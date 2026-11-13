@@ -35,6 +35,10 @@ def common(output,scene):
     write(marker,info);return cs,document,info
 
 def prepare(output,method,scene,config):
+    specs=specs_for(scene,method,'background')
+    if specs and len(specs)>4:
+        from .stream_cache import prepare_streamed
+        return prepare_streamed(output,method,scene,config)
     output=Path(output);cs,document,info=common(output,scene)
     selection=document['input_selection'];ref=np.load(output/'common'/scene/'reference_points.npz')
     base=output/'cache'/method/scene

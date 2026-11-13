@@ -65,7 +65,8 @@ def stage(root,name,inputs,outputs,fn):
     write_json(receipt,dict(signature=signature,outputs=[fingerprint(p) for p in outputs],completed_at=time.time()))
 
 
-def wait_gpu(gpu,minimum_mib=21000,timeout=0,on_wait=None,maximum_used_mib=None):
+def wait_gpu(gpu,minimum_mib=21000,timeout=0,on_wait=None,maximum_used_mib=None,poll_interval=60):
+    if poll_interval<=0:raise ValueError('GPU polling interval must be positive')
     start=time.monotonic();last_report=-60.
     while True:
         field='memory.used' if maximum_used_mib is not None else 'memory.free'
@@ -77,7 +78,7 @@ def wait_gpu(gpu,minimum_mib=21000,timeout=0,on_wait=None,maximum_used_mib=None)
             except ValueError:pass
         elapsed=time.monotonic()-start
         if elapsed-last_report>=60:
-            detail=dict(gpu=gpu,wait_seconds=int(elapsed))
+            detail=dict(gpu=gpu,wait_seconds=int(elapsed),poll_interval_seconds=poll_interval)
             if maximum_used_mib is not None:
                 detail.update(maximum_used_mib=maximum_used_mib,used_mib=r.stdout.strip() if r.returncode==0 else None)
             else:detail.update(minimum_mib=minimum_mib,free_mib=r.stdout.strip() if r.returncode==0 else None)
@@ -87,18 +88,18 @@ def wait_gpu(gpu,minimum_mib=21000,timeout=0,on_wait=None,maximum_used_mib=None)
         if timeout is not None and (timeout<=0 or elapsed>=timeout):
             condition=f'used memory must be below {maximum_used_mib} MiB' if maximum_used_mib is not None else f'free memory must be at least {minimum_mib} MiB'
             raise RuntimeError(f'GPU {gpu} unavailable: {condition}')
-        time.sleep(10)
+        time.sleep(poll_interval)
 
 
 @contextmanager
-def gpu_slot(gpu,timeout=3600,minimum_mib=21000,on_wait=None,maximum_used_mib=None):
+def gpu_slot(gpu,timeout=3600,minimum_mib=21000,on_wait=None,maximum_used_mib=None,poll_interval=60):
     """Serialize our GPU stages across independent resume/queue processes."""
     directory=Path('/home/member/.cache/paintmesh-recompose-gpu');directory.mkdir(parents=True,exist_ok=True)
     with (directory/f'{gpu}.lock').open('a') as lock:
         print(f'Waiting for composition GPU slot {gpu}',flush=True)
         fcntl.flock(lock,fcntl.LOCK_EX)
         try:
-            wait_gpu(gpu,minimum_mib=minimum_mib,timeout=timeout,on_wait=on_wait,maximum_used_mib=maximum_used_mib)
+            wait_gpu(gpu,minimum_mib=minimum_mib,timeout=timeout,on_wait=on_wait,maximum_used_mib=maximum_used_mib,poll_interval=poll_interval)
             yield
         finally:fcntl.flock(lock,fcntl.LOCK_UN)
 
@@ -126,7 +127,7 @@ def generator_environment(cfg,gpu=None):
     return env
 
 
-def generation_with_retry(command,env,log_path,gpu,maximum_used_mib,on_start=None,on_wait=None,on_oom=None):
+def generation_with_retry(command,env,log_path,gpu,maximum_used_mib,on_start=None,on_wait=None,on_oom=None,poll_interval=60):
     """Release a failed CUDA process and requeue only explicit CUDA OOMs.
 
     Other users can allocate VRAM after a successful launch gate. A retry uses
@@ -135,7 +136,7 @@ def generation_with_retry(command,env,log_path,gpu,maximum_used_mib,on_start=Non
     log_path=Path(log_path);attempt=0
     while True:
         attempt+=1
-        with gpu_slot(gpu,timeout=None,maximum_used_mib=maximum_used_mib,on_wait=on_wait):
+        with gpu_slot(gpu,timeout=None,maximum_used_mib=maximum_used_mib,on_wait=on_wait,poll_interval=poll_interval):
             if on_start:on_start(attempt)
             with log_path.open('ab') as log:
                 log.write(f'\n=== Generation attempt {attempt}, {time.strftime("%F %T")} ===\n'.encode());log.flush()
@@ -144,12 +145,13 @@ def generation_with_retry(command,env,log_path,gpu,maximum_used_mib,on_start=Non
         if result.returncode==0:return
         with log_path.open('rb') as log:
             log.seek(0,2);end=log.tell();log.seek(max(offset,end-65536));tail=log.read().decode(errors='replace')
-        if not any(s in tail for s in ['CUDA out of memory','torch.cuda.OutOfMemoryError']):
+        if not any(s in tail for s in ['CUDA out of memory','torch.cuda.OutOfMemoryError',
+                                      'CUBLAS_STATUS_ALLOC_FAILED','CUDNN_STATUS_ALLOC_FAILED']):
             raise subprocess.CalledProcessError(result.returncode,command)
         detail=dict(gpu=gpu,attempt=attempt,reason='CUDA OOM; waiting for used VRAM below launch threshold')
         print(f'Retrying generation after VRAM contention: {detail}',flush=True)
         if on_oom:on_oom(detail)
-        time.sleep(10)
+        time.sleep(poll_interval)
 
 
 def run_scene(repo,config,scene,gpu=0,until='compose'):
@@ -203,10 +205,12 @@ def run_scene(repo,config,scene,gpu=0,until='compose'):
                 waiting=lambda detail:write_json(root/'status.json',dict(state='running',stage='waiting_gpu',object=target,**detail))
                 env=generator_environment(cfg['generator'],gpu)
                 env['PAINTMESH_RECOMPOSE_GPU_MAX_USED_MIB']=str(cfg['execution']['gpu_max_used_mib'])
+                env['PAINTMESH_RECOMPOSE_GPU_POLL_SECONDS']=str(cfg['execution']['gpu_poll_interval_seconds'])
                 generation_with_retry(command,env,obj/'generation.log',gpu,cfg['execution']['gpu_max_used_mib'],
                     on_start=lambda attempt:write_json(root/'status.json',dict(state='running',stage='generate',object=target,gpu=gpu,attempt=attempt)),
                     on_wait=waiting,
-                    on_oom=lambda detail:write_json(root/'status.json',dict(state='running',stage='retrying_gpu_oom',object=target,**detail)))
+                    on_oom=lambda detail:write_json(root/'status.json',dict(state='running',stage='retrying_gpu_oom',object=target,**detail)),
+                    poll_interval=cfg['execution']['gpu_poll_interval_seconds'])
             write_json(root/'status.json',dict(state='running',stage='generate',object=target,gpu=gpu))
             stage(obj,'generate',dict(evidence=fingerprint(evidence/'observations.json'),pointmaps=fingerprint(evidence/'pointmaps.npz'),config=cfg['generator']),
                   [generated/'asset.npz',generated/'generated.glb',generated/'initial_pose.json',generated/'generation.json',generated/'input_validation.json'],generate)

@@ -119,7 +119,7 @@ def main():
           '', '| 场景 | 来源 | 状态 | 物体 ID：留出轮廓 IoU | 场景图 | 对照图 / 问题 |','|---|---|---|---|---|---|',*rows,'',
           '## 打开文件','',
           '- `<scene>/composition/world/composed_gaussians.ply`：inpaint 背景 + 原始删除高斯。各项原始渲染属性直接复制，可在标准 3DGS 查看器中打开。',
-          '- 同目录 `mesh_scene.gltf` + `mesh_buffers/`：全分辨率背景 mesh 和独立物体节点，可在 Blender 等 glTF 工具中导入；保留独立变换。此版本使用烘焙顶点颜色，原生物体 UV 版本另存为 `<id>_textured.glb`。',
+          '- 同目录 `mesh_scene.gltf` + `mesh_buffers/`：全分辨率背景 mesh 和独立物体节点，可在 Blender 等 glTF 工具中导入；保留独立变换。此版本使用顶点颜色；`<id>_textured.glb` 保留生成器原生材质，不表示一定有 UV 纹理。本批未启用 UV 纹理烘焙。',
           '- `scene.json`：mesh 使用 object_to_world；原始世界坐标高斯使用 Δ = object_to_world × inverse(original_pose)。初始 Δ=I，移动时两种表示同步。',
           '- `world/gaussian_ranges.json`：合并 PLY 中背景和各物体的实例行范围。',
           '- `<scene>/original_gaussians/manifest.json`：精确集合差、源模型、实际删除点数及每物体点数；training=false。',
@@ -135,6 +135,8 @@ def main():
     if audit.exists():
         check=read_json(audit)
         text.insert(6,f"实际数据逐属性核对：{sum(v['passed'] for v in check['scenes'])}/11 场景通过；核对背景及恢复物体的 XYZ、SH、opacity、scale、rotation 与原始记录完全相同。")
+    if (root/'SCENE_CHECKS.zh-CN.md').exists():
+        text.extend(['','重新检测：[全部场景完整性与摆放](SCENE_CHECKS.zh-CN.md)；[逐图观察](checks_all_scenes/VISUAL_REVIEW.zh-CN.md)。'])
     (root/'README.md').write_text('\n'.join(text)+'\n');write_json(root/'delivery_errors.json',errors)
     write_status(root)
     return bool(errors)

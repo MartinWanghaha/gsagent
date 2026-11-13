@@ -76,9 +76,11 @@ conda run --no-capture-output -n paintmesh python scripts/paintmesh/review_recom
 
 命令覆盖同一输出目录。没有旧高斯训练策略的回退入口。按输入、实现与输出 hash 复用未改变的生成资产，场景锁阻止并发覆盖；每张卡独占生成/渲染阶段并检查显存余量。
 
-原生分辨率全场景重生成入口：`regenerate_native_recomposition.py --gpus 0,1 --log-dir <日志目录>`。两条 CPU 队列准备输入，两张 GPU 分别运行一个生成任务；按 `execution.gpu_max_used_mib=5120`，单卡已用显存小于 5 GiB 即启动，否则每 10 秒检查，不终止其他任务。`--resume` 复用已经完成的本轮准备与场景。完成后在原目录覆盖 mesh、组合场景和渲染对照，重新逐属性核对原始高斯，并写 `native_input_comparison.md`。
+原生分辨率全场景重生成入口：`regenerate_native_recomposition.py --gpus 0,1 --log-dir <日志目录>`。两条 CPU 队列准备输入，两张 GPU 分别运行一个生成任务；按 `execution.gpu_max_used_mib=8192`，单卡已用显存小于 8 GiB 即启动，否则按 `execution.gpu_poll_interval_seconds=60` 每分钟检查一次，不终止其他任务。`--resume` 复用已经完成的本轮准备与场景。完成后在原目录覆盖 mesh、组合场景和渲染对照，重新逐属性核对原始高斯，并写 `native_input_comparison.md`。
 
 依赖导入及输入核验完成、实际加载 GPU 模型之前，再检查一次相同显存门槛，记录到 `generated/runtime.json`。其他进程在任务运行中增长显存仍可能触发 OOM；显式 CUDA OOM 自动释放子进程并等待重试，保持输入、权重、随机种子不变。非 OOM 错误直接报告。`--resume --wait-for-queue` 可在当前批次结束后仅续跑未完成场景。
+
+两张卡共享待运行队列：显存超过门槛的卡不占住某个场景，空闲卡可接手该场景；准备完成且队列已空时，忙卡的等待线程退出，避免空队列阻塞整批结束。
 
 ## 输出文件
 
@@ -127,8 +129,12 @@ conda run --no-capture-output -n paintmesh python scripts/paintmesh/run_recompos
 
 ## 本轮真实数据验证
 
+全场景重新检测：`conda run --no-capture-output -n paintmesh python scripts/paintmesh/check_recomposition_scenes.py`。它逐属性比较组合高斯与真实源模型，逐顶点/逐三角形读取 glTF 背景与物体缓冲，核对世界坐标 PLY/GLB、原图 RGB/alpha/pointmap 和官方 518 裁剪记录；随后重新射线计算所有物体的 3 个留出视角以及支撑/碰撞结果。输出 `recomposition/SCENE_CHECKS.zh-CN.md`、`checks_all_scenes/report.json` 和每物体的检查图，不改变模型或验收阈值。
+
+完整性通过只表示来源和文件正确，摆放检查另列。轮廓高 IoU 不能排除对称物体的朝向或纹理混淆；接触值达到 0.3 时可能是支撑未匹配的惩罚，不作为真实间距。移动代数检查不代替新位置的碰撞检测。
+
 `audit_recomposition.py` 已对 11 个场景逐元素核对：合并后的背景及恢复物体的 XYZ、SH、opacity、scale、rotation 与各自来源记录相同，全部通过。明细保存在 `recomposition/original_gaussian_audit.json`。这验证高斯直接复用的完整性，不等同于生成 mesh 的位姿精度。
 
-新版 car 已完成 0.05 倍物体尺度的实际移动测试，接触/碰撞检查通过，前后图片保存在 `car/movement_demo/movement_comparison.jpg`。此示例使用原始物体高斯，mesh 与高斯采用同一刚体位移，未进行任何高斯训练。
+历史版本 car 曾完成 0.05 倍物体尺度的移动测试。这不能作为后续重新生成模型的移动验收；以当前 scene.json 和重新计算的接触/碰撞结果为准。2026-11-10 原始分辨率重生成版本的 car 仍是 needs_review，当前移动导出会拒绝。
 
 完整场景图保留独立物体 ID 与变换；合并 PLY 是供查看器打开的扁平结果。需要在外部编辑器独立选择物体时，分别加载各 `<id>_gaussians.ply` 和背景高斯，或通过主场景图与 CLI 移动后重新导出。不要把扁平 PLY 当成自动保留对象层级的文件格式。

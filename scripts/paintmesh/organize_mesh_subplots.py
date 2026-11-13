@@ -21,10 +21,10 @@ from mesh_benchmark.layout import work_root,figure_bucket
 
 MODES=['background','recomposition']
 LABELS={'gt':'GT reference','2dgs':'2DGS','come':'CoMe','gof':'GOF',
-        'gaussian_wrapping':'Gaussian Wrapping','paintmesh':'PaintMesh'}
+        'gaussian_wrapping':'Gaussian Wrapping','paintmesh_stage1':'PaintMesh stage 1','paintmesh':'PaintMesh'}
 FILES=['rgb.png','rgb_zoom.png','rgb_scored.png','rgb_scored_zoom.png',
        'geometry.png','geometry_zoom.png','geometry_scored.png','evaluation_mask.png',
-       'target_mask.png','coverage_mask.png','panel.png']
+       'target_mask.png','coverage_mask.png','geometry_evaluation_mask.png','panel.png']
 
 def copy_atomic(source,dest):
     if Path(source).resolve()==Path(dest).resolve():raise ValueError('Cannot overwrite a source artifact')
@@ -36,19 +36,26 @@ def export_method(root,figures,out,scene,mode,method,info):
     dest=out/method/mode/scene;dest.mkdir(parents=True,exist_ok=True)
     rgb=root/'common'/scene/'held_out'/(stem+'_gt.png') if is_gt else root/mode/method/scene/'renders'/(stem+'.png')
     geometry=figures/'assets'/scene/mode/((method if not is_gt else 'reference')+'_geometry.png')
-    evaluation=root/'common'/scene/(mode+'_support')/(stem+'.png')
+    geometry_evaluation=root/'common'/scene/(mode+'_support')/(stem+'.png')
+    native_evaluation=root/'common'/scene/(mode+'_native_support')/(stem+'.png')
+    evaluation=native_evaluation if native_evaluation.exists() else geometry_evaluation
     target=root/'common'/scene/'held_out'/(stem+'_foreground.png')
     depth=root/'cache'/method/scene/mode/'depth'/(stem+'.npy')
     if not is_gt and not depth.exists():depth=figures/'assets'/scene/'extra'/(method+'_depth.npy')
     metrics_file=root/mode/method/scene/'metrics.json'
+    metrics=read(metrics_file) if not is_gt and metrics_file.exists() else None
+    rgb_depth=depth
+    if metrics and metrics.get('native_mesh_rendering_version'):
+        from evaluate_native_mesh_rgb import rendering
+        rgb_depth=rendering(root,method,scene,mode)['depth']/(stem+'.npy')
     geometry_metrics=root/'cache'/method/scene/mode/'geometry_metrics.json'
     sheet=figures/'scenes'/scene/(mode+'.png')
-    inputs=[rgb,geometry,evaluation,target,sheet,figures/'scenes'/scene/'figure_manifest.json',Path(__file__)]
-    if not is_gt:inputs += [depth,metrics_file,geometry_metrics]
+    inputs=[rgb,geometry,evaluation,geometry_evaluation,target,sheet,figures/'scenes'/scene/'figure_manifest.json',Path(__file__)]
+    if not is_gt:inputs += [depth,rgb_depth,metrics_file,geometry_metrics]
     sig=digest(dict(camera=camera,roi=roi,inputs=[identity(p) if p.exists() else dict(path=str(p),missing=True) for p in inputs]))
     metadata=dest/'source.json'
     if metadata.exists() and read(metadata).get('signature')==sig and (dest/'panel.png').exists():return read(metadata),False
-    produced=set();metrics=read(metrics_file) if not is_gt and metrics_file.exists() else None
+    produced=set()
     if metrics and metrics.get('scoring_protocol_version')!=2:metrics=None
     geo=read(geometry_metrics) if not is_gt and geometry_metrics.exists() else None
     if geo and geo.get('scoring_protocol_version')!=2:geo=None
@@ -56,18 +63,19 @@ def export_method(root,figures,out,scene,mode,method,info):
     status='reference' if is_gt else ('complete' if metrics and rgb.exists() else ('RGB rendered; metrics pending' if rgb.exists() else ('geometry only; RGB pending' if geometry.exists() else 'no completed mesh/evaluation')))
     def copy(source,name):
         if source.exists():copy_atomic(source,dest/name);produced.add(name)
-    for source,name in [(rgb,'rgb.png'),(geometry,'geometry.png'),(evaluation,'evaluation_mask.png'),(target,'target_mask.png')]:copy(source,name)
-    valid=np.asarray(Image.open(evaluation))>127 if evaluation.exists() else None
+    for source,name in [(rgb,'rgb.png'),(geometry,'geometry.png'),(evaluation,'evaluation_mask.png'),(geometry_evaluation,'geometry_evaluation_mask.png'),(target,'target_mask.png')]:copy(source,name)
     for source,prefix in [(rgb,'rgb'),(geometry,'geometry')]:
         if not source.exists():continue
+        mask=geometry_evaluation if prefix=='geometry' else evaluation
+        valid=np.asarray(Image.open(mask))>127 if mask.exists() else None
         with Image.open(source) as image:
             if image.size!=(camera['width'],camera['height']):raise ValueError(f'Camera/image size mismatch: {source}')
             save(image.crop(roi),dest/(prefix+'_zoom'));produced.add(prefix+'_zoom.png')
             if valid is not None:
                 scored=masked_image(image.convert('RGB'),valid);save(scored,dest/(prefix+'_scored'));produced.add(prefix+'_scored.png')
                 if prefix=='rgb':save(scored.crop(roi),dest/'rgb_scored_zoom');produced.add('rgb_scored_zoom.png')
-    if not is_gt and depth.exists():
-        d=np.load(depth,mmap_mode='r');coverage=np.isfinite(d)&(d>0)
+    if not is_gt and rgb_depth.exists():
+        d=np.load(rgb_depth,mmap_mode='r');coverage=np.isfinite(d)&(d>0)
         if mode=='background':coverage&=~(np.asarray(Image.open(target))>127)
         save(Image.fromarray(coverage.astype('uint8')*255),dest/'coverage_mask');produced.add('coverage_mask.png')
     # Literal column extraction preserves the exact scores and gray-mask domain
@@ -91,8 +99,11 @@ def export_method(root,figures,out,scene,mode,method,info):
                 original_image=camera['name'],camera=camera,roi_xyxy=roi,
                 source_rgb=str(rgb) if rgb.exists() else None,source_geometry=str(geometry) if geometry.exists() else None,
                 source_depth=str(depth) if not is_gt and depth.exists() else None,
+                source_rgb_depth=str(rgb_depth) if not is_gt and rgb_depth.exists() else None,
                 source_comparison=str(sheet),source_panel_crop=box,source_evaluation_mask=str(evaluation),
+                source_geometry_evaluation_mask=str(geometry_evaluation),
                 source_foreground_mask=str(target),generated_files=sorted(produced),
+                geometry_postprocessing=metrics.get('geometry_postprocessing') if metrics else None,
                 view_metrics=view,scene_geometry=geo,metrics_scope='RGB scores: chosen view; geometry: entire scene; common covered region')
     write(metadata,record)
     write(dest/'metrics.json',dict(method=method,mode=mode,scene=scene,view=camera['name'],status=status,
@@ -103,7 +114,7 @@ def export_method(root,figures,out,scene,mode,method,info):
       '- `rgb.png`：原尺寸、无标注的真实 mesh 渲染（GT 目录为实拍参考图）；`rgb_zoom.png`：原始像素裁剪，无拉伸。\n'
       '- `geometry.png` / `geometry_zoom.png`：相同视角的表面预览（GT 为稀疏参考点云）。\n'
       '- `rgb_scored.png` / `rgb_scored_zoom.png` / `geometry_scored.png`：与主评分同域，排除区域显示为灰色。\n'
-      '- `evaluation_mask.png`：共同评分域；`coverage_mask.png`：自身有效域；`target_mask.png`：目标区域。白色表示该 mask 为真。\n'
+      '- `evaluation_mask.png`：RGB 共同评分域；`geometry_evaluation_mask.png`：固定几何支持域；`coverage_mask.png`：RGB 自身有效域；`target_mask.png`：目标区域。白色表示该 mask 为真。\n'
       '- `metrics.json` / `source.json`：所选视角分数、场景几何分数、原始文件、相机与裁剪坐标。\n\n'
       '仅导出当前存在的原始数据；缺失 RGB 或 mesh 时，panel.png 中保留明确状态，不制造假结果。\n')
     return record,True
@@ -130,6 +141,7 @@ def indexes(out,records,waiting):
        '| `geometry.png` / `geometry_zoom.png` | 表面几何预览及相同 ROI 裁剪 |',
        '| `rgb_scored.png` / `rgb_scored_zoom.png` / `geometry_scored.png` | 无效区域显示为灰色的同评分区域版本 |',
        '| `evaluation_mask.png` | 白色为共同评分域 |',
+       '| `geometry_evaluation_mask.png` | 白色为固定几何支持域，与 RGB 光栅化支持分别记录 |',
        '| `coverage_mask.png` | 白色为该方法自身有效像素；纯背景已排除目标 mask |',
        '| `target_mask.png` | 白色为目标物体区域，背景评分忽略其内部 |',
        '| `metrics.json` | 所选视角图像指标与场景几何指标，分别标明范围 |',

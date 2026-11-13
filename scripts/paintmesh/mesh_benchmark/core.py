@@ -13,7 +13,7 @@ REPO = Path(__file__).resolve().parents[3]
 BASE = REPO / 'output/3dgs_with_mesh'
 RECOMPOSE = Path(os.environ.get('PAINTMESH_RECOMPOSE_ROOT',str(REPO/'output/paintmesh/Inpaint360GS/recomposition')))
 SCENES = ['bag','car','cone_red','cone_yellow','cube','doppelherz','fruits','garden_toys','redbull','toys','truck']
-METHODS = ['2dgs','come','gof','gaussian_wrapping','paintmesh']
+METHODS = ['2dgs','come','gof','gaussian_wrapping','paintmesh_stage1','paintmesh']
 STATES = ['background','recomposition']
 
 def read(path):
@@ -37,7 +37,11 @@ def cameras(scene):
     file = REPO/'submodules/Inpaint360GS/tools/read_write_model.py'
     spec = importlib.util.spec_from_file_location('mesh_eval_colmap', file)
     mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)
-    intrinsics, extrinsics, _ = mod.read_model(str(source/'sparse/0'), ext='.bin')
+    # Camera-only consumers never use sparse 3D points. Avoid parsing the
+    # entire point/track cloud repeatedly for every RGB-scoring job.
+    sparse=source/'sparse/0'
+    intrinsics=mod.read_cameras_binary(str(sparse/'cameras.bin'))
+    extrinsics=mod.read_images_binary(str(sparse/'images.bin'))
     images = {x.name:x for x in extrinsics.values()}
     sizes = {x['name']:(x['width'],x['height']) for x in split['images']}
     result = []
@@ -87,7 +91,16 @@ class MeshScene:
         from recompose.geometry import transform
         for spec in specs:
             path = Path(spec['path']); asset = None
-            if path.suffix == '.npz':
+            if path.name.endswith('.mesh.json'):
+                meta=read(path)
+                if meta['format']!='paintmesh-native-triangles-v1':raise ValueError('Unknown native triangle buffer')
+                for key,stamp in [('vertices','vertex_identity'),('indices','index_identity')]:
+                    if identity(meta[key]['path'])!=meta[stamp]:raise ValueError('Native triangle source changed')
+                data=np.load(meta['vertices']['path'],mmap_mode='r')
+                vertices=np.asarray(data['position'],dtype='float32',order='C')
+                faces=np.asarray(np.load(meta['indices']['path'],mmap_mode='r'),dtype='uint32',order='C')
+                colors=np.asarray(data['color'][:,:3],dtype='float32')/255.
+            elif path.suffix == '.npz':
                 with np.load(path) as a: asset = {k:a[k] for k in a.files}
                 vertices = transform(asset['vertices'], spec['transform']).astype('float32')
                 faces = np.asarray(asset['faces'], dtype='uint32'); colors = asset.get('colors')
@@ -101,7 +114,8 @@ class MeshScene:
             if int(faces.max())>=len(vertices):raise ValueError(f'Out-of-range triangle indices: {path}')
             gid = self.scene.add_triangles(o3d.core.Tensor.from_numpy(vertices), o3d.core.Tensor.from_numpy(faces))
             self.attributes[gid] = (faces, colors, asset, data)
-            self.counts.append(dict(path=str(path),vertices=len(vertices),faces=len(faces),has_native_color=colors is not None))
+            self.counts.append(dict(path=str(path),vertices=len(vertices),faces=len(faces),has_native_color=colors is not None,
+                bounds=[vertices.min(0).tolist(),vertices.max(0).tolist()]))
             # Open3D retains its own tensor handles. Release temporary vertex copies.
             del vertices
 
@@ -126,12 +140,20 @@ class MeshScene:
 
 def specs_for(scene,method,state):
     document = read(RECOMPOSE/scene/'composition/scene.json')
+    if method=='paintmesh_stage1':
+        if document.get('stage1_whole',{}).get('complete'):
+            return document['stage1_whole']['mesh_specs']
+        # This is the actual pre-removal artifact, not a new reconstruction.
+        path=Path(document['input_selection']['original_mesh'])
+        return [dict(path=str(path))] if path.exists() else None
     if method != 'paintmesh':
         p = BASE/method/scene/'mesh_complete.json'
         if not p.exists(): return None
         m = read(p)
         if not m.get('complete') or not Path(m['path']).exists(): return None
-        return [dict(path=m['path'])]
+        # A color-only publication has a new primary PLY but retains the exact
+        # original geometry identity for the immutable virtual-scan cache.
+        return [dict(path=m.get('geometry_path',m['path']))]
     result = [dict(path=document['background']['mesh']['path'])]
     result += [dict(path=x['path']) for x in document['background'].get('patches',[])]
     if state == 'recomposition':

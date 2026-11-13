@@ -71,6 +71,26 @@ def export_mesh_scene(scene,output):
     refs=[scene['background']['mesh']]+scene['background'].get('patches',[])
     from .io import read_json
     for i,ref in enumerate(refs):
+        if Path(ref['path']).name.endswith('.mesh.json'):
+            # Complete fine-scene partitions are already tightly packed native
+            # triangle buffers. glTF shares those exact bytes; no second copy.
+            source=read_json(ref['path']);vp=Path(source['vertices']['path']);fp=Path(source['indices']['path'])
+            v=np.load(vp,mmap_mode='r');f=np.load(fp,mmap_mode='r')
+            if v.dtype.itemsize!=16 or f.dtype!=np.dtype('<u4') or f.shape!=(source['face_count'],3):
+                raise ValueError('Invalid native glTF triangle layout')
+            if v.offset%4 or f.offset%4:raise ValueError('Unaligned native triangle array')
+            bi=len(doc['buffers']);vi=len(doc['bufferViews']);ai=len(doc['accessors']);mi=len(doc['meshes']);ni=len(doc['nodes'])
+            doc['buffers'] += [dict(uri=os.path.relpath(vp,out),byteLength=vp.stat().st_size),
+                               dict(uri=os.path.relpath(fp,out),byteLength=fp.stat().st_size)]
+            doc['bufferViews'] += [dict(buffer=bi,byteOffset=v.offset,byteLength=len(v)*16,byteStride=16,target=34962),
+                dict(buffer=bi+1,byteOffset=f.offset,byteLength=f.nbytes,target=34963)]
+            doc['accessors'] += [dict(bufferView=vi,byteOffset=0,componentType=5126,count=len(v),type='VEC3',min=source['bounds'][0],max=source['bounds'][1]),
+                dict(bufferView=vi,byteOffset=12,componentType=5121,normalized=True,count=len(v),type='VEC4'),
+                dict(bufferView=vi+1,byteOffset=0,componentType=5125,count=f.size,type='SCALAR')]
+            doc['meshes'].append(dict(name='background' if i==0 else f'background_patch_{i}',primitives=[dict(attributes={'POSITION':ai,'COLOR_0':ai+1},indices=ai+2,material=0)]))
+            doc['nodes'].append(dict(name='background' if i==0 else f'background_patch_{i}',mesh=mi,matrix=np.eye(4).T.ravel().tolist()))
+            doc['scenes'][0]['nodes'].append(ni)
+            continue
         buffer=cache/f'{ref["sha256"]}.bin';metadata=buffer.with_suffix('.json')
         meta=read_json(metadata) if metadata.exists() else None
         if meta is None or not buffer.exists() or buffer.stat().st_size!=meta['byte_length']:

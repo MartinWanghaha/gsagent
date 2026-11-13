@@ -112,16 +112,19 @@ def test_completed_mesh_refresh_only_invalidates_changed_scene_scores(tmp_path):
         assert (tmp_path/'cache/paintmesh/redbull'/state/'source_depth.npy').exists()
         assert not (tmp_path/'common/redbull'/(state+'_support')).exists()
 
-def test_whole_memory_retry_preserves_rendering_inputs(tmp_path):
+def test_whole_memory_retry_never_reduces_quality(tmp_path):
     from mesh_benchmark.core import write,read
     from run_whole_mesh_comparison import reduce_fusion_memory
     original=dict(voxel_size=.01,sdf_trunc=.06,grid_radius_resolution=384,
                   max_depth=100.,alpha_min=.5,train_names=['a.jpg','b.jpg'])
     write(tmp_path/'whole_scene_plan.json',dict(scenes={'bag':original}))
-    reduce_fusion_memory(tmp_path,'bag')
+    import pytest
+    before=(tmp_path/'whole_scene_plan.json').read_bytes()
+    with pytest.raises(RuntimeError,match='coarsening is disabled'):
+        reduce_fusion_memory(tmp_path,'bag')
     updated=read(tmp_path/'whole_scene_plan.json')['scenes']['bag']
-    assert updated['voxel_size']==.02 and updated['sdf_trunc']==.12
-    assert all(updated[k]==original[k] for k in ['max_depth','alpha_min','train_names'])
+    assert updated==original
+    assert (tmp_path/'whole_scene_plan.json').read_bytes()==before
 
 def test_whole_baseline_reuse_canonicalizes_matrices_and_isolates_outputs(tmp_path,monkeypatch):
     from mesh_benchmark import whole,core,cache

@@ -12,8 +12,9 @@ import time
 PIN='abb04b5e8af5bc33b0265bdf19937e76bbb6bcdd'
 
 
-def wait_before_model_allocation(output,maximum_used_mib=5120):
+def wait_before_model_allocation(output,maximum_used_mib=8192,poll_interval=60):
     """Imports and native input verification can outlast the parent's VRAM check."""
+    if poll_interval<=0:raise ValueError('GPU polling interval must be positive')
     physical=os.environ.get('CUDA_VISIBLE_DEVICES','').split(',')[0]
     if not physical:raise ValueError('An isolated physical GPU is required for inference')
     while True:
@@ -23,11 +24,12 @@ def wait_before_model_allocation(output,maximum_used_mib=5120):
         except ValueError:used=None
         ready=used is not None and used<maximum_used_mib
         record=dict(stage='loading_model' if ready else 'waiting_before_model_load',
-                    physical_gpu=physical,used_mib=used,maximum_used_mib=maximum_used_mib,updated_at=time.time())
+                    physical_gpu=physical,used_mib=used,maximum_used_mib=maximum_used_mib,
+                    poll_interval_seconds=poll_interval,updated_at=time.time())
         Path(output).write_text(json.dumps(record,indent=2))
         print('Pre-allocation GPU check:',record,flush=True)
         if ready:return
-        time.sleep(10)
+        time.sleep(poll_interval)
 
 
 def validate_generation_inputs(evidence):
@@ -100,7 +102,8 @@ def external_pointmap_inference(official,preprocessing_receipt=None):
             check_hydra_safety(config,WHITELIST_FILTERS,BLACKLIST_FILTERS)
             if preprocessing_receipt is not None:
                 wait_before_model_allocation(Path(preprocessing_receipt).with_name('runtime.json'),
-                    int(os.environ.get('PAINTMESH_RECOMPOSE_GPU_MAX_USED_MIB','5120')))
+                    int(os.environ.get('PAINTMESH_RECOMPOSE_GPU_MAX_USED_MIB','8192')),
+                    int(os.environ.get('PAINTMESH_RECOMPOSE_GPU_POLL_SECONDS','60')))
             self._pipeline=instantiate(config)
             if preprocessing_receipt is not None:
                 original_preprocess=self._pipeline.preprocess_image

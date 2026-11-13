@@ -77,19 +77,10 @@ def plan(root):
     return result
 
 def reduce_fusion_memory(root,scene):
-    """Coarsen TSDF only, preserving all model/camera/depth rendering inputs."""
-    from mesh_benchmark.core import read,write
-    file=root/'whole_scene_plan.json';configuration=read(file)
-    p=configuration['scenes'][scene];old=p['voxel_size']
-    p['voxel_size']*=2;p['sdf_trunc']*=2;p['grid_radius_resolution']/=2
-    history=p.setdefault('memory_adjustments',[])
-    history.append(dict(previous_voxel=old,new_voxel=p['voxel_size'],reason='RAM headroom guard',time=time.time()))
-    write(file,configuration)
-    lines=['# 实际融合分辨率与内存调整','', '仅依据内存保护调整，不根据评估分数选择。所有训练相机、RGB、深度范围及深度缓存保持不变。','',
-           '| 场景 | 当前体素 | 当前截断带宽 |','|---|---:|---:|']
-    for name,param in configuration['scenes'].items():lines.append(f'| {name} | {param["voxel_size"]:.8f} | {param["sdf_trunc"]:.8f} |')
-    (root/'FUSION_MEMORY_ADJUSTMENTS.md').write_text('\n'.join(lines)+'\n')
-    print('FUSION_MEMORY_RETRY',scene,old,'->',p['voxel_size'],flush=True)
+    """Fail without mutating quality settings; never trade fidelity for memory."""
+    raise RuntimeError(f'{scene}: automatic TSDF coarsening is disabled. '
+                       'Keep voxel size, truncation, images and cameras unchanged; '
+                       'wait for resources or use a spatially tiled extraction.')
 
 def run(root):
     from mesh_benchmark.core import SCENES,read,write
@@ -116,16 +107,8 @@ def run(root):
                     status(root,'waiting for resources',jobs);time.sleep(10)
                 env=os.environ.copy();env['CUDA_VISIBLE_DEVICES']='' if cached else str(candidates[0])
                 jobs[scene]=dict(status='running',stage='whole background extraction',gpu=None if cached else candidates[0])
-                for attempt in range(3):
-                    try:
-                        supervise(root,[sys.executable,str(Path(__file__).resolve()),'--output',str(root),'--worker','extract','--scene',scene],
-                                  scene+'_extraction.log',jobs,'extract '+scene,env)
-                        break
-                    except RuntimeError:
-                        tail=(root/'logs'/(scene+'_extraction.log')).read_text()[-4000:]
-                        if 'MemoryError' not in tail or attempt==2:raise
-                        reduce_fusion_memory(root,scene)
-                        env['CUDA_VISIBLE_DEVICES']=''
+                supervise(root,[sys.executable,str(Path(__file__).resolve()),'--output',str(root),'--worker','extract','--scene',scene],
+                          scene+'_extraction.log',jobs,'extract '+scene,env)
             validation=root/'meshes'/scene/'coverage_validation.json'
             published=root/'recomposition'/scene/'composition/scene.json'
             if not validation.exists() or not published.exists():
